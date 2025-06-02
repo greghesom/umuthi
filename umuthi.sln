@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Web", "umuthi.Web\um
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Tests", "umuthi.Tests\umuthi.Tests.csproj", "{83F51199-20D3-2D28-5B61-B262A31290FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi_Functions", "umuthi.Functions\umuthi_Functions.csproj", "{B376DFD2-5F42-72D6-DC06-5806AEF013B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Functions", "umuthi.Functions\umuthi.Functions.csproj", "{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +40,10 @@ Global
 		{83F51199-20D3-2D28-5B61-B262A31290FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83F51199-20D3-2D28-5B61-B262A31290FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83F51199-20D3-2D28-5B61-B262A31290FA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B376DFD2-5F42-72D6-DC06-5806AEF013B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B376DFD2-5F42-72D6-DC06-5806AEF013B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B376DFD2-5F42-72D6-DC06-5806AEF013B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B376DFD2-5F42-72D6-DC06-5806AEF013B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

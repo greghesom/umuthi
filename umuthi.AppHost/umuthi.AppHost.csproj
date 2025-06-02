@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\umuthi.ApiService\umuthi.ApiService.csproj" />
     <ProjectReference Include="..\umuthi.Web\umuthi.Web.csproj" />
+	<ProjectReference Include="..\umuthi.Functions\umuthi.Functions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
