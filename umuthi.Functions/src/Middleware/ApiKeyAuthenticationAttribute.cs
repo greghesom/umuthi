@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Azure.Functions.Worker;
 
-namespace umuthi.Functions
+namespace umuthi.Functions.Middleware
 {
     /// <summary>
     /// Attribute for marking functions that require API key authentication

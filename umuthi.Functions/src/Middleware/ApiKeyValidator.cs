@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
-namespace umuthi.Functions
+namespace umuthi.Functions.Middleware
 {
     /// <summary>
     /// Static helper class to validate API keys for function endpoints

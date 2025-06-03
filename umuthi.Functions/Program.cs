@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
+using umuthi.Functions.Services;
 
 var builder = new HostBuilder()
     .ConfigureFunctionsWebApplication()
@@ -9,8 +10,9 @@ var builder = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
-        // Add your custom services here
-        // services.AddScoped<IMyService, MyService>();
+        // Register audio processing services
+        services.AddScoped<IAudioConversionService, AudioConversionService>();
+        services.AddScoped<ISpeechTranscriptionService, SpeechTranscriptionService>();
     });
 
 var host = builder.Build();

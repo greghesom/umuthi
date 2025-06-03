@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
-namespace umuthi.Functions
+namespace umuthi.Functions.Middleware
 {
     /// <summary>
     /// Simple in-memory rate limiter for API keys

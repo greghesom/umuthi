@@ -1,22 +1,11 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 using NAudio.Lame;
 using System.IO;
 using System.Threading.Tasks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.CognitiveServices.Speech;
-using Microsoft.CognitiveServices.Speech.Audio;
-using Azure.Identity;
-using System.Text;
-using System.Text.Json;
 
-namespace umuthi.Functions;
+namespace umuthi.Functions.Helpers;
 
 public class BufferedAudioHelpers
 {
