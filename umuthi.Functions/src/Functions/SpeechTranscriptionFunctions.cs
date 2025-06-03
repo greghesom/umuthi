@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using umuthi.Functions.Services;
 using umuthi.Functions.Middleware;
+using umuthi.Functions.Models;
 
 namespace umuthi.Functions.Functions;
 
@@ -19,19 +20,24 @@ public class SpeechTranscriptionFunctions
 {
     private readonly ILogger<SpeechTranscriptionFunctions> _logger;
     private readonly ISpeechTranscriptionService _speechTranscriptionService;
+    private readonly IUsageTrackingService _usageTrackingService;
 
     public SpeechTranscriptionFunctions(
         ILogger<SpeechTranscriptionFunctions> logger,
-        ISpeechTranscriptionService speechTranscriptionService)
+        ISpeechTranscriptionService speechTranscriptionService,
+        IUsageTrackingService usageTrackingService)
     {
         _logger = logger;
         _speechTranscriptionService = speechTranscriptionService;
-    }
-
-    [Function("ConvertAudioToTranscript")]
+        _usageTrackingService = usageTrackingService;
+    }    [Function("ConvertAudioToTranscript")]
     [ApiKeyAuthentication]
     public async Task<IActionResult> ConvertAudioToTranscript([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
+        var startTime = DateTime.UtcNow;
+        long totalInputSize = 0;
+        long totalOutputSize = 0;
+        
         try
         {
             // Validate API key
@@ -83,30 +89,81 @@ public class SpeechTranscriptionFunctions
                 validFiles.Add(file);
             }
 
+            totalInputSize = totalSize;
+
             // Process transcription using the service
             var transcript = await _speechTranscriptionService.TranscribeAudioFilesAsync(
                 validFiles, language, includeTimestamps, _logger);
                 
+            // Calculate output size based on transcript content
+            string responseContent = "";
+            IActionResult response;
+            
             // Format response based on user preferences
             if (includeTimestamps)
             {
-                return new OkObjectResult(transcript);
+                responseContent = System.Text.Json.JsonSerializer.Serialize(transcript);
+                response = new OkObjectResult(transcript);
             }
             else
             {
                 // Extract just the text from the transcript
                 var plainText = _speechTranscriptionService.ExtractPlainTextFromTranscript(transcript);
-                return new ContentResult
+                responseContent = plainText;
+                response = new ContentResult
                 {
                     Content = plainText,
                     ContentType = "text/plain",
                     StatusCode = 200
                 };
             }
+
+            totalOutputSize = System.Text.Encoding.UTF8.GetByteCount(responseContent);
+
+            // Track usage for billing
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "ConvertAudioToTranscript",
+                OperationTypes.SpeechTranscription,
+                totalInputSize,
+                totalOutputSize,
+                (long)(DateTime.UtcNow - startTime).TotalMilliseconds,
+                200,
+                true,
+                null,
+                new UsageMetadata 
+                { 
+                    Language = language,
+                    IncludeTimestamps = includeTimestamps,
+                    OriginalFileName = string.Join("; ", validFiles.Select(f => f.FileName))
+                }
+            );
+
+            return response;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred during audio to transcript conversion");
+            
+            // Track failed usage
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "ConvertAudioToTranscript",
+                OperationTypes.SpeechTranscription,
+                totalInputSize,
+                totalOutputSize,
+                (long)(DateTime.UtcNow - startTime).TotalMilliseconds,
+                500,
+                false,
+                ex.Message,
+                new UsageMetadata 
+                { 
+                    Language = req.Query["language"].ToString(),
+                    IncludeTimestamps = req.Query.ContainsKey("timestamps") && req.Query["timestamps"].ToString().ToLower() == "true",
+                    OriginalFileName = req.Form.Files.Count > 0 ? string.Join("; ", req.Form.Files.Select(f => f.FileName)) : null
+                }
+            );
+            
             return new StatusCodeResult(500);
         }
     }

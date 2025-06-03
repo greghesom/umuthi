@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using umuthi.Functions.Services;
 using umuthi.Functions.Middleware;
+using umuthi.Functions.Models;
 
 namespace umuthi.Functions.Functions;
 
@@ -18,19 +19,24 @@ public class AudioConversionFunctions
 {
     private readonly ILogger<AudioConversionFunctions> _logger;
     private readonly IAudioConversionService _audioConversionService;
+    private readonly IUsageTrackingService _usageTrackingService;
 
     public AudioConversionFunctions(
         ILogger<AudioConversionFunctions> logger,
-        IAudioConversionService audioConversionService)
+        IAudioConversionService audioConversionService,
+        IUsageTrackingService usageTrackingService)
     {
         _logger = logger;
         _audioConversionService = audioConversionService;
-    }
-
-    [Function("ConvertWavToMp3")]
+        _usageTrackingService = usageTrackingService;
+    }    [Function("ConvertWavToMp3")]
     [ApiKeyAuthentication]
     public async Task<IActionResult> ConvertWavToMp3([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
+        var startTime = DateTime.UtcNow;
+        long inputFileSize = 0;
+        long outputFileSize = 0;
+        
         try
         {
             // Validate API key
@@ -48,6 +54,7 @@ public class AudioConversionFunctions
             }
 
             var uploadedFile = req.Form.Files[0];
+            inputFileSize = uploadedFile.Length;
 
             // Validate file extension
             if (!uploadedFile.FileName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
@@ -65,8 +72,26 @@ public class AudioConversionFunctions
 
             // Convert audio using the service
             var result = await _audioConversionService.ConvertWavToMp3Async(uploadedFile, _logger);
+            outputFileSize = result.Data.Length;
 
-            _logger.LogInformation($"Conversion completed. Output file: {result.FileName}, Size: {result.Data.Length} bytes");
+            _logger.LogInformation($"Conversion completed. Output file: {result.FileName}, Size: {result.Data.Length} bytes");            // Track usage for billing
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "ConvertWavToMp3",
+                OperationTypes.AudioConversion,
+                inputFileSize,
+                outputFileSize,
+                (long)(DateTime.UtcNow - startTime).TotalMilliseconds,
+                200,
+                true,
+                null,
+                new UsageMetadata 
+                { 
+                    OriginalFileName = uploadedFile.FileName,
+                    InputFormat = ".wav",
+                    OutputFormat = ".mp3"
+                }
+            );
 
             return new FileContentResult(result.Data, "audio/mpeg")
             {
@@ -76,14 +101,36 @@ public class AudioConversionFunctions
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred during WAV to MP3 conversion");
+            
+            // Track failed usage
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "ConvertWavToMp3",
+                OperationTypes.AudioConversion,
+                inputFileSize,
+                outputFileSize,
+                (long)(DateTime.UtcNow - startTime).TotalMilliseconds,
+                500,
+                false,
+                ex.Message,
+                new UsageMetadata 
+                { 
+                    OriginalFileName = req.Form.Files.FirstOrDefault()?.FileName,
+                    InputFormat = ".wav",
+                    OutputFormat = ".mp3"
+                }
+            );
+            
             return new StatusCodeResult(500);
         }
-    }
-
-    [Function("ConvertMpegToMp3")]
+    }    [Function("ConvertMpegToMp3")]
     [ApiKeyAuthentication]
     public async Task<IActionResult> ConvertMpegToMp3([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
+        var startTime = DateTime.UtcNow;
+        long inputFileSize = 0;
+        long outputFileSize = 0;
+        
         try
         {
             // Validate API key
@@ -101,6 +148,7 @@ public class AudioConversionFunctions
             }
 
             var uploadedFile = req.Form.Files[0];
+            inputFileSize = uploadedFile.Length;
 
             // Validate file extension (support common MPEG formats)
             var validExtensions = new[] { ".mpeg", ".mpg", ".mp4", ".m4a", ".aac" };
@@ -121,8 +169,28 @@ public class AudioConversionFunctions
 
             // Convert audio using the service
             var result = await _audioConversionService.ConvertMpegToMp3Async(uploadedFile, _logger);
+            outputFileSize = result.Data.Length;
 
             _logger.LogInformation($"Conversion completed. Output file: {result.FileName}, Size: {result.Data.Length} bytes");
+
+            // Track usage for billing
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "ConvertMpegToMp3",
+                OperationTypes.AudioConversion,
+                inputFileSize,
+                outputFileSize,
+                (long)(DateTime.UtcNow - startTime).TotalMilliseconds,
+                200,
+                true,
+                null,
+                new UsageMetadata 
+                { 
+                    OriginalFileName = uploadedFile.FileName,
+                    InputFormat = fileExtension,
+                    OutputFormat = ".mp3"
+                }
+            );
 
             return new FileContentResult(result.Data, "audio/mpeg")
             {
@@ -132,6 +200,27 @@ public class AudioConversionFunctions
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred during MPEG to MP3 conversion");
+            
+            // Track failed usage
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "ConvertMpegToMp3",
+                OperationTypes.AudioConversion,
+                inputFileSize,
+                outputFileSize,
+                (long)(DateTime.UtcNow - startTime).TotalMilliseconds,
+                500,
+                false,
+                ex.Message,
+                new UsageMetadata 
+                { 
+                    OriginalFileName = req.Form.Files.FirstOrDefault()?.FileName,
+                    InputFormat = req.Form.Files.FirstOrDefault() != null ? 
+                        Path.GetExtension(req.Form.Files.FirstOrDefault()!.FileName).ToLowerInvariant() : null,
+                    OutputFormat = ".mp3"
+                }
+            );
+            
             return new StatusCodeResult(500);
         }
     }

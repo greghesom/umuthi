@@ -13,6 +13,9 @@ var builder = new HostBuilder()
         // Register audio processing services
         services.AddScoped<IAudioConversionService, AudioConversionService>();
         services.AddScoped<ISpeechTranscriptionService, SpeechTranscriptionService>();
+        
+        // Register usage tracking service for billing
+        services.AddScoped<IUsageTrackingService, UsageTrackingService>();
     });
 
 var host = builder.Build();
