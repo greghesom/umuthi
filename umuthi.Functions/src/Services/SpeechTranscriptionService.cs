@@ -92,13 +92,44 @@ public class SpeechTranscriptionService : ISpeechTranscriptionService
 
     public string ExtractPlainTextFromTranscript(object transcript)
     {
+        var sb = new StringBuilder();
+        
+        // Handle Fast Transcription format
+        if (transcript is JsonElement jsonResponse)
+        {
+            if (jsonResponse.TryGetProperty("results", out var results))
+            {
+                foreach (var result in results.EnumerateArray())
+                {
+                    if (result.TryGetProperty("text", out var text))
+                    {
+                        sb.AppendLine(text.GetString());
+                    }
+                }
+                return sb.ToString().Trim();
+            }
+        }
+        
+        // Handle regular transcription format (List<object>)
         var resultsList = transcript as List<object>;
         if (resultsList == null || resultsList.Count == 0)
         {
+            // Try to handle as dynamic object with results property
+            var dynamicObj = transcript as dynamic;
+            if (dynamicObj?.results != null)
+            {
+                foreach (var result in dynamicObj.results)
+                {
+                    if (result.text != null)
+                    {
+                        sb.AppendLine(result.text.ToString());
+                    }
+                }
+                return sb.ToString().Trim();
+            }
+            
             return string.Empty;
         }
-        
-        var sb = new StringBuilder();
         
         foreach (var result in resultsList)
         {
@@ -321,42 +352,40 @@ public class SpeechTranscriptionService : ISpeechTranscriptionService
             // Set up authentication header
             httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", speechKey);
             
-            // Prepare the transcription request
-            var transcriptionRequest = new
-            {
-                contentUrls = new string[0], // We'll use form data instead
-                properties = new
-                {
-                    diarizationEnabled = false,
-                    wordLevelTimestampsEnabled = true,
-                    punctuationMode = "DictatedAndAutomatic",
-                    profanityFilterMode = "Masked"
-                },
-                locale = language,
-                displayName = $"Fast transcription for {audioFile.FileName}"
-            };
-
-            // Fast Transcription endpoint URL
-            var endpoint = $"https://{speechRegion}.api.cognitive.microsoft.com/speechtotext/v3.2-preview.2/transcriptions";
+            // Fast Transcription endpoint URL for direct transcription
+            var endpoint = $"https://{speechRegion}.api.cognitive.microsoft.com/speechtotext/transcriptions:transcribe?api-version=2024-05-15-preview";
             
             // Create multipart form content
             using var formContent = new MultipartFormDataContent();
             
-            // Add transcription definition
-            var definitionContent = new StringContent(
-                JsonSerializer.Serialize(transcriptionRequest), 
-                Encoding.UTF8, 
-                "application/json");
-            formContent.Add(definitionContent, "definition");
+            // Add configuration as form parameters
+            formContent.Add(new StringContent(language), "locales");
+            formContent.Add(new StringContent("true"), "profanityFilterMode"); 
+            formContent.Add(new StringContent("true"), "addWordLevelTimestamps");
             
             // Add audio file
             var fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(tempFilePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("audio/wav");
+            
+            // Determine content type based on file extension
+            var extension = Path.GetExtension(audioFile.FileName).ToLowerInvariant();
+            var contentType = extension switch
+            {
+                ".wav" => "audio/wav",
+                ".mp3" => "audio/mpeg",
+                ".mp4" => "audio/mp4", 
+                ".m4a" => "audio/mp4",
+                ".aac" => "audio/aac",
+                ".flac" => "audio/flac",
+                ".ogg" => "audio/ogg",
+                _ => "audio/wav"
+            };
+            
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
             formContent.Add(fileContent, "audio", audioFile.FileName);
             
             logger.LogInformation($"Sending Fast Transcription request to {endpoint}");
             
-            // Send POST request to create transcription
+            // Send POST request for immediate transcription
             var response = await httpClient.PostAsync(endpoint, formContent);
             
             if (!response.IsSuccessStatusCode)
@@ -367,22 +396,67 @@ public class SpeechTranscriptionService : ISpeechTranscriptionService
             }
             
             var responseContent = await response.Content.ReadAsStringAsync();
-            logger.LogInformation($"Fast Transcription response: {responseContent}");
+            logger.LogInformation($"Fast Transcription response received, length: {responseContent.Length}");
             
             // Parse the response
             var transcriptionResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
             
-            // Extract the transcription result
-            var result = new
+            // Extract the transcription results in a format similar to the regular transcription
+            var results = new List<object>();
+            
+            if (transcriptionResponse.TryGetProperty("combinedPhrases", out var combinedPhrases))
+            {
+                foreach (var phrase in combinedPhrases.EnumerateArray())
+                {
+                    if (phrase.TryGetProperty("text", out var text))
+                    {
+                        var result = new
+                        {
+                            text = text.GetString(),
+                            confidence = phrase.TryGetProperty("confidence", out var conf) ? conf.GetDouble() : 1.0,
+                            offset = phrase.TryGetProperty("offsetInTicks", out var offset) ? offset.GetInt64() : 0,
+                            duration = phrase.TryGetProperty("durationInTicks", out var duration) ? duration.GetInt64() : 0
+                        };
+                        results.Add(result);
+                    }
+                }
+            }
+            
+            // If no combined phrases, try to extract from phrases array
+            if (results.Count == 0 && transcriptionResponse.TryGetProperty("phrases", out var phrases))
+            {
+                foreach (var phrase in phrases.EnumerateArray())
+                {
+                    if (phrase.TryGetProperty("nBest", out var nBest) && nBest.GetArrayLength() > 0)
+                    {
+                        var bestResult = nBest[0];
+                        if (bestResult.TryGetProperty("display", out var display))
+                        {
+                            var result = new
+                            {
+                                text = display.GetString(),
+                                confidence = bestResult.TryGetProperty("confidence", out var conf) ? conf.GetDouble() : 1.0,
+                                offset = phrase.TryGetProperty("offsetInTicks", out var offset) ? offset.GetInt64() : 0,
+                                duration = phrase.TryGetProperty("durationInTicks", out var duration) ? duration.GetInt64() : 0
+                            };
+                            results.Add(result);
+                        }
+                    }
+                }
+            }
+            
+            // Create response in the same format as regular transcription
+            var finalResult = new
             {
                 success = true,
-                transcription = transcriptionResponse,
+                results = results,
                 originalFileName = audioFile.FileName,
                 language = language,
-                service = "FastTranscription"
+                service = "FastTranscription",
+                totalDuration = transcriptionResponse.TryGetProperty("durationInTicks", out var totalDur) ? totalDur.GetInt64() : 0
             };
             
-            return result;
+            return finalResult;
         }
         finally
         {

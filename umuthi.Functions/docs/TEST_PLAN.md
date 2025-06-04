@@ -58,7 +58,20 @@ Before running the tests, ensure the following prerequisites are met:
 | Silent Audio | Upload audio with no speech | Empty or minimal transcript |
 | Low Quality Audio | Upload audio with background noise or low quality | Best-effort transcript |
 
-### 5. API Documentation Tests
+### 5. Fast Transcription Tests
+
+| Test Case | Description | Expected Result |
+|-----------|-------------|-----------------|
+| Single WAV File | Fast transcribe a WAV file | 200 OK with transcript JSON including timestamps |
+| Single MP3 File | Fast transcribe an MP3 file | 200 OK with transcript JSON |
+| Different Languages | Test with different language parameters | 200 OK with correct language transcript |
+| Multiple Files | Upload multiple files (should fail) | 400 Bad Request |
+| Large File | Upload file up to 1GB limit | 200 OK with transcript |
+| Oversized File | Upload file larger than 1GB | 400 Bad Request |
+| Invalid Format | Upload unsupported file format | 400 Bad Request |
+| Missing API Key | Call without authentication | 401 Unauthorized |
+
+### 6. API Documentation Tests
 
 | Test Case | Description | Expected Result |
 |-----------|-------------|-----------------|
@@ -78,6 +91,8 @@ The repository includes the following test scripts:
 
 - `test-api-auth.ps1`: Tests API key authentication
 - `test-audio-conversion.ps1`: Tests the audio conversion and transcription functions
+- `test-fast-transcription.ps1`: Tests the Fast Transcription API functionality
+- `test-fast-transcription-validation.ps1`: Validates Fast Transcription parameter handling
 - `generate-test-audio.ps1`: Generates sample audio files for testing
 
 ## Monitoring and Logging
