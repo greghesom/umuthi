@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -90,13 +92,44 @@ public class SpeechTranscriptionService : ISpeechTranscriptionService
 
     public string ExtractPlainTextFromTranscript(object transcript)
     {
+        var sb = new StringBuilder();
+        
+        // Handle Fast Transcription format
+        if (transcript is JsonElement jsonResponse)
+        {
+            if (jsonResponse.TryGetProperty("results", out var results))
+            {
+                foreach (var result in results.EnumerateArray())
+                {
+                    if (result.TryGetProperty("text", out var text))
+                    {
+                        sb.AppendLine(text.GetString());
+                    }
+                }
+                return sb.ToString().Trim();
+            }
+        }
+        
+        // Handle regular transcription format (List<object>)
         var resultsList = transcript as List<object>;
         if (resultsList == null || resultsList.Count == 0)
         {
+            // Try to handle as dynamic object with results property
+            var dynamicObj = transcript as dynamic;
+            if (dynamicObj?.results != null)
+            {
+                foreach (var result in dynamicObj.results)
+                {
+                    if (result.text != null)
+                    {
+                        sb.AppendLine(result.text.ToString());
+                    }
+                }
+                return sb.ToString().Trim();
+            }
+            
             return string.Empty;
         }
-        
-        var sb = new StringBuilder();
         
         foreach (var result in resultsList)
         {
@@ -287,5 +320,151 @@ public class SpeechTranscriptionService : ISpeechTranscriptionService
         await recognizer.StopContinuousRecognitionAsync();
         
         return transcriptionResults;
+    }
+
+    public async Task<object> FastTranscribeAudioAsync(IFormFile audioFile, string language, ILogger logger)
+    {
+        // Get configuration from environment
+        var speechKey = Environment.GetEnvironmentVariable("SpeechServiceKey");
+        var speechRegion = Environment.GetEnvironmentVariable("SpeechServiceRegion");
+        
+        // Validate configuration
+        if (string.IsNullOrEmpty(speechKey) || string.IsNullOrEmpty(speechRegion))
+        {
+            throw new InvalidOperationException("Speech service configuration is missing. Please set SpeechServiceKey and SpeechServiceRegion in application settings.");
+        }
+
+        string tempFilePath = Path.GetTempFileName();
+        
+        try
+        {
+            // Save uploaded file to temporary location
+            using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
+            {
+                await audioFile.CopyToAsync(fileStream);
+            }
+            
+            logger.LogInformation($"Saved file: {audioFile.FileName}, Size: {audioFile.Length} bytes to {tempFilePath}");
+
+            // Create HTTP client for Fast Transcription API
+            using var httpClient = new HttpClient();
+            
+            // Set up authentication header
+            httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", speechKey);
+            
+            // Fast Transcription endpoint URL for direct transcription
+            var endpoint = $"https://{speechRegion}.api.cognitive.microsoft.com/speechtotext/transcriptions:transcribe?api-version=2024-05-15-preview";
+            
+            // Create multipart form content
+            using var formContent = new MultipartFormDataContent();
+            
+            // Add configuration as form parameters
+            formContent.Add(new StringContent(language), "locales");
+            formContent.Add(new StringContent("true"), "profanityFilterMode"); 
+            formContent.Add(new StringContent("true"), "addWordLevelTimestamps");
+            
+            // Add audio file
+            var fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(tempFilePath));
+            
+            // Determine content type based on file extension
+            var extension = Path.GetExtension(audioFile.FileName).ToLowerInvariant();
+            var contentType = extension switch
+            {
+                ".wav" => "audio/wav",
+                ".mp3" => "audio/mpeg",
+                ".mp4" => "audio/mp4", 
+                ".m4a" => "audio/mp4",
+                ".aac" => "audio/aac",
+                ".flac" => "audio/flac",
+                ".ogg" => "audio/ogg",
+                _ => "audio/wav"
+            };
+            
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
+            formContent.Add(fileContent, "audio", audioFile.FileName);
+            
+            logger.LogInformation($"Sending Fast Transcription request to {endpoint}");
+            
+            // Send POST request for immediate transcription
+            var response = await httpClient.PostAsync(endpoint, formContent);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                logger.LogError($"Fast Transcription request failed: {response.StatusCode} - {errorContent}");
+                throw new HttpRequestException($"Fast Transcription request failed: {response.StatusCode} - {errorContent}");
+            }
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            logger.LogInformation($"Fast Transcription response received, length: {responseContent.Length}");
+            
+            // Parse the response
+            var transcriptionResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
+            
+            // Extract the transcription results in a format similar to the regular transcription
+            var results = new List<object>();
+            
+            if (transcriptionResponse.TryGetProperty("combinedPhrases", out var combinedPhrases))
+            {
+                foreach (var phrase in combinedPhrases.EnumerateArray())
+                {
+                    if (phrase.TryGetProperty("text", out var text))
+                    {
+                        var result = new
+                        {
+                            text = text.GetString(),
+                            confidence = phrase.TryGetProperty("confidence", out var conf) ? conf.GetDouble() : 1.0,
+                            offset = phrase.TryGetProperty("offsetInTicks", out var offset) ? offset.GetInt64() : 0,
+                            duration = phrase.TryGetProperty("durationInTicks", out var duration) ? duration.GetInt64() : 0
+                        };
+                        results.Add(result);
+                    }
+                }
+            }
+            
+            // If no combined phrases, try to extract from phrases array
+            if (results.Count == 0 && transcriptionResponse.TryGetProperty("phrases", out var phrases))
+            {
+                foreach (var phrase in phrases.EnumerateArray())
+                {
+                    if (phrase.TryGetProperty("nBest", out var nBest) && nBest.GetArrayLength() > 0)
+                    {
+                        var bestResult = nBest[0];
+                        if (bestResult.TryGetProperty("display", out var display))
+                        {
+                            var result = new
+                            {
+                                text = display.GetString(),
+                                confidence = bestResult.TryGetProperty("confidence", out var conf) ? conf.GetDouble() : 1.0,
+                                offset = phrase.TryGetProperty("offsetInTicks", out var offset) ? offset.GetInt64() : 0,
+                                duration = phrase.TryGetProperty("durationInTicks", out var duration) ? duration.GetInt64() : 0
+                            };
+                            results.Add(result);
+                        }
+                    }
+                }
+            }
+            
+            // Create response in the same format as regular transcription
+            var finalResult = new
+            {
+                success = true,
+                results = results,
+                originalFileName = audioFile.FileName,
+                language = language,
+                service = "FastTranscription",
+                totalDuration = transcriptionResponse.TryGetProperty("durationInTicks", out var totalDur) ? totalDur.GetInt64() : 0
+            };
+            
+            return finalResult;
+        }
+        finally
+        {
+            // Clean up temporary file
+            if (File.Exists(tempFilePath))
+            {
+                File.Delete(tempFilePath);
+            }
+        }
     }
 }

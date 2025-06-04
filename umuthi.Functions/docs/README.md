@@ -41,6 +41,16 @@ Quick authentication methods:
   - `timestamps`: When set to "true", includes word timestamps in output - defaults to false
 - **Output**: Plain text or JSON with timestamps (based on timestamps parameter)
 
+### FastTranscribeAudio
+- **Endpoint**: `POST /api/FastTranscribeAudio`
+- **Description**: Fast transcription using Azure AI Fast Transcription API (single file only)
+- **Content-Type**: `multipart/form-data`
+- **Max File Size**: 1GB
+- **Supported Input**: MPEG, MPG, MP4, M4A, AAC, MP3, WAV, FLAC, OGG files
+- **Query Parameters**:
+  - `language`: Speech recognition language (e.g., en-US, fr-FR) - defaults to en-US
+- **Output**: JSON with detailed transcription results including timestamps and confidence scores
+
 ### GetSupportedFormats
 - **Endpoint**: `GET /api/GetSupportedFormats`
 - **Description**: Returns information about supported formats and usage
@@ -60,7 +70,10 @@ curl -X POST -F "file=@your-video-file.mp4" http://localhost:7071/api/ConvertMpe
 curl -X POST -F "file=@your-audio-file.mp3" http://localhost:7071/api/ConvertMpegToTranscript?language=en-US -H "x-api-key: umuthi-dev-api-key" --output transcript.txt
 
 # Audio to Transcript with timestamps
-curl -X POST -F "file=@your-audio-file.mp3" http://localhost:7071/api/ConvertMpegToTranscript?language=en-US&timestamps=true --output transcript.json
+curl -X POST -F "file=@your-audio-file.mp3" http://localhost:7071/api/ConvertMpegToTranscript?language=en-US&timestamps=true -H "x-api-key: umuthi-dev-api-key" --output transcript.json
+
+# Fast Transcription
+curl -X POST -F "file=@your-audio-file.mp3" http://localhost:7071/api/FastTranscribeAudio?language=en-US -H "x-api-key: umuthi-dev-api-key" --output fast-transcript.json
 ```
 
 ### Using PowerShell
@@ -81,6 +94,11 @@ $form = @{
     file2 = Get-Item -Path "audio2.mp3"
 }
 Invoke-RestMethod -Uri "http://localhost:7071/api/ConvertMpegToTranscript?language=en-US" -Method Post -Form $form -OutFile "transcript.txt"
+
+# Fast Transcription
+$form = @{ file = Get-Item -Path "audio.mp3" }
+$headers = @{"x-api-key" = "umuthi-dev-api-key"}
+Invoke-RestMethod -Uri "http://localhost:7071/api/FastTranscribeAudio?language=en-US" -Method Post -Form $form -Headers $headers -OutFile "fast-transcript.json"
 ```
 
 ## Configuration
