@@ -31,13 +31,12 @@ public class UsageTrackingService : IUsageTrackingService
     public UsageTrackingService(
         ILogger<UsageTrackingService> logger,
         IConfiguration configuration)
-    {
-        _logger = logger;
+    {        _logger = logger;
         _configuration = configuration;
 
         // Initialize Azure Table Storage client
-        var connectionString = _configuration.GetConnectionString("AzureWebJobsStorage") 
-                             ?? throw new InvalidOperationException("AzureWebJobsStorage connection string is required");
+        var connectionString = _configuration["AzureWebJobsStorage"] 
+                             ?? throw new InvalidOperationException("AzureWebJobsStorage setting is required");
         
         var tableServiceClient = new TableServiceClient(connectionString);
         _usageTableClient = tableServiceClient.GetTableClient("usagetracking");
