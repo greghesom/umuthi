@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using umuthi.Functions.Models;
 
 namespace umuthi.Functions.Functions;
 
@@ -22,17 +23,17 @@ public class ApiInfoFunctions
     {
         _logger.LogInformation("API information request received.");
 
-        var supportedFormats = new
+        var response = new SupportedFormatsResponse
         {
-            input = new[] { "WAV", "MPEG", "MPG", "MP4", "M4A", "AAC", "MP3" },
-            output = new[] { "MP3", "TEXT" },
-            maxFileSize = "50MB for conversion, 100MB for transcription",
-            functions = new[] { "/api/ConvertWavToMp3", "/api/ConvertMpegToMp3", "/api/ConvertAudioToTranscript" },
-            version = "1.0.0",
-            lastUpdated = DateTime.UtcNow.ToString("yyyy-MM-dd")
+            Input = new[] { "WAV", "MPEG", "MPG", "MP4", "M4A", "AAC", "MP3" },
+            Output = new[] { "MP3", "TEXT" },
+            MaxFileSize = "50MB for conversion, 100MB for transcription",
+            Functions = new[] { "/api/ConvertWavToMp3", "/api/ConvertMpegToMp3", "/api/ConvertAudioToTranscript" },
+            Version = "1.0.0",
+            Description = "Umuthi Audio Processing API - Convert audio files and transcribe speech to text with usage tracking and billing support."
         };
 
-        return new OkObjectResult(supportedFormats);
+        return new OkObjectResult(response);
     }
 
     [Function("HealthCheck")]
@@ -44,10 +45,12 @@ public class ApiInfoFunctions
         {
             status = "healthy",
             timestamp = DateTime.UtcNow,
+            version = "1.0.0",
             services = new
             {
                 audioConversion = "operational",
-                speechTranscription = "operational"
+                speechTranscription = "operational",
+                usageTracking = "operational"
             }
         };
 

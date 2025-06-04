@@ -9,6 +9,9 @@ using System.Linq;
 using umuthi.Functions.Services;
 using umuthi.Functions.Middleware;
 using umuthi.Functions.Models;
+using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
+using Microsoft.OpenApi.Models;
+using System.Net;
 
 namespace umuthi.Functions.Functions;
 
