@@ -30,4 +30,16 @@ public interface ISpeechTranscriptionService
     /// <param name="transcript">Transcript object containing recognition results</param>
     /// <returns>Plain text representation of the transcript</returns>
     string ExtractPlainTextFromTranscript(object transcript);
+
+    /// <summary>
+    /// Fast transcription using Azure Speech Services Fast Transcription API
+    /// </summary>
+    /// <param name="audioFile">Audio file to transcribe</param>
+    /// <param name="language">Language code for transcription (e.g., "en-US")</param>
+    /// <param name="logger">Logger for tracking the transcription process</param>
+    /// <returns>Fast transcription results</returns>
+    Task<object> FastTranscribeAudioAsync(
+        IFormFile audioFile, 
+        string language, 
+        ILogger logger);
 }

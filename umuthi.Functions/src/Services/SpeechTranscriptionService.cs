@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -287,5 +289,108 @@ public class SpeechTranscriptionService : ISpeechTranscriptionService
         await recognizer.StopContinuousRecognitionAsync();
         
         return transcriptionResults;
+    }
+
+    public async Task<object> FastTranscribeAudioAsync(IFormFile audioFile, string language, ILogger logger)
+    {
+        // Get configuration from environment
+        var speechKey = Environment.GetEnvironmentVariable("SpeechServiceKey");
+        var speechRegion = Environment.GetEnvironmentVariable("SpeechServiceRegion");
+        
+        // Validate configuration
+        if (string.IsNullOrEmpty(speechKey) || string.IsNullOrEmpty(speechRegion))
+        {
+            throw new InvalidOperationException("Speech service configuration is missing. Please set SpeechServiceKey and SpeechServiceRegion in application settings.");
+        }
+
+        string tempFilePath = Path.GetTempFileName();
+        
+        try
+        {
+            // Save uploaded file to temporary location
+            using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
+            {
+                await audioFile.CopyToAsync(fileStream);
+            }
+            
+            logger.LogInformation($"Saved file: {audioFile.FileName}, Size: {audioFile.Length} bytes to {tempFilePath}");
+
+            // Create HTTP client for Fast Transcription API
+            using var httpClient = new HttpClient();
+            
+            // Set up authentication header
+            httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", speechKey);
+            
+            // Prepare the transcription request
+            var transcriptionRequest = new
+            {
+                contentUrls = new string[0], // We'll use form data instead
+                properties = new
+                {
+                    diarizationEnabled = false,
+                    wordLevelTimestampsEnabled = true,
+                    punctuationMode = "DictatedAndAutomatic",
+                    profanityFilterMode = "Masked"
+                },
+                locale = language,
+                displayName = $"Fast transcription for {audioFile.FileName}"
+            };
+
+            // Fast Transcription endpoint URL
+            var endpoint = $"https://{speechRegion}.api.cognitive.microsoft.com/speechtotext/v3.2-preview.2/transcriptions";
+            
+            // Create multipart form content
+            using var formContent = new MultipartFormDataContent();
+            
+            // Add transcription definition
+            var definitionContent = new StringContent(
+                JsonSerializer.Serialize(transcriptionRequest), 
+                Encoding.UTF8, 
+                "application/json");
+            formContent.Add(definitionContent, "definition");
+            
+            // Add audio file
+            var fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(tempFilePath));
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("audio/wav");
+            formContent.Add(fileContent, "audio", audioFile.FileName);
+            
+            logger.LogInformation($"Sending Fast Transcription request to {endpoint}");
+            
+            // Send POST request to create transcription
+            var response = await httpClient.PostAsync(endpoint, formContent);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                logger.LogError($"Fast Transcription request failed: {response.StatusCode} - {errorContent}");
+                throw new HttpRequestException($"Fast Transcription request failed: {response.StatusCode} - {errorContent}");
+            }
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            logger.LogInformation($"Fast Transcription response: {responseContent}");
+            
+            // Parse the response
+            var transcriptionResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
+            
+            // Extract the transcription result
+            var result = new
+            {
+                success = true,
+                transcription = transcriptionResponse,
+                originalFileName = audioFile.FileName,
+                language = language,
+                service = "FastTranscription"
+            };
+            
+            return result;
+        }
+        finally
+        {
+            // Clean up temporary file
+            if (File.Exists(tempFilePath))
+            {
+                File.Delete(tempFilePath);
+            }
+        }
     }
 }

@@ -24,6 +24,7 @@ public static class OpenApiConfiguration
 ## Features
 - **Audio Conversion**: Convert between various audio formats (WAV, MPEG, MP4, M4A, AAC → MP3)
 - **Speech Transcription**: Convert audio files to text using Azure Cognitive Services
+- **Fast Transcription**: High-speed batch transcription using Azure Fast Transcription API (single file, up to 1GB)
 - **Usage Tracking**: Comprehensive billing and analytics with Make.com integration
 - **Secure Authentication**: API key-based authentication with rate limiting
 
@@ -40,7 +41,7 @@ The API supports Make.com workflow headers for customer tracking:
 
 ## Rate Limits
 - Default: 100 requests per minute per API key
-- File size limits: 50MB for conversion, 100MB for transcription
+- File size limits: 50MB for conversion, 100MB for transcription, 1GB for fast transcription
 
 ## Usage Tracking
 All API calls are tracked for billing purposes including:
