@@ -7,11 +7,13 @@ var sqlServer = builder.AddSqlServer("sqlserver")
 var umuthiDb = sqlServer.AddDatabase("umuthidb");
 
 var apiService = builder.AddProject<Projects.umuthi_ApiService>("apiservice")
-    .WithReference(umuthiDb, "DefaultConnection");
+    .WithReference(umuthiDb, "DefaultConnection")
+    .WaitFor(sqlServer);
 
 var functionApp = builder.AddProject<Projects.umuthi_Functions>("functions")
     .WithExternalHttpEndpoints()
-    .WithReference(umuthiDb, "DefaultConnection");
+    .WithReference(umuthiDb, "DefaultConnection")
+    .WaitFor(sqlServer);
 
 builder.AddProject<Projects.umuthi_Web>("webfrontend")
     .WithExternalHttpEndpoints()
@@ -19,6 +21,7 @@ builder.AddProject<Projects.umuthi_Web>("webfrontend")
     .WaitFor(apiService)
     .WithReference(functionApp)
     .WaitFor(functionApp)
-    .WithReference(umuthiDb, "DefaultConnection");
+    .WithReference(umuthiDb, "DefaultConnection")
+    .WaitFor(sqlServer);
 
 builder.Build().Run();

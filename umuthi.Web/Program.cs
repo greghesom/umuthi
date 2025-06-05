@@ -3,6 +3,8 @@ using umuthi.Infrastructure.Configuration;
 using umuthi.Web;
 using umuthi.Web.Components;
 using umuthi.Web.Hubs;
+using umuthi.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -43,6 +45,22 @@ builder.Services.AddHttpClient<WeatherApiClient>(client =>
     });
 
 var app = builder.Build();
+
+// Ensure database is created and migrated on startup
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        // Apply any pending migrations to the database
+        await context.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
