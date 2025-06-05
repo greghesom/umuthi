@@ -259,14 +259,18 @@ else
     private Task CreateNewNode(NodeType nodeType, ModuleType moduleType)
     {
         var nodeId = $"node-{nodeCounter++}";
+        
+        // Validate and adjust position to avoid overlaps
+        var position = FindValidNodePosition(nextNodeX, nextNodeY);
+        
         var newNode = new WorkflowNodeModel
         {
             Id = nodeId,
             Label = GetDefaultNodeLabel(nodeType, moduleType),
             Description = GetDefaultNodeDescription(nodeType, moduleType),
             NodeType = MapNodeTypeToWorkflowNodeType(nodeType),
-            PositionX = nextNodeX,
-            PositionY = nextNodeY,
+            PositionX = position.X,
+            PositionY = position.Y,
             HasError = false,
             Status = WorkflowNode.NodeStatus.None
         };
@@ -282,12 +286,63 @@ else
             nextNodeY += 150;
         }
         
-        Logger.LogInformation("Created new node: {NodeId} of type {NodeType}", nodeId, nodeType);
+        Logger.LogInformation("Created new node: {NodeId} of type {NodeType} at ({X}, {Y})", nodeId, nodeType, position.X, position.Y);
         
         // Here you would typically save to the backend
         // await WorkflowService.AddNodeAsync(WorkflowId, newNode);
         
         return Task.CompletedTask;
+    }
+    
+    private (double X, double Y) FindValidNodePosition(double preferredX, double preferredY)
+    {
+        const double nodeWidth = 160;
+        const double nodeHeight = 80;
+        const double minSpacing = 20;
+        const double canvasMargin = 50;
+        
+        var testX = Math.Max(canvasMargin, preferredX);
+        var testY = Math.Max(canvasMargin, preferredY);
+        
+        // Check for overlaps with existing nodes
+        int attempts = 0;
+        const int maxAttempts = 50;
+        
+        while (attempts < maxAttempts)
+        {
+            bool hasOverlap = false;
+            
+            foreach (var existingNode in workflowNodes)
+            {
+                var distanceX = Math.Abs(testX - existingNode.PositionX);
+                var distanceY = Math.Abs(testY - existingNode.PositionY);
+                
+                if (distanceX < nodeWidth + minSpacing && distanceY < nodeHeight + minSpacing)
+                {
+                    hasOverlap = true;
+                    break;
+                }
+            }
+            
+            if (!hasOverlap)
+            {
+                return (testX, testY);
+            }
+            
+            // Try next position in a grid pattern
+            testX += nodeWidth + minSpacing;
+            if (testX > 1000)
+            {
+                testX = canvasMargin;
+                testY += nodeHeight + minSpacing;
+            }
+            
+            attempts++;
+        }
+        
+        // If no valid position found after max attempts, use preferred position anyway
+        Logger.LogWarning("Could not find non-overlapping position for new node, using preferred position");
+        return (Math.Max(canvasMargin, preferredX), Math.Max(canvasMargin, preferredY));
     }
     
     private string GetDefaultNodeLabel(NodeType nodeType, ModuleType moduleType)

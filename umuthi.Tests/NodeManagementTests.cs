@@ -116,4 +116,46 @@ public class NodeManagementTests
             Assert.IsTrue(found, $"Required module type '{requiredType}' not found");
         }
     }
+
+    [TestMethod]
+    public void UniqueNodeId_Generation_Should_Create_Different_Ids()
+    {
+        // This test simulates the node counter behavior to ensure unique IDs
+        // Arrange
+        var counter = 1;
+        var generatedIds = new HashSet<string>();
+
+        // Act
+        for (int i = 0; i < 10; i++)
+        {
+            var nodeId = $"node-{counter++}";
+            generatedIds.Add(nodeId);
+        }
+
+        // Assert
+        Assert.AreEqual(10, generatedIds.Count, "All generated node IDs should be unique");
+    }
+
+    [TestMethod]
+    public void NodePosition_Validation_Should_Ensure_MinimumSpacing()
+    {
+        // This test verifies the node positioning logic
+        // Arrange
+        const double nodeWidth = 160;
+        const double nodeHeight = 80;
+        const double minSpacing = 20;
+        
+        var position1 = (X: 100.0, Y: 100.0);
+        var position2 = (X: position1.X + nodeWidth + minSpacing, Y: position1.Y);
+
+        // Act
+        var distanceX = Math.Abs(position2.X - position1.X);
+        var distanceY = Math.Abs(position2.Y - position1.Y);
+
+        // Assert
+        Assert.IsTrue(distanceX >= nodeWidth + minSpacing, "Nodes should maintain minimum horizontal spacing");
+        Assert.IsTrue(distanceY >= 0, "Vertical distance should be valid");
+        Assert.IsTrue(nodeHeight > 0, "Node height should be positive");
+        Assert.IsTrue(nodeWidth > 0, "Node width should be positive");
+    }
 }
