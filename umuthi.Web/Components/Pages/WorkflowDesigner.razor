@@ -64,20 +64,30 @@ else
                                   OnNodeDragEnd="OnNodeDragEnd" />
                 }
 
-                <!-- Connection lines would be rendered here -->
-                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
-                    <!-- Sample connections -->
-                    <line x1="200" y1="150" x2="300" y2="290" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)" />
-                    <line x1="350" y1="350" x2="250" y2="430" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)" />
-                    <line x1="250" y1="470" x2="350" y2="580" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)" />
-                    
-                    <defs>
-                        <marker id="arrowhead" markerWidth="10" markerHeight="7" 
-                                refX="10" refY="3.5" orient="auto">
-                            <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e" />
-                        </marker>
-                    </defs>
-                </svg>
+                <!-- Connection lines -->
+                <ConnectionContainer>
+                    @foreach (var connection in workflowConnections)
+                    {
+                        var sourceNode = workflowNodes.FirstOrDefault(n => n.Id == connection.SourceNodeId);
+                        var targetNode = workflowNodes.FirstOrDefault(n => n.Id == connection.TargetNodeId);
+                        
+                        if (sourceNode != null && targetNode != null)
+                        {
+                            <ConnectionLine ConnectionId="@connection.Id"
+                                            SourceX="@GetConnectionPointX(sourceNode, connection.SourcePort)"
+                                            SourceY="@GetConnectionPointY(sourceNode, connection.SourcePort)"
+                                            TargetX="@GetConnectionPointX(targetNode, connection.TargetPort)"
+                                            TargetY="@GetConnectionPointY(targetNode, connection.TargetPort)"
+                                            SourcePort="@connection.SourcePort"
+                                            TargetPort="@connection.TargetPort"
+                                            Style="@connection.Style"
+                                            Status="@connection.Status"
+                                            OnConnectionClicked="OnConnectionClicked"
+                                            OnConnectionHovered="OnConnectionHovered"
+                                            OnConnectionLeft="OnConnectionLeft" />
+                        }
+                    }
+                </ConnectionContainer>
             </WorkflowCanvas>
         </div>
     </div>
@@ -89,11 +99,13 @@ else
     private WorkflowDto? workflow;
     private string? selectedNodeId;
     private List<WorkflowNodeModel> workflowNodes = new();
+    private List<WorkflowConnectionModel> workflowConnections = new();
     
     protected override async Task OnInitializedAsync()
     {
         await LoadWorkflow();
         InitializeSampleNodes();
+        InitializeSampleConnections();
     }
     
     private async Task LoadWorkflow()
@@ -206,5 +218,100 @@ else
         public double PositionY { get; set; } = 0;
         public bool HasError { get; set; } = false;
         public WorkflowNode.NodeStatus Status { get; set; } = WorkflowNode.NodeStatus.None;
+    }
+
+    private void InitializeSampleConnections()
+    {
+        workflowConnections = new List<WorkflowConnectionModel>
+        {
+            new()
+            {
+                Id = "conn-1",
+                SourceNodeId = "email-1",
+                TargetNodeId = "ai-1",
+                SourcePort = "output",
+                TargetPort = "input",
+                Style = ConnectionLine.ConnectionStyle.Solid,
+                Status = ConnectionLine.ConnectionStatus.Active
+            },
+            new()
+            {
+                Id = "conn-2", 
+                SourceNodeId = "ai-1",
+                TargetNodeId = "router-1",
+                SourcePort = "output",
+                TargetPort = "input",
+                Style = ConnectionLine.ConnectionStyle.Dashed,
+                Status = ConnectionLine.ConnectionStatus.Success
+            },
+            new()
+            {
+                Id = "conn-3",
+                SourceNodeId = "router-1", 
+                TargetNodeId = "integration-1",
+                SourcePort = "output",
+                TargetPort = "input",
+                Style = ConnectionLine.ConnectionStyle.Solid,
+                Status = ConnectionLine.ConnectionStatus.Error
+            },
+            new()
+            {
+                Id = "conn-4",
+                SourceNodeId = "ai-1",
+                TargetNodeId = "utility-1", 
+                SourcePort = "output",
+                TargetPort = "input",
+                Style = ConnectionLine.ConnectionStyle.Dotted,
+                Status = ConnectionLine.ConnectionStatus.Warning
+            }
+        };
+    }
+
+    private double GetConnectionPointX(WorkflowNodeModel node, string port)
+    {
+        // Assuming node width of ~160px based on CSS min-width
+        const double nodeWidth = 160;
+        return port switch
+        {
+            "input" => node.PositionX, // Left side
+            "output" => node.PositionX + nodeWidth, // Right side
+            _ => node.PositionX + nodeWidth / 2 // Center
+        };
+    }
+
+    private double GetConnectionPointY(WorkflowNodeModel node, string port)
+    {
+        // Assuming node height of ~80px based on typical node structure
+        const double nodeHeight = 80;
+        return node.PositionY + nodeHeight / 2; // Center vertically
+    }
+
+    private Task OnConnectionClicked(ConnectionLine.ConnectionEventArgs args)
+    {
+        Logger.LogInformation("Connection clicked: {ConnectionId}", args.ConnectionId);
+        return Task.CompletedTask;
+    }
+
+    private Task OnConnectionHovered(ConnectionLine.ConnectionEventArgs args)
+    {
+        Logger.LogInformation("Connection hovered: {ConnectionId}", args.ConnectionId);
+        return Task.CompletedTask;
+    }
+
+    private Task OnConnectionLeft(ConnectionLine.ConnectionEventArgs args)
+    {
+        Logger.LogInformation("Connection left: {ConnectionId}", args.ConnectionId);
+        return Task.CompletedTask;
+    }
+
+    private class WorkflowConnectionModel
+    {
+        public string Id { get; set; } = "";
+        public string SourceNodeId { get; set; } = "";
+        public string TargetNodeId { get; set; } = "";
+        public string SourcePort { get; set; } = "output";
+        public string TargetPort { get; set; } = "input";
+        public ConnectionLine.ConnectionStyle Style { get; set; } = ConnectionLine.ConnectionStyle.Solid;
+        public ConnectionLine.ConnectionStatus Status { get; set; } = ConnectionLine.ConnectionStatus.Normal;
     }
 }

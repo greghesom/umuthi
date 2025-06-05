@@ -1,0 +1,63 @@
+@* SVG Container for Connection Lines *@
+
+<svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;" class="connections-container">
+    <!-- Arrow marker definitions -->
+    <defs>
+        <!-- Normal status markers -->
+        <marker id="arrowhead-normal-normal" markerWidth="10" markerHeight="7" 
+                refX="10" refY="3.5" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e" />
+        </marker>
+        <marker id="arrowhead-normal-hovered" markerWidth="12" markerHeight="8" 
+                refX="12" refY="4" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 12 4, 0 8" fill="#0969da" />
+        </marker>
+        
+        <!-- Active status markers -->
+        <marker id="arrowhead-active-normal" markerWidth="10" markerHeight="7" 
+                refX="10" refY="3.5" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#0969da" />
+        </marker>
+        <marker id="arrowhead-active-hovered" markerWidth="12" markerHeight="8" 
+                refX="12" refY="4" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 12 4, 0 8" fill="#0969da" />
+        </marker>
+        
+        <!-- Success status markers -->
+        <marker id="arrowhead-success-normal" markerWidth="10" markerHeight="7" 
+                refX="10" refY="3.5" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#1f883d" />
+        </marker>
+        <marker id="arrowhead-success-hovered" markerWidth="12" markerHeight="8" 
+                refX="12" refY="4" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 12 4, 0 8" fill="#1f883d" />
+        </marker>
+        
+        <!-- Warning status markers -->
+        <marker id="arrowhead-warning-normal" markerWidth="10" markerHeight="7" 
+                refX="10" refY="3.5" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#d1931a" />
+        </marker>
+        <marker id="arrowhead-warning-hovered" markerWidth="12" markerHeight="8" 
+                refX="12" refY="4" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 12 4, 0 8" fill="#fb8500" />
+        </marker>
+        
+        <!-- Error status markers -->
+        <marker id="arrowhead-error-normal" markerWidth="10" markerHeight="7" 
+                refX="10" refY="3.5" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#cf222e" />
+        </marker>
+        <marker id="arrowhead-error-hovered" markerWidth="12" markerHeight="8" 
+                refX="12" refY="4" orient="auto" class="arrow-marker">
+            <polygon points="0 0, 12 4, 0 8" fill="#cf222e" />
+        </marker>
+    </defs>
+    
+    <!-- Render all connection lines -->
+    @ChildContent
+</svg>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
