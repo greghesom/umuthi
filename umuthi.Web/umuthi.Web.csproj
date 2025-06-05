@@ -8,6 +8,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\umuthi.ServiceDefaults\umuthi.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\umuthi.Application\umuthi.Application.csproj" />
+    <ProjectReference Include="..\umuthi.Infrastructure\umuthi.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
   </ItemGroup>
 
 </Project>

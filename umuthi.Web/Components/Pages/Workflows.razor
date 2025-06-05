@@ -1,0 +1,222 @@
+@page "/workflows"
+@using umuthi.Application.DTOs
+@using umuthi.Application.Interfaces
+@inject IWorkflowService WorkflowService
+@inject ILogger<Workflows> Logger
+@rendermode InteractiveServer
+
+<PageTitle>Workflows</PageTitle>
+
+<h1>Workflow Management</h1>
+
+<p>Manage your automation workflows below.</p>
+
+@if (workflows == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row mb-3">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="ShowCreateForm">
+                <i class="fas fa-plus"></i> Create New Workflow
+            </button>
+        </div>
+    </div>
+
+    @if (showCreateForm)
+    {
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5>Create New Workflow</h5>
+            </div>
+            <div class="card-body">
+                <EditForm Model="newWorkflow" OnValidSubmit="CreateWorkflow">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <InputText class="form-control" @bind-Value="newWorkflow.Name" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <InputTextArea class="form-control" @bind-Value="newWorkflow.Description" rows="3" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-success">Create</button>
+                        <button type="button" class="btn btn-secondary ms-2" @onclick="HideCreateForm">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (workflows.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Active</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var workflow in workflows)
+                    {
+                        <tr>
+                            <td>@workflow.Name</td>
+                            <td>@workflow.Description</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(workflow.Status)">
+                                    @workflow.Status
+                                </span>
+                            </td>
+                            <td>
+                                @if (workflow.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </td>
+                            <td>@workflow.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                @if (workflow.Status == Domain.Enums.WorkflowStatus.Draft)
+                                {
+                                    <button class="btn btn-sm btn-success me-1" @onclick="() => PublishWorkflow(workflow.Id)">
+                                        Publish
+                                    </button>
+                                }
+                                @if (workflow.Status != Domain.Enums.WorkflowStatus.Archived)
+                                {
+                                    <button class="btn btn-sm btn-warning me-1" @onclick="() => ArchiveWorkflow(workflow.Id)">
+                                        Archive
+                                    </button>
+                                }
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteWorkflow(workflow.Id)">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h4>No workflows found</h4>
+            <p>Get started by creating your first workflow using the button above.</p>
+        </div>
+    }
+}
+
+@code {
+    private IEnumerable<WorkflowDto>? workflows;
+    private CreateWorkflowDto newWorkflow = new();
+    private bool showCreateForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWorkflows();
+    }
+
+    private async Task LoadWorkflows()
+    {
+        try
+        {
+            workflows = await WorkflowService.GetAllWorkflowsAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading workflows");
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        showCreateForm = true;
+        newWorkflow = new CreateWorkflowDto();
+    }
+
+    private void HideCreateForm()
+    {
+        showCreateForm = false;
+    }
+
+    private async Task CreateWorkflow()
+    {
+        try
+        {
+            await WorkflowService.CreateWorkflowAsync(newWorkflow);
+            await LoadWorkflows();
+            HideCreateForm();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating workflow");
+        }
+    }
+
+    private async Task PublishWorkflow(Guid id)
+    {
+        try
+        {
+            await WorkflowService.PublishWorkflowAsync(id);
+            await LoadWorkflows();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error publishing workflow");
+        }
+    }
+
+    private async Task ArchiveWorkflow(Guid id)
+    {
+        try
+        {
+            await WorkflowService.ArchiveWorkflowAsync(id);
+            await LoadWorkflows();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error archiving workflow");
+        }
+    }
+
+    private async Task DeleteWorkflow(Guid id)
+    {
+        try
+        {
+            await WorkflowService.DeleteWorkflowAsync(id);
+            await LoadWorkflows();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting workflow");
+        }
+    }
+
+    private string GetStatusBadgeClass(Domain.Enums.WorkflowStatus status)
+    {
+        return status switch
+        {
+            Domain.Enums.WorkflowStatus.Draft => "bg-secondary",
+            Domain.Enums.WorkflowStatus.Published => "bg-success",
+            Domain.Enums.WorkflowStatus.Archived => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+}
