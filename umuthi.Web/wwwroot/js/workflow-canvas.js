@@ -49,7 +49,7 @@ window.workflowCanvas = {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        this.dotNetRef.invokeMethodAsync('OnMouseDown', x, y);
+        this.dotNetRef.invokeMethod('OnMouseDown', x, y);
     },
 
     handleMouseMove: function (e) {
@@ -67,7 +67,7 @@ window.workflowCanvas = {
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            this.dotNetRef.invokeMethodAsync('OnMouseMove', x, y);
+            this.dotNetRef.invokeMethod('OnMouseMove', x, y);
         });
     },
 
@@ -81,7 +81,7 @@ window.workflowCanvas = {
             this.rafId = null;
         }
         
-        this.dotNetRef.invokeMethodAsync('OnMouseUp');
+        this.dotNetRef.invokeMethod('OnMouseUp');
     },
 
     handleWheel: function (e) {
@@ -101,7 +101,7 @@ window.workflowCanvas = {
             delta = -e.wheelDelta;
         }
         
-        this.dotNetRef.invokeMethodAsync('OnWheel', delta, x, y);
+        this.dotNetRef.invokeMethod('OnWheel', delta, x, y);
     },
 
     handleTouchStart: function (e) {
@@ -115,7 +115,7 @@ window.workflowCanvas = {
             const y = touch.clientY - rect.top;
             
             this.touchStart = { x, y };
-            this.dotNetRef.invokeMethodAsync('OnMouseDown', x, y);
+            this.dotNetRef.invokeMethod('OnMouseDown', x, y);
         } else if (e.touches.length === 2) {
             // Two fingers - prepare for zoom
             this.touchStart = {
@@ -141,7 +141,7 @@ window.workflowCanvas = {
             }
             
             this.rafId = requestAnimationFrame(() => {
-                this.dotNetRef.invokeMethodAsync('OnMouseMove', x, y);
+                this.dotNetRef.invokeMethod('OnMouseMove', x, y);
             });
         } else if (e.touches.length === 2 && this.touchStart && this.touchStart.touch1) {
             // Two fingers - zoom
@@ -157,7 +157,7 @@ window.workflowCanvas = {
             
             // Simulate wheel event for zoom
             const delta = scale > 1 ? -100 : 100;
-            this.dotNetRef.invokeMethodAsync('OnWheel', delta, x, y);
+            this.dotNetRef.invokeMethod('OnWheel', delta, x, y);
             
             this.touchStart.distance = currentDistance;
         }
@@ -173,7 +173,7 @@ window.workflowCanvas = {
                 this.rafId = null;
             }
             
-            this.dotNetRef.invokeMethodAsync('OnMouseUp');
+            this.dotNetRef.invokeMethod('OnMouseUp');
         } else if (e.touches.length === 1 && this.touchStart && this.touchStart.touch1) {
             // Switched from two finger to one finger
             const touch = e.touches[0];
@@ -182,7 +182,7 @@ window.workflowCanvas = {
             const y = touch.clientY - rect.top;
             
             this.touchStart = { x, y };
-            this.dotNetRef.invokeMethodAsync('OnMouseDown', x, y);
+            this.dotNetRef.invokeMethod('OnMouseDown', x, y);
         }
     },
 
