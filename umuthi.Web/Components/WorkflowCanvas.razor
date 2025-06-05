@@ -30,10 +30,20 @@
             @ChildContent
         </div>
     </div>
+    
+    <!-- Floating Add Node Button -->
+    <div class="floating-add-button">
+        <button class="btn btn-primary btn-lg rounded-circle" 
+                @onclick="OnAddNodeClicked" 
+                title="Add Node">
+            <i class="bi bi-plus"></i>
+        </button>
+    </div>
 </div>
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnAddNodeClicked { get; set; }
     
     private ElementReference canvasContainer;
     private ElementReference canvasElement;

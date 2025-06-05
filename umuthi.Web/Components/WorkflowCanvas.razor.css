@@ -171,3 +171,50 @@
 .workflow-canvas.zooming {
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+
+/* Floating Add Node Button */
+.floating-add-button {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+}
+
+.floating-add-button .btn {
+    width: 60px;
+    height: 60px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    border: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+.floating-add-button .btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.floating-add-button .btn:active {
+    transform: scale(0.95);
+}
+
+.floating-add-button .btn i {
+    font-size: 24px;
+}
+
+/* Responsive adjustments for floating button */
+@media (max-width: 768px) {
+    .floating-add-button {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .floating-add-button .btn {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .floating-add-button .btn i {
+        font-size: 20px;
+    }
+}
