@@ -1,0 +1,173 @@
+@* SVG Connection Line Component for Workflow Designer *@
+
+<g class="connection-line @GetConnectionClass()" data-connection-id="@ConnectionId">
+    <!-- Main connection path -->
+    <path d="@GetBezierPath()" 
+          stroke="@GetStrokeColor()" 
+          stroke-width="@StrokeWidth" 
+          stroke-dasharray="@GetStrokeDashArray()"
+          fill="none" 
+          marker-end="url(#arrowhead-@GetArrowheadId())"
+          class="connection-path"
+          @onmouseover="OnConnectionHover"
+          @onmouseout="OnConnectionLeave" />
+    
+    <!-- Hover detection area (wider invisible path) -->
+    <path d="@GetBezierPath()" 
+          stroke="transparent" 
+          stroke-width="@(StrokeWidth + 8)" 
+          fill="none" 
+          class="connection-hover-area"
+          @onmouseover="OnConnectionHover"
+          @onmouseout="OnConnectionLeave"
+          @onclick="OnConnectionClick" />
+</g>
+
+@code {
+    [Parameter] public string ConnectionId { get; set; } = "";
+    [Parameter] public double SourceX { get; set; } = 0;
+    [Parameter] public double SourceY { get; set; } = 0;
+    [Parameter] public double TargetX { get; set; } = 0;
+    [Parameter] public double TargetY { get; set; } = 0;
+    [Parameter] public string SourcePort { get; set; } = "output";
+    [Parameter] public string TargetPort { get; set; } = "input";
+    [Parameter] public ConnectionStyle Style { get; set; } = ConnectionStyle.Solid;
+    [Parameter] public ConnectionStatus Status { get; set; } = ConnectionStatus.Normal;
+    [Parameter] public int StrokeWidth { get; set; } = 2;
+    [Parameter] public EventCallback<ConnectionEventArgs> OnConnectionClicked { get; set; }
+    [Parameter] public EventCallback<ConnectionEventArgs> OnConnectionHovered { get; set; }
+    [Parameter] public EventCallback<ConnectionEventArgs> OnConnectionLeft { get; set; }
+
+    private bool isHovered = false;
+
+    public enum ConnectionStyle
+    {
+        Solid,
+        Dashed,
+        Dotted
+    }
+
+    public enum ConnectionStatus
+    {
+        Normal,
+        Active,
+        Success,
+        Warning,
+        Error
+    }
+
+    public class ConnectionEventArgs
+    {
+        public string ConnectionId { get; set; } = "";
+        public double MouseX { get; set; }
+        public double MouseY { get; set; }
+    }
+
+    private string GetBezierPath()
+    {
+        // Calculate control points for smooth bezier curve
+        var deltaX = Math.Abs(TargetX - SourceX);
+        var deltaY = Math.Abs(TargetY - SourceY);
+        
+        // Determine control point offset based on direction and distance
+        var controlOffset = Math.Max(50, Math.Min(deltaX * 0.5, 150));
+        
+        // Adjust control points based on source and target ports
+        var sourceControlX = SourceX + (SourcePort == "output" ? controlOffset : -controlOffset);
+        var sourceControlY = SourceY;
+        
+        var targetControlX = TargetX + (TargetPort == "input" ? -controlOffset : controlOffset);
+        var targetControlY = TargetY;
+        
+        // Create bezier curve path
+        return $"M {SourceX} {SourceY} C {sourceControlX} {sourceControlY}, {targetControlX} {targetControlY}, {TargetX} {TargetY}";
+    }
+
+    private string GetStrokeColor()
+    {
+        if (isHovered)
+        {
+            return Status switch
+            {
+                ConnectionStatus.Active => "#0969da",
+                ConnectionStatus.Success => "#1f883d",
+                ConnectionStatus.Warning => "#fb8500",
+                ConnectionStatus.Error => "#cf222e",
+                _ => "#0969da"
+            };
+        }
+
+        return Status switch
+        {
+            ConnectionStatus.Active => "#0969da",
+            ConnectionStatus.Success => "#1f883d",
+            ConnectionStatus.Warning => "#d1931a",
+            ConnectionStatus.Error => "#cf222e",
+            _ => "#8b949e"
+        };
+    }
+
+    private string GetStrokeDashArray()
+    {
+        return Style switch
+        {
+            ConnectionStyle.Dashed => "8 4",
+            ConnectionStyle.Dotted => "2 3",
+            _ => ""
+        };
+    }
+
+    private string GetConnectionClass()
+    {
+        var classes = new List<string> { "workflow-connection" };
+        
+        if (isHovered)
+            classes.Add("hovered");
+            
+        classes.Add($"status-{Status.ToString().ToLowerInvariant()}");
+        classes.Add($"style-{Style.ToString().ToLowerInvariant()}");
+        
+        return string.Join(" ", classes);
+    }
+
+    private string GetArrowheadId()
+    {
+        return $"{Status.ToString().ToLowerInvariant()}-{(isHovered ? "hovered" : "normal")}";
+    }
+
+    private async Task OnConnectionHover(MouseEventArgs e)
+    {
+        isHovered = true;
+        StateHasChanged();
+        
+        await OnConnectionHovered.InvokeAsync(new ConnectionEventArgs
+        {
+            ConnectionId = ConnectionId,
+            MouseX = e.ClientX,
+            MouseY = e.ClientY
+        });
+    }
+
+    private async Task OnConnectionLeave(MouseEventArgs e)
+    {
+        isHovered = false;
+        StateHasChanged();
+        
+        await OnConnectionLeft.InvokeAsync(new ConnectionEventArgs
+        {
+            ConnectionId = ConnectionId,
+            MouseX = e.ClientX,
+            MouseY = e.ClientY
+        });
+    }
+
+    private async Task OnConnectionClick(MouseEventArgs e)
+    {
+        await OnConnectionClicked.InvokeAsync(new ConnectionEventArgs
+        {
+            ConnectionId = ConnectionId,
+            MouseX = e.ClientX,
+            MouseY = e.ClientY
+        });
+    }
+}
