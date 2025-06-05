@@ -1,0 +1,173 @@
+/* Workflow Canvas Container */
+.workflow-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    cursor: grab;
+}
+
+.workflow-canvas-container:active {
+    cursor: grabbing;
+}
+
+/* Canvas Controls */
+.canvas-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+}
+
+.canvas-controls .btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d0d7de;
+    background: white;
+    color: #656d76;
+    transition: all 0.2s ease;
+}
+
+.canvas-controls .btn:hover {
+    background: #f6f8fa;
+    border-color: #8c959f;
+    color: #24292f;
+}
+
+.zoom-indicator {
+    font-size: 12px;
+    font-weight: 500;
+    color: #656d76;
+    margin-left: 4px;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* Main Canvas */
+.workflow-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
+    will-change: transform;
+}
+
+/* Grid Background */
+.canvas-grid {
+    position: absolute;
+    top: -5000px;
+    left: -5000px;
+    width: 10000px;
+    height: 10000px;
+    opacity: 0.6;
+    background-image: 
+        radial-gradient(circle, #d1d5db 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: 0 0;
+    pointer-events: none;
+}
+
+/* Large grid overlay for better visual hierarchy */
+.canvas-grid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle, #9ca3af 1px, transparent 1px);
+    background-size: 100px 100px;
+    background-position: 0 0;
+    opacity: 0.3;
+}
+
+/* Canvas Content */
+.canvas-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+}
+
+/* Make.com inspired styling */
+.workflow-canvas-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .canvas-controls {
+        top: 10px;
+        right: 10px;
+        padding: 6px 8px;
+        gap: 6px;
+    }
+    
+    .canvas-controls .btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .zoom-indicator {
+        font-size: 11px;
+        min-width: 35px;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .workflow-canvas-container {
+        cursor: default;
+    }
+    
+    .workflow-canvas-container:active {
+        cursor: default;
+    }
+    
+    .canvas-controls .btn {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .canvas-grid {
+        background-image: 
+            radial-gradient(circle, #d1d5db 0.5px, transparent 0.5px);
+    }
+    
+    .canvas-grid::before {
+        background-image: 
+            radial-gradient(circle, #9ca3af 0.5px, transparent 0.5px);
+    }
+}
+
+/* Performance optimizations */
+.workflow-canvas {
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Smooth transitions for zoom */
+.workflow-canvas.zooming {
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
