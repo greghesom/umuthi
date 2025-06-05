@@ -11,4 +11,6 @@ public class Workflow : BaseEntity
     public string? Configuration { get; set; } // JSON configuration
     
     public ICollection<WorkflowExecution> Executions { get; set; } = new List<WorkflowExecution>();
+    public ICollection<WorkflowNode> Nodes { get; set; } = new List<WorkflowNode>();
+    public ICollection<WorkflowConnection> Connections { get; set; } = new List<WorkflowConnection>();
 }

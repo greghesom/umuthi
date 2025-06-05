@@ -15,3 +15,25 @@ public enum ExecutionStatus
     Failed = 3,
     Cancelled = 4
 }
+
+public enum NodeType
+{
+    Input = 0,
+    Process = 1,
+    Output = 2,
+    Decision = 3,
+    Trigger = 4
+}
+
+public enum ModuleType
+{
+    AudioConversion = 0,
+    SpeechTranscription = 1,
+    TextProcessing = 2,
+    DataTransform = 3,
+    FileHandler = 4,
+    ApiCall = 5,
+    Condition = 6,
+    Loop = 7,
+    Custom = 8
+}
