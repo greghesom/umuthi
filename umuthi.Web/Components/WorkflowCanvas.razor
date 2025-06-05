@@ -1,0 +1,170 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<div class="workflow-canvas-container" @ref="canvasContainer">
+    <!-- Viewport Controls -->
+    <div class="canvas-controls">
+        <button class="btn btn-sm btn-outline-secondary" @onclick="ZoomIn" title="Zoom In">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="ZoomOut" title="Zoom Out">
+            <i class="fas fa-minus"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="ResetView" title="Reset View">
+            <i class="fas fa-home"></i>
+        </button>
+        <span class="zoom-indicator">@($"{(int)(viewport.Scale * 100)}%")</span>
+    </div>
+
+    <!-- Main Canvas -->
+    <div class="workflow-canvas" 
+         @ref="canvasElement"
+         style="transform: translate(@(viewport.OffsetX)px, @(viewport.OffsetY)px) scale(@viewport.Scale)">
+        
+        <!-- Grid Background -->
+        <div class="canvas-grid"></div>
+        
+        <!-- Canvas Content Area -->
+        <div class="canvas-content">
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    
+    private ElementReference canvasContainer;
+    private ElementReference canvasElement;
+    
+    private ViewportState viewport = new()
+    {
+        OffsetX = 0,
+        OffsetY = 0,
+        Scale = 1.0,
+        MinScale = 0.1,
+        MaxScale = 3.0
+    };
+    
+    private bool isDragging = false;
+    private double lastMouseX = 0;
+    private double lastMouseY = 0;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeCanvasInteractions();
+        }
+    }
+    
+    private async Task InitializeCanvasInteractions()
+    {
+        await JSRuntime.InvokeVoidAsync("workflowCanvas.initialize", canvasContainer, DotNetObjectReference.Create(this));
+    }
+    
+    [JSInvokable]
+    public void OnMouseDown(double x, double y)
+    {
+        isDragging = true;
+        lastMouseX = x;
+        lastMouseY = y;
+    }
+    
+    [JSInvokable]
+    public void OnMouseMove(double x, double y)
+    {
+        if (isDragging)
+        {
+            var deltaX = x - lastMouseX;
+            var deltaY = y - lastMouseY;
+            
+            viewport.OffsetX += deltaX;
+            viewport.OffsetY += deltaY;
+            
+            ApplyCanvasBounds();
+            
+            lastMouseX = x;
+            lastMouseY = y;
+            
+            StateHasChanged();
+        }
+    }
+    
+    [JSInvokable]
+    public void OnMouseUp()
+    {
+        isDragging = false;
+    }
+    
+    [JSInvokable]
+    public void OnWheel(double deltaY, double x, double y)
+    {
+        var scaleFactor = deltaY > 0 ? 0.9 : 1.1;
+        var newScale = Math.Max(viewport.MinScale, Math.Min(viewport.MaxScale, viewport.Scale * scaleFactor));
+        
+        if (newScale != viewport.Scale)
+        {
+            // Zoom towards mouse position
+            var mouseX = x - viewport.OffsetX;
+            var mouseY = y - viewport.OffsetY;
+            
+            viewport.OffsetX -= mouseX * (newScale - viewport.Scale) / viewport.Scale;
+            viewport.OffsetY -= mouseY * (newScale - viewport.Scale) / viewport.Scale;
+            viewport.Scale = newScale;
+            
+            ApplyCanvasBounds();
+            StateHasChanged();
+        }
+    }
+    
+    private void ZoomIn()
+    {
+        var newScale = Math.Min(viewport.MaxScale, viewport.Scale * 1.2);
+        if (newScale != viewport.Scale)
+        {
+            viewport.Scale = newScale;
+            ApplyCanvasBounds();
+            StateHasChanged();
+        }
+    }
+    
+    private void ZoomOut()
+    {
+        var newScale = Math.Max(viewport.MinScale, viewport.Scale * 0.8);
+        if (newScale != viewport.Scale)
+        {
+            viewport.Scale = newScale;
+            ApplyCanvasBounds();
+            StateHasChanged();
+        }
+    }
+    
+    private void ResetView()
+    {
+        viewport.OffsetX = 0;
+        viewport.OffsetY = 0;
+        viewport.Scale = 1.0;
+        StateHasChanged();
+    }
+    
+    private void ApplyCanvasBounds()
+    {
+        // Define canvas boundaries (can be adjusted based on content)
+        var maxOffset = 2000;
+        var minOffset = -2000;
+        
+        viewport.OffsetX = Math.Max(minOffset, Math.Min(maxOffset, viewport.OffsetX));
+        viewport.OffsetY = Math.Max(minOffset, Math.Min(maxOffset, viewport.OffsetY));
+    }
+    
+    private class ViewportState
+    {
+        public double OffsetX { get; set; }
+        public double OffsetY { get; set; }
+        public double Scale { get; set; }
+        public double MinScale { get; set; }
+        public double MaxScale { get; set; }
+    }
+}

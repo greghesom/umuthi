@@ -1,0 +1,26 @@
+@page "/canvas-test"
+@using umuthi.Web.Components
+
+<PageTitle>Workflow Canvas Test</PageTitle>
+
+<div style="height: 100vh; display: flex; flex-direction: column;">
+    <div style="padding: 1rem; background: white; border-bottom: 1px solid #dee2e6;">
+        <h1>Workflow Canvas Test</h1>
+        <p>Test the workflow canvas with pan and zoom functionality.</p>
+    </div>
+    
+    <div style="flex: 1;">
+        <WorkflowCanvas>
+            <!-- Test content -->
+            <div style="position: absolute; top: 100px; left: 100px; background: #007bff; color: white; padding: 20px; border-radius: 8px;">
+                Test Node 1
+            </div>
+            <div style="position: absolute; top: 250px; left: 300px; background: #28a745; color: white; padding: 20px; border-radius: 8px;">
+                Test Node 2
+            </div>
+            <div style="position: absolute; top: 400px; left: 150px; background: #dc3545; color: white; padding: 20px; border-radius: 8px;">
+                Test Node 3
+            </div>
+        </WorkflowCanvas>
+    </div>
+</div>

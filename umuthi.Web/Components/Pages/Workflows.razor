@@ -92,6 +92,9 @@ else
                             </td>
                             <td>@workflow.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                             <td>
+                                <a href="/workflow-designer/@workflow.Id" class="btn btn-sm btn-primary me-1">
+                                    <i class="bi bi-diagram-3"></i> Design
+                                </a>
                                 @if (workflow.Status == Domain.Enums.WorkflowStatus.Draft)
                                 {
                                     <button class="btn btn-sm btn-success me-1" @onclick="() => PublishWorkflow(workflow.Id)">

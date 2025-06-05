@@ -1,0 +1,130 @@
+@page "/workflow-designer/{workflowId:guid}"
+@using umuthi.Web.Components
+@using umuthi.Application.DTOs
+@using umuthi.Application.Interfaces
+@inject IWorkflowService WorkflowService
+@inject ILogger<WorkflowDesigner> Logger
+@rendermode InteractiveServer
+
+<PageTitle>Workflow Designer - @(workflow?.Name ?? "Loading...")</PageTitle>
+
+@if (workflow == null)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading workflow...</p>
+        </div>
+    </div>
+}
+else
+{
+    <div style="height: 100vh; display: flex; flex-direction: column;">
+        <!-- Header -->
+        <div style="padding: 1rem; background: white; border-bottom: 1px solid #dee2e6; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">@workflow.Name</h2>
+                    <p class="text-muted mb-0">@workflow.Description</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary">
+                        <i class="bi bi-save"></i> Save
+                    </button>
+                    <button class="btn btn-outline-secondary">
+                        <i class="bi bi-play"></i> Test Run
+                    </button>
+                    <a href="/workflows" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Workflows
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Canvas -->
+        <div style="flex: 1;">
+            <WorkflowCanvas>
+                <!-- Sample workflow nodes - in a real implementation, these would be loaded from the workflow data -->
+                <div class="workflow-node start-node" style="position: absolute; top: 100px; left: 100px;">
+                    <div class="node-header">
+                        <i class="bi bi-play-circle"></i>
+                        <span>Start</span>
+                    </div>
+                    <div class="node-content">
+                        <small class="text-muted">Workflow trigger</small>
+                    </div>
+                </div>
+
+                <div class="workflow-node action-node" style="position: absolute; top: 250px; left: 300px;">
+                    <div class="node-header">
+                        <i class="bi bi-gear"></i>
+                        <span>Action</span>
+                    </div>
+                    <div class="node-content">
+                        <small class="text-muted">Process data</small>
+                    </div>
+                </div>
+
+                <div class="workflow-node condition-node" style="position: absolute; top: 400px; left: 150px;">
+                    <div class="node-header">
+                        <i class="bi bi-question-diamond"></i>
+                        <span>Condition</span>
+                    </div>
+                    <div class="node-content">
+                        <small class="text-muted">Decision point</small>
+                    </div>
+                </div>
+
+                <div class="workflow-node end-node" style="position: absolute; top: 550px; left: 350px;">
+                    <div class="node-header">
+                        <i class="bi bi-stop-circle"></i>
+                        <span>End</span>
+                    </div>
+                    <div class="node-content">
+                        <small class="text-muted">Workflow completion</small>
+                    </div>
+                </div>
+
+                <!-- Connection lines would be rendered here -->
+                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                    <!-- Sample connections -->
+                    <line x1="200" y1="150" x2="300" y2="290" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)" />
+                    <line x1="350" y1="350" x2="250" y2="430" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)" />
+                    <line x1="250" y1="470" x2="350" y2="580" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)" />
+                    
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                                refX="10" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e" />
+                        </marker>
+                    </defs>
+                </svg>
+            </WorkflowCanvas>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid WorkflowId { get; set; }
+    
+    private WorkflowDto? workflow;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWorkflow();
+    }
+    
+    private async Task LoadWorkflow()
+    {
+        try
+        {
+            workflow = await WorkflowService.GetWorkflowByIdAsync(WorkflowId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading workflow {WorkflowId}", WorkflowId);
+        }
+    }
+}
