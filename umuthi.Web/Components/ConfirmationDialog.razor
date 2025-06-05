@@ -1,0 +1,69 @@
+<!-- Confirmation Dialog Modal -->
+<div class="modal @(IsVisible ? "show" : "")" tabindex="-1" style="display: @(IsVisible ? "block" : "none")">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="@IconClass me-2"></i>
+                    @Title
+                </h5>
+                <button type="button" class="btn-close" @onclick="OnCancel"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">@Message</p>
+                @if (!string.IsNullOrWhiteSpace(Details))
+                {
+                    <small class="text-muted d-block mt-2">@Details</small>
+                }
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary" @onclick="OnCancel">@CancelText</button>
+                <button type="button" class="btn @ConfirmButtonClass" @onclick="OnConfirm">@ConfirmText</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Backdrop -->
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show" @onclick="OnCancel"></div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string Title { get; set; } = "Confirm Action";
+    [Parameter] public string Message { get; set; } = "Are you sure you want to continue?";
+    [Parameter] public string? Details { get; set; }
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public ConfirmationDialogType DialogType { get; set; } = ConfirmationDialogType.Warning;
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    
+    private string IconClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "bi bi-exclamation-triangle text-danger",
+        ConfirmationDialogType.Warning => "bi bi-exclamation-circle text-warning",
+        ConfirmationDialogType.Info => "bi bi-info-circle text-info",
+        ConfirmationDialogType.Success => "bi bi-check-circle text-success",
+        _ => "bi bi-question-circle text-secondary"
+    };
+    
+    private string ConfirmButtonClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "btn-danger",
+        ConfirmationDialogType.Warning => "btn-warning",
+        ConfirmationDialogType.Info => "btn-info",
+        ConfirmationDialogType.Success => "btn-success",
+        _ => "btn-primary"
+    };
+    
+    public enum ConfirmationDialogType
+    {
+        Info,
+        Success,
+        Warning,
+        Danger
+    }
+}

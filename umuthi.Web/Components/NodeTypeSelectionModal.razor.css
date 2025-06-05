@@ -1,0 +1,126 @@
+/* Node Type Selection Modal */
+.node-type-card {
+    padding: 20px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.node-type-card:hover {
+    border-color: #0d6efd;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+}
+
+.node-type-card.selected {
+    border-color: #0d6efd;
+    background: #e7f1ff;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+}
+
+.node-type-card .card-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f8f9fa;
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s ease;
+}
+
+.node-type-card:hover .card-icon,
+.node-type-card.selected .card-icon {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.node-type-card .card-icon i {
+    font-size: 20px;
+    color: #6c757d;
+    transition: color 0.3s ease;
+}
+
+.node-type-card:hover .card-icon i,
+.node-type-card.selected .card-icon i {
+    color: white;
+}
+
+.node-type-card .card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.node-type-card .card-title {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.node-type-card .card-description {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.node-type-card.selected .card-title {
+    color: #0d6efd;
+}
+
+/* Modal customizations */
+.modal-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.modal-title {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #e1e5e9;
+    padding: 16px 24px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .node-type-card {
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .node-type-card .card-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .node-type-card .card-icon i {
+        font-size: 18px;
+    }
+    
+    .node-type-card .card-title {
+        font-size: 15px;
+    }
+    
+    .node-type-card .card-description {
+        font-size: 13px;
+    }
+}

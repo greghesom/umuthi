@@ -2,9 +2,13 @@
 @using umuthi.Web.Components
 @using umuthi.Application.DTOs
 @using umuthi.Application.Interfaces
+@using umuthi.Domain.Enums
+@using Microsoft.JSInterop
 @inject IWorkflowService WorkflowService
 @inject ILogger<WorkflowDesigner> Logger
+@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
+@implements IAsyncDisposable
 
 <PageTitle>Workflow Designer - @(workflow?.Name ?? "Loading...")</PageTitle>
 
@@ -21,7 +25,7 @@
 }
 else
 {
-    <div style="height: 100vh; display: flex; flex-direction: column;">
+    <div style="height: 100vh; display: flex; flex-direction: column;" tabindex="0">
         <!-- Header -->
         <div style="padding: 1rem; background: white; border-bottom: 1px solid #dee2e6; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <div class="d-flex justify-content-between align-items-center">
@@ -45,7 +49,7 @@ else
         
         <!-- Canvas -->
         <div style="flex: 1;">
-            <WorkflowCanvas>
+            <WorkflowCanvas OnAddNodeClicked="OnAddNodeClicked">
                 <!-- Sample workflow nodes using the new WorkflowNode component -->
                 @foreach (var node in workflowNodes)
                 {
@@ -61,7 +65,9 @@ else
                                   OnNodeClicked="OnNodeClicked"
                                   OnNodeDragStart="OnNodeDragStart"
                                   OnNodeDrag="OnNodeDrag"
-                                  OnNodeDragEnd="OnNodeDragEnd" />
+                                  OnNodeDragEnd="OnNodeDragEnd"
+                                  OnNodeContextMenu="OnNodeContextMenu" />
+                }
                 }
 
                 <!-- Connection lines -->
@@ -91,6 +97,29 @@ else
             </WorkflowCanvas>
         </div>
     </div>
+    
+    <!-- Node Type Selection Modal -->
+    <NodeTypeSelectionModal IsVisible="showNodeTypeModal"
+                           OnNodeTypeSelected="OnNodeTypeSelected"
+                           OnCancel="OnCancelNodeTypeSelection" />
+    
+    <!-- Confirmation Dialog -->
+    <ConfirmationDialog IsVisible="showConfirmationDialog"
+                       Title="@confirmationTitle"
+                       Message="@confirmationMessage"
+                       Details="@confirmationDetails"
+                       DialogType="@confirmationDialogType"
+                       ConfirmText="@confirmationConfirmText"
+                       OnConfirm="OnConfirmationConfirmed"
+                       OnCancel="OnConfirmationCancelled" />
+    
+    <!-- Context Menu -->
+    <ContextMenu IsVisible="showContextMenu"
+                X="contextMenuX"
+                Y="contextMenuY"
+                MenuItems="contextMenuItems"
+                OnItemSelected="OnContextMenuItemSelected"
+                OnHide="OnContextMenuHide" />
 }
 
 @code {
@@ -101,11 +130,41 @@ else
     private List<WorkflowNodeModel> workflowNodes = new();
     private List<WorkflowConnectionModel> workflowConnections = new();
     
+    // Modal states
+    private bool showNodeTypeModal = false;
+    private bool showConfirmationDialog = false;
+    private string confirmationTitle = "";
+    private string confirmationMessage = "";
+    private string? confirmationDetails = null;
+    private ConfirmationDialog.ConfirmationDialogType confirmationDialogType = ConfirmationDialog.ConfirmationDialogType.Warning;
+    private string confirmationConfirmText = "Confirm";
+    private string? pendingDeleteNodeId = null;
+    
+    // Context menu states
+    private bool showContextMenu = false;
+    private double contextMenuX = 0;
+    private double contextMenuY = 0;
+    private string? contextMenuNodeId = null;
+    private List<ContextMenu.ContextMenuItem> contextMenuItems = new();
+    
+    // Node creation
+    private double nextNodeX = 200;
+    private double nextNodeY = 200;
+    private int nodeCounter = 1;
+    
     protected override async Task OnInitializedAsync()
     {
         await LoadWorkflow();
         InitializeSampleNodes();
         InitializeSampleConnections();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("workflowDesigner.initialize", DotNetObjectReference.Create(this));
+        }
     }
     
     private async Task LoadWorkflow()
@@ -174,6 +233,223 @@ else
             }
         };
     }
+    
+    // Node Management Methods
+    private Task OnAddNodeClicked()
+    {
+        showNodeTypeModal = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    
+    private async Task OnNodeTypeSelected(NodeTypeSelectionModal.NodeTypeSelectionResult result)
+    {
+        showNodeTypeModal = false;
+        await CreateNewNode(result.NodeType, result.ModuleType);
+        StateHasChanged();
+    }
+    
+    private Task OnCancelNodeTypeSelection()
+    {
+        showNodeTypeModal = false;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    
+    private Task CreateNewNode(NodeType nodeType, ModuleType moduleType)
+    {
+        var nodeId = $"node-{nodeCounter++}";
+        
+        // Validate and adjust position to avoid overlaps
+        var position = FindValidNodePosition(nextNodeX, nextNodeY);
+        
+        var newNode = new WorkflowNodeModel
+        {
+            Id = nodeId,
+            Label = GetDefaultNodeLabel(nodeType, moduleType),
+            Description = GetDefaultNodeDescription(nodeType, moduleType),
+            NodeType = MapNodeTypeToWorkflowNodeType(nodeType),
+            PositionX = position.X,
+            PositionY = position.Y,
+            HasError = false,
+            Status = WorkflowNode.NodeStatus.None
+        };
+        
+        workflowNodes.Add(newNode);
+        selectedNodeId = nodeId;
+        
+        // Update position for next node
+        nextNodeX += 200;
+        if (nextNodeX > 800)
+        {
+            nextNodeX = 200;
+            nextNodeY += 150;
+        }
+        
+        Logger.LogInformation("Created new node: {NodeId} of type {NodeType} at ({X}, {Y})", nodeId, nodeType, position.X, position.Y);
+        
+        // Here you would typically save to the backend
+        // await WorkflowService.AddNodeAsync(WorkflowId, newNode);
+        
+        return Task.CompletedTask;
+    }
+    
+    private (double X, double Y) FindValidNodePosition(double preferredX, double preferredY)
+    {
+        const double nodeWidth = 160;
+        const double nodeHeight = 80;
+        const double minSpacing = 20;
+        const double canvasMargin = 50;
+        
+        var testX = Math.Max(canvasMargin, preferredX);
+        var testY = Math.Max(canvasMargin, preferredY);
+        
+        // Check for overlaps with existing nodes
+        int attempts = 0;
+        const int maxAttempts = 50;
+        
+        while (attempts < maxAttempts)
+        {
+            bool hasOverlap = false;
+            
+            foreach (var existingNode in workflowNodes)
+            {
+                var distanceX = Math.Abs(testX - existingNode.PositionX);
+                var distanceY = Math.Abs(testY - existingNode.PositionY);
+                
+                if (distanceX < nodeWidth + minSpacing && distanceY < nodeHeight + minSpacing)
+                {
+                    hasOverlap = true;
+                    break;
+                }
+            }
+            
+            if (!hasOverlap)
+            {
+                return (testX, testY);
+            }
+            
+            // Try next position in a grid pattern
+            testX += nodeWidth + minSpacing;
+            if (testX > 1000)
+            {
+                testX = canvasMargin;
+                testY += nodeHeight + minSpacing;
+            }
+            
+            attempts++;
+        }
+        
+        // If no valid position found after max attempts, use preferred position anyway
+        Logger.LogWarning("Could not find non-overlapping position for new node, using preferred position");
+        return (Math.Max(canvasMargin, preferredX), Math.Max(canvasMargin, preferredY));
+    }
+    
+    private string GetDefaultNodeLabel(NodeType nodeType, ModuleType moduleType)
+    {
+        return nodeType switch
+        {
+            NodeType.Input => $"Input {moduleType}",
+            NodeType.Process => $"Process {moduleType}",
+            NodeType.Output => $"Output {moduleType}",
+            NodeType.Decision => $"Decision {moduleType}",
+            NodeType.Trigger => $"Trigger {moduleType}",
+            _ => $"Node {moduleType}"
+        };
+    }
+    
+    private string GetDefaultNodeDescription(NodeType nodeType, ModuleType moduleType)
+    {
+        return $"{nodeType} node using {moduleType} module";
+    }
+    
+    private WorkflowNode.NodeTypeCategory MapNodeTypeToWorkflowNodeType(NodeType nodeType)
+    {
+        return nodeType switch
+        {
+            NodeType.Input => WorkflowNode.NodeTypeCategory.Email, // Default mapping
+            NodeType.Process => WorkflowNode.NodeTypeCategory.AI,
+            NodeType.Output => WorkflowNode.NodeTypeCategory.Integration,
+            NodeType.Decision => WorkflowNode.NodeTypeCategory.Router,
+            NodeType.Trigger => WorkflowNode.NodeTypeCategory.Utility,
+            _ => WorkflowNode.NodeTypeCategory.Utility
+        };
+    }
+    
+    [JSInvokable]
+    public Task OnKeyDown(string key)
+    {
+        if (key == "Delete" && !string.IsNullOrEmpty(selectedNodeId))
+        {
+            return ShowDeleteNodeConfirmation(selectedNodeId);
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private Task ShowDeleteNodeConfirmation(string nodeId)
+    {
+        var node = workflowNodes.FirstOrDefault(n => n.Id == nodeId);
+        if (node != null)
+        {
+            pendingDeleteNodeId = nodeId;
+            confirmationTitle = "Delete Node";
+            confirmationMessage = $"Are you sure you want to delete the node '{node.Label}'?";
+            confirmationDetails = "This action cannot be undone. All connections to this node will also be removed.";
+            confirmationDialogType = ConfirmationDialog.ConfirmationDialogType.Danger;
+            confirmationConfirmText = "Delete";
+            showConfirmationDialog = true;
+            StateHasChanged();
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private async Task OnConfirmationConfirmed()
+    {
+        showConfirmationDialog = false;
+        
+        if (!string.IsNullOrEmpty(pendingDeleteNodeId))
+        {
+            await DeleteNode(pendingDeleteNodeId);
+            pendingDeleteNodeId = null;
+        }
+        
+        StateHasChanged();
+    }
+    
+    private Task OnConfirmationCancelled()
+    {
+        showConfirmationDialog = false;
+        pendingDeleteNodeId = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    
+    private Task DeleteNode(string nodeId)
+    {
+        var node = workflowNodes.FirstOrDefault(n => n.Id == nodeId);
+        if (node != null)
+        {
+            workflowNodes.Remove(node);
+            
+            // Remove all connections involving this node
+            workflowConnections.RemoveAll(c => c.SourceNodeId == nodeId || c.TargetNodeId == nodeId);
+            
+            // Clear selection if the deleted node was selected
+            if (selectedNodeId == nodeId)
+            {
+                selectedNodeId = null;
+            }
+            
+            Logger.LogInformation("Deleted node: {NodeId}", nodeId);
+            
+            // Here you would typically save to the backend
+            // await WorkflowService.DeleteNodeAsync(WorkflowId, nodeId);
+        }
+        
+        return Task.CompletedTask;
+    }
 
     private Task OnNodeClicked(WorkflowNode.WorkflowNodeEventArgs args)
     {
@@ -205,6 +481,103 @@ else
     {
         Logger.LogInformation("Node drag end: {NodeId} at ({X}, {Y})", args.NodeId, args.X, args.Y);
         // Here you would typically save the new position to the backend
+        return Task.CompletedTask;
+    }
+    
+    private Task OnNodeContextMenu(WorkflowNode.WorkflowNodeContextMenuEventArgs args)
+    {
+        contextMenuNodeId = args.NodeId;
+        contextMenuX = args.ClientX;
+        contextMenuY = args.ClientY;
+        
+        // Build context menu items for the node
+        var node = workflowNodes.FirstOrDefault(n => n.Id == args.NodeId);
+        if (node != null)
+        {
+            selectedNodeId = args.NodeId; // Select the node when right-clicked
+            
+            contextMenuItems = new List<ContextMenu.ContextMenuItem>
+            {
+                ContextMenu.ContextMenuItem.Create("duplicate", "Duplicate Node", "bi bi-copy", "Ctrl+D"),
+                ContextMenu.ContextMenuItem.Create("configure", "Configure", "bi bi-gear", ""),
+                ContextMenu.ContextMenuItem.Separator(),
+                ContextMenu.ContextMenuItem.Create("delete", "Delete Node", "bi bi-trash", "Delete")
+            };
+            
+            showContextMenu = true;
+            StateHasChanged();
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private async Task OnContextMenuItemSelected(ContextMenu.ContextMenuItem item)
+    {
+        if (string.IsNullOrEmpty(contextMenuNodeId))
+            return;
+            
+        switch (item.Id)
+        {
+            case "duplicate":
+                await DuplicateNode(contextMenuNodeId);
+                break;
+            case "configure":
+                await ConfigureNode(contextMenuNodeId);
+                break;
+            case "delete":
+                await ShowDeleteNodeConfirmation(contextMenuNodeId);
+                break;
+        }
+        
+        showContextMenu = false;
+        StateHasChanged();
+    }
+    
+    private Task OnContextMenuHide()
+    {
+        showContextMenu = false;
+        contextMenuNodeId = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    
+    private Task DuplicateNode(string nodeId)
+    {
+        var sourceNode = workflowNodes.FirstOrDefault(n => n.Id == nodeId);
+        if (sourceNode != null)
+        {
+            var duplicatedNodeId = $"node-{nodeCounter++}";
+            var duplicatedNode = new WorkflowNodeModel
+            {
+                Id = duplicatedNodeId,
+                Label = $"{sourceNode.Label} (Copy)",
+                Description = sourceNode.Description,
+                NodeType = sourceNode.NodeType,
+                PositionX = sourceNode.PositionX + 50,
+                PositionY = sourceNode.PositionY + 50,
+                HasError = false,
+                Status = WorkflowNode.NodeStatus.None
+            };
+            
+            workflowNodes.Add(duplicatedNode);
+            selectedNodeId = duplicatedNodeId;
+            
+            Logger.LogInformation("Duplicated node: {OriginalNodeId} -> {NewNodeId}", nodeId, duplicatedNodeId);
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private Task ConfigureNode(string nodeId)
+    {
+        var node = workflowNodes.FirstOrDefault(n => n.Id == nodeId);
+        if (node != null)
+        {
+            Logger.LogInformation("Configure node: {NodeId}", nodeId);
+            // Here you would typically open a configuration modal
+            // For now, just log the action
+        }
+        
         return Task.CompletedTask;
     }
 
@@ -313,5 +686,17 @@ else
         public string TargetPort { get; set; } = "input";
         public ConnectionLine.ConnectionStyle Style { get; set; } = ConnectionLine.ConnectionStyle.Solid;
         public ConnectionLine.ConnectionStatus Status { get; set; } = ConnectionLine.ConnectionStatus.Normal;
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workflowDesigner.dispose");
+        }
+        catch (JSDisconnectedException)
+        {
+            // Component is being disposed, ignore JS disconnection
+        }
     }
 }

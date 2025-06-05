@@ -5,7 +5,9 @@
 <div class="workflow-node @GetNodeTypeClass() @(IsSelected ? "selected" : "") @(HasError ? "error" : "")"
      style="position: absolute; top: @(PositionY)px; left: @(PositionX)px; @(IsBeingDragged ? "z-index: 1000;" : "")"
      @onmousedown="OnMouseDown"
-     @onclick="OnClick">
+     @onclick="OnClick"
+     @oncontextmenu="OnContextMenu"
+     @oncontextmenu:preventDefault="true">
     
     <!-- Error Badge -->
     @if (HasError)
@@ -47,6 +49,7 @@
     [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDragStart { get; set; }
     [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDrag { get; set; }
     [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDragEnd { get; set; }
+    [Parameter] public EventCallback<WorkflowNodeContextMenuEventArgs> OnNodeContextMenu { get; set; }
     
     private bool IsBeingDragged = false;
     private double dragStartX = 0;
@@ -79,6 +82,13 @@
         public double Y { get; set; }
         public double DeltaX { get; set; }
         public double DeltaY { get; set; }
+    }
+    
+    public class WorkflowNodeContextMenuEventArgs
+    {
+        public string NodeId { get; set; } = "";
+        public double ClientX { get; set; }
+        public double ClientY { get; set; }
     }
 
     private string GetNodeTypeClass()
@@ -129,6 +139,16 @@
             NodeStatus.Warning => "bi bi-exclamation-triangle",
             _ => ""
         };
+    }
+
+    private async Task OnContextMenu(MouseEventArgs e)
+    {
+        await OnNodeContextMenu.InvokeAsync(new WorkflowNodeContextMenuEventArgs
+        {
+            NodeId = Id,
+            ClientX = e.ClientX,
+            ClientY = e.ClientY
+        });
     }
 
     private async Task OnClick()

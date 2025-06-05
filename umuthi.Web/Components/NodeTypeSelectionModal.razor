@@ -1,0 +1,153 @@
+@using umuthi.Domain.Enums
+
+<!-- Modal -->
+<div class="modal @(IsVisible ? "show" : "")" tabindex="-1" style="display: @(IsVisible ? "block" : "none")">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add New Node
+                </h5>
+                <button type="button" class="btn-close" @onclick="OnCancel"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">Select a node type to add to your workflow:</p>
+                
+                <div class="row g-3">
+                    @foreach (var nodeTypeInfo in GetAvailableNodeTypes())
+                    {
+                        <div class="col-md-6">
+                            <div class="node-type-card @(SelectedNodeType == nodeTypeInfo.NodeType ? "selected" : "")" 
+                                 @onclick="() => SelectNodeType(nodeTypeInfo.NodeType)">
+                                <div class="card-icon">
+                                    <i class="@nodeTypeInfo.Icon"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h6 class="card-title">@nodeTypeInfo.Title</h6>
+                                    <p class="card-description">@nodeTypeInfo.Description</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+                <button type="button" class="btn btn-primary" @onclick="OnConfirm" disabled="@(SelectedNodeType == null)">
+                    Add Node
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Backdrop -->
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show" @onclick="OnCancel"></div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<NodeTypeSelectionResult> OnNodeTypeSelected { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    
+    private NodeType? SelectedNodeType { get; set; }
+    
+    protected override void OnParametersSet()
+    {
+        if (!IsVisible)
+        {
+            SelectedNodeType = null;
+        }
+    }
+    
+    private void SelectNodeType(NodeType nodeType)
+    {
+        SelectedNodeType = nodeType;
+    }
+    
+    private async Task OnConfirm()
+    {
+        if (SelectedNodeType.HasValue)
+        {
+            var result = new NodeTypeSelectionResult
+            {
+                NodeType = SelectedNodeType.Value,
+                ModuleType = GetDefaultModuleType(SelectedNodeType.Value)
+            };
+            
+            await OnNodeTypeSelected.InvokeAsync(result);
+        }
+    }
+    
+    private ModuleType GetDefaultModuleType(NodeType nodeType)
+    {
+        return nodeType switch
+        {
+            NodeType.Input => ModuleType.FileHandler,
+            NodeType.Process => ModuleType.TextProcessing,
+            NodeType.Output => ModuleType.FileHandler,
+            NodeType.Decision => ModuleType.Condition,
+            NodeType.Trigger => ModuleType.Custom,
+            _ => ModuleType.Custom
+        };
+    }
+    
+    private IEnumerable<NodeTypeInfo> GetAvailableNodeTypes()
+    {
+        return new[]
+        {
+            new NodeTypeInfo
+            {
+                NodeType = NodeType.Input,
+                Title = "Input Node",
+                Description = "Receives data from external sources or triggers",
+                Icon = "bi bi-box-arrow-in-down"
+            },
+            new NodeTypeInfo
+            {
+                NodeType = NodeType.Process,
+                Title = "Process Node",
+                Description = "Transforms, analyzes, or manipulates data",
+                Icon = "bi bi-gear"
+            },
+            new NodeTypeInfo
+            {
+                NodeType = NodeType.Output,
+                Title = "Output Node",
+                Description = "Sends data to external destinations",
+                Icon = "bi bi-box-arrow-up"
+            },
+            new NodeTypeInfo
+            {
+                NodeType = NodeType.Decision,
+                Title = "Decision Node",
+                Description = "Routes workflow based on conditions",
+                Icon = "bi bi-signpost-split"
+            },
+            new NodeTypeInfo
+            {
+                NodeType = NodeType.Trigger,
+                Title = "Trigger Node",
+                Description = "Starts workflow execution automatically",
+                Icon = "bi bi-play-circle"
+            }
+        };
+    }
+    
+    private class NodeTypeInfo
+    {
+        public NodeType NodeType { get; set; }
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Icon { get; set; } = "";
+    }
+    
+    public class NodeTypeSelectionResult
+    {
+        public NodeType NodeType { get; set; }
+        public ModuleType ModuleType { get; set; }
+    }
+}
