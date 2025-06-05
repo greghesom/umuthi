@@ -25,6 +25,16 @@ public class WorkflowConfiguration : IEntityTypeConfiguration<Workflow>
             .HasForeignKey(e => e.WorkflowId)
             .OnDelete(DeleteBehavior.Cascade);
             
+        builder.HasMany(w => w.Nodes)
+            .WithOne(n => n.Workflow)
+            .HasForeignKey(n => n.WorkflowId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        builder.HasMany(w => w.Connections)
+            .WithOne(c => c.Workflow)
+            .HasForeignKey(c => c.WorkflowId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
         builder.HasIndex(w => w.Name);
     }
 }
@@ -44,5 +54,93 @@ public class WorkflowExecutionConfiguration : IEntityTypeConfiguration<WorkflowE
         builder.HasIndex(e => e.WorkflowId);
         builder.HasIndex(e => e.Status);
         builder.HasIndex(e => e.StartedAt);
+    }
+}
+
+public class WorkflowNodeConfiguration : IEntityTypeConfiguration<WorkflowNode>
+{
+    public void Configure(EntityTypeBuilder<WorkflowNode> builder)
+    {
+        builder.HasKey(n => n.Id);
+        
+        builder.Property(n => n.Configuration)
+            .HasColumnType("nvarchar(max)");
+            
+        builder.Property(n => n.Metadata)
+            .HasColumnType("nvarchar(max)");
+            
+        builder.HasMany(n => n.SourceConnections)
+            .WithOne(c => c.SourceNode)
+            .HasForeignKey(c => c.SourceNodeId)
+            .OnDelete(DeleteBehavior.NoAction);
+            
+        builder.HasMany(n => n.TargetConnections)
+            .WithOne(c => c.TargetNode)
+            .HasForeignKey(c => c.TargetNodeId)
+            .OnDelete(DeleteBehavior.NoAction);
+            
+        builder.HasIndex(n => n.WorkflowId);
+        builder.HasIndex(n => n.NodeType);
+        builder.HasIndex(n => n.ModuleType);
+    }
+}
+
+public class WorkflowConnectionConfiguration : IEntityTypeConfiguration<WorkflowConnection>
+{
+    public void Configure(EntityTypeBuilder<WorkflowConnection> builder)
+    {
+        builder.HasKey(c => c.Id);
+        
+        builder.Property(c => c.SourcePort)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.Property(c => c.TargetPort)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.HasIndex(c => c.WorkflowId);
+        builder.HasIndex(c => c.SourceNodeId);
+        builder.HasIndex(c => c.TargetNodeId);
+        
+        // Unique constraint to prevent duplicate connections
+        builder.HasIndex(c => new { c.SourceNodeId, c.TargetNodeId, c.SourcePort, c.TargetPort })
+            .IsUnique();
+    }
+}
+
+public class NodeTemplateConfiguration : IEntityTypeConfiguration<NodeTemplate>
+{
+    public void Configure(EntityTypeBuilder<NodeTemplate> builder)
+    {
+        builder.HasKey(t => t.Id);
+        
+        builder.Property(t => t.Name)
+            .IsRequired()
+            .HasMaxLength(200);
+            
+        builder.Property(t => t.Description)
+            .HasMaxLength(1000);
+            
+        builder.Property(t => t.Icon)
+            .HasMaxLength(500);
+            
+        builder.Property(t => t.Category)
+            .HasMaxLength(100);
+            
+        builder.Property(t => t.Version)
+            .HasMaxLength(20);
+            
+        builder.Property(t => t.DefaultConfiguration)
+            .HasColumnType("nvarchar(max)");
+            
+        builder.Property(t => t.ConfigurationSchema)
+            .HasColumnType("nvarchar(max)");
+            
+        builder.HasIndex(t => t.Name);
+        builder.HasIndex(t => t.NodeType);
+        builder.HasIndex(t => t.ModuleType);
+        builder.HasIndex(t => t.Category);
+        builder.HasIndex(t => t.IsActive);
     }
 }
