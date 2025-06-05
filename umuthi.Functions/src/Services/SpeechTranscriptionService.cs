@@ -358,10 +358,21 @@ public class SpeechTranscriptionService : ISpeechTranscriptionService
             // Create multipart form content
             using var formContent = new MultipartFormDataContent();
             
-            // Add configuration as form parameters
-            formContent.Add(new StringContent(language), "locales");
-            formContent.Add(new StringContent("true"), "profanityFilterMode"); 
-            formContent.Add(new StringContent("true"), "addWordLevelTimestamps");
+            // Add configuration as a single definition JSON
+            var definitionObj = new
+            {
+                locales = new[] { language },
+                profanityFilterMode = "Masked",
+                addWordLevelTimestamps = false,
+                diarizationSettings = new
+                {
+                    minSpeakers = 1,
+                    maxSpeakers = 4
+                }
+            };
+            
+            var definitionJson = JsonSerializer.Serialize(definitionObj);
+            formContent.Add(new StringContent(definitionJson, Encoding.UTF8, "application/json"), "definition");
             
             // Add audio file
             var fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(tempFilePath));
