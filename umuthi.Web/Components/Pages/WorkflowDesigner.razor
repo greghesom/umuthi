@@ -46,46 +46,23 @@ else
         <!-- Canvas -->
         <div style="flex: 1;">
             <WorkflowCanvas>
-                <!-- Sample workflow nodes - in a real implementation, these would be loaded from the workflow data -->
-                <div class="workflow-node start-node" style="position: absolute; top: 100px; left: 100px;">
-                    <div class="node-header">
-                        <i class="bi bi-play-circle"></i>
-                        <span>Start</span>
-                    </div>
-                    <div class="node-content">
-                        <small class="text-muted">Workflow trigger</small>
-                    </div>
-                </div>
-
-                <div class="workflow-node action-node" style="position: absolute; top: 250px; left: 300px;">
-                    <div class="node-header">
-                        <i class="bi bi-gear"></i>
-                        <span>Action</span>
-                    </div>
-                    <div class="node-content">
-                        <small class="text-muted">Process data</small>
-                    </div>
-                </div>
-
-                <div class="workflow-node condition-node" style="position: absolute; top: 400px; left: 150px;">
-                    <div class="node-header">
-                        <i class="bi bi-question-diamond"></i>
-                        <span>Condition</span>
-                    </div>
-                    <div class="node-content">
-                        <small class="text-muted">Decision point</small>
-                    </div>
-                </div>
-
-                <div class="workflow-node end-node" style="position: absolute; top: 550px; left: 350px;">
-                    <div class="node-header">
-                        <i class="bi bi-stop-circle"></i>
-                        <span>End</span>
-                    </div>
-                    <div class="node-content">
-                        <small class="text-muted">Workflow completion</small>
-                    </div>
-                </div>
+                <!-- Sample workflow nodes using the new WorkflowNode component -->
+                @foreach (var node in workflowNodes)
+                {
+                    <WorkflowNode Id="@node.Id"
+                                  Label="@node.Label"
+                                  Description="@node.Description"
+                                  NodeType="@node.NodeType"
+                                  PositionX="@node.PositionX"
+                                  PositionY="@node.PositionY"
+                                  IsSelected="@(selectedNodeId == node.Id)"
+                                  HasError="@node.HasError"
+                                  Status="@node.Status"
+                                  OnNodeClicked="OnNodeClicked"
+                                  OnNodeDragStart="OnNodeDragStart"
+                                  OnNodeDrag="OnNodeDrag"
+                                  OnNodeDragEnd="OnNodeDragEnd" />
+                }
 
                 <!-- Connection lines would be rendered here -->
                 <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
@@ -110,10 +87,13 @@ else
     [Parameter] public Guid WorkflowId { get; set; }
     
     private WorkflowDto? workflow;
+    private string? selectedNodeId;
+    private List<WorkflowNodeModel> workflowNodes = new();
     
     protected override async Task OnInitializedAsync()
     {
         await LoadWorkflow();
+        InitializeSampleNodes();
     }
     
     private async Task LoadWorkflow()
@@ -126,5 +106,105 @@ else
         {
             Logger.LogError(ex, "Error loading workflow {WorkflowId}", WorkflowId);
         }
+    }
+
+    private void InitializeSampleNodes()
+    {
+        workflowNodes = new List<WorkflowNodeModel>
+        {
+            new() 
+            { 
+                Id = "email-1", 
+                Label = "Email Trigger", 
+                Description = "Trigger on new email",
+                NodeType = WorkflowNode.NodeTypeCategory.Email,
+                PositionX = 100, 
+                PositionY = 100 
+            },
+            new() 
+            { 
+                Id = "ai-1", 
+                Label = "AI Processing", 
+                Description = "Process text with AI",
+                NodeType = WorkflowNode.NodeTypeCategory.AI,
+                PositionX = 300, 
+                PositionY = 250,
+                Status = WorkflowNode.NodeStatus.Running
+            },
+            new() 
+            { 
+                Id = "router-1", 
+                Label = "Decision Router", 
+                Description = "Route based on condition",
+                NodeType = WorkflowNode.NodeTypeCategory.Router,
+                PositionX = 150, 
+                PositionY = 400 
+            },
+            new() 
+            { 
+                Id = "integration-1", 
+                Label = "API Integration", 
+                Description = "Call external API",
+                NodeType = WorkflowNode.NodeTypeCategory.Integration,
+                PositionX = 350, 
+                PositionY = 550,
+                HasError = true
+            },
+            new() 
+            { 
+                Id = "utility-1", 
+                Label = "Data Transform", 
+                Description = "Transform data format",
+                NodeType = WorkflowNode.NodeTypeCategory.Utility,
+                PositionX = 500, 
+                PositionY = 300,
+                Status = WorkflowNode.NodeStatus.Completed
+            }
+        };
+    }
+
+    private Task OnNodeClicked(WorkflowNode.WorkflowNodeEventArgs args)
+    {
+        selectedNodeId = args.NodeId;
+        StateHasChanged();
+        Logger.LogInformation("Node clicked: {NodeId}", args.NodeId);
+        return Task.CompletedTask;
+    }
+
+    private Task OnNodeDragStart(WorkflowNode.WorkflowNodeEventArgs args)
+    {
+        Logger.LogInformation("Node drag start: {NodeId} at ({X}, {Y})", args.NodeId, args.X, args.Y);
+        return Task.CompletedTask;
+    }
+
+    private Task OnNodeDrag(WorkflowNode.WorkflowNodeEventArgs args)
+    {
+        var node = workflowNodes.FirstOrDefault(n => n.Id == args.NodeId);
+        if (node != null)
+        {
+            node.PositionX = args.X;
+            node.PositionY = args.Y;
+            StateHasChanged();
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task OnNodeDragEnd(WorkflowNode.WorkflowNodeEventArgs args)
+    {
+        Logger.LogInformation("Node drag end: {NodeId} at ({X}, {Y})", args.NodeId, args.X, args.Y);
+        // Here you would typically save the new position to the backend
+        return Task.CompletedTask;
+    }
+
+    private class WorkflowNodeModel
+    {
+        public string Id { get; set; } = "";
+        public string Label { get; set; } = "";
+        public string Description { get; set; } = "";
+        public WorkflowNode.NodeTypeCategory NodeType { get; set; } = WorkflowNode.NodeTypeCategory.Utility;
+        public double PositionX { get; set; } = 0;
+        public double PositionY { get; set; } = 0;
+        public bool HasError { get; set; } = false;
+        public WorkflowNode.NodeStatus Status { get; set; } = WorkflowNode.NodeStatus.None;
     }
 }
