@@ -20,6 +20,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\umuthi.AppHost\umuthi.AppHost.csproj" />
+    <ProjectReference Include="..\umuthi.Domain\umuthi.Domain.csproj" />
+    <ProjectReference Include="..\umuthi.Application\umuthi.Application.csproj" />
+    <ProjectReference Include="..\umuthi.Infrastructure\umuthi.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
