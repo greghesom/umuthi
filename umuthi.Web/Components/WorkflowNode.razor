@@ -1,0 +1,203 @@
+@using umuthi.Domain.Enums
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<div class="workflow-node @GetNodeTypeClass() @(IsSelected ? "selected" : "") @(HasError ? "error" : "")"
+     style="position: absolute; top: @(PositionY)px; left: @(PositionX)px; @(IsBeingDragged ? "z-index: 1000;" : "")"
+     @onmousedown="OnMouseDown"
+     @onclick="OnClick">
+    
+    <!-- Error Badge -->
+    @if (HasError)
+    {
+        <div class="node-error-badge">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+    }
+    
+    <!-- Status Indicator -->
+    @if (Status != NodeStatus.None)
+    {
+        <div class="node-status-indicator @GetStatusClass()">
+            <i class="@GetStatusIcon()"></i>
+        </div>
+    }
+    
+    <div class="node-header">
+        <i class="@GetNodeIcon()"></i>
+        <span>@Label</span>
+    </div>
+    
+    <div class="node-content">
+        <small class="text-muted">@Description</small>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Description { get; set; } = "";
+    [Parameter] public NodeTypeCategory NodeType { get; set; } = NodeTypeCategory.Utility;
+    [Parameter] public double PositionX { get; set; } = 0;
+    [Parameter] public double PositionY { get; set; } = 0;
+    [Parameter] public bool IsSelected { get; set; } = false;
+    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public NodeStatus Status { get; set; } = NodeStatus.None;
+    [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeClicked { get; set; }
+    [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDragStart { get; set; }
+    [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDrag { get; set; }
+    [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDragEnd { get; set; }
+    
+    private bool IsBeingDragged = false;
+    private double dragStartX = 0;
+    private double dragStartY = 0;
+    private double initialMouseX = 0;
+    private double initialMouseY = 0;
+
+    public enum NodeTypeCategory
+    {
+        Email,
+        AI,
+        Utility,
+        Router,
+        Integration
+    }
+
+    public enum NodeStatus
+    {
+        None,
+        Running,
+        Completed,
+        Error,
+        Warning
+    }
+
+    public class WorkflowNodeEventArgs
+    {
+        public string NodeId { get; set; } = "";
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double DeltaX { get; set; }
+        public double DeltaY { get; set; }
+    }
+
+    private string GetNodeTypeClass()
+    {
+        return NodeType switch
+        {
+            NodeTypeCategory.Email => "email-node",
+            NodeTypeCategory.AI => "ai-node",
+            NodeTypeCategory.Utility => "utility-node",
+            NodeTypeCategory.Router => "router-node",
+            NodeTypeCategory.Integration => "integration-node",
+            _ => "utility-node"
+        };
+    }
+
+    private string GetNodeIcon()
+    {
+        return NodeType switch
+        {
+            NodeTypeCategory.Email => "bi bi-envelope",
+            NodeTypeCategory.AI => "bi bi-robot",
+            NodeTypeCategory.Utility => "bi bi-tools",
+            NodeTypeCategory.Router => "bi bi-share",
+            NodeTypeCategory.Integration => "bi bi-diagram-3",
+            _ => "bi bi-gear"
+        };
+    }
+
+    private string GetStatusClass()
+    {
+        return Status switch
+        {
+            NodeStatus.Running => "status-running",
+            NodeStatus.Completed => "status-completed",
+            NodeStatus.Error => "status-error",
+            NodeStatus.Warning => "status-warning",
+            _ => ""
+        };
+    }
+
+    private string GetStatusIcon()
+    {
+        return Status switch
+        {
+            NodeStatus.Running => "bi bi-arrow-clockwise spin",
+            NodeStatus.Completed => "bi bi-check-circle",
+            NodeStatus.Error => "bi bi-x-circle",
+            NodeStatus.Warning => "bi bi-exclamation-triangle",
+            _ => ""
+        };
+    }
+
+    private async Task OnClick()
+    {
+        if (!IsBeingDragged)
+        {
+            await OnNodeClicked.InvokeAsync(new WorkflowNodeEventArgs
+            {
+                NodeId = Id,
+                X = PositionX,
+                Y = PositionY
+            });
+        }
+    }
+
+    private async Task OnMouseDown(MouseEventArgs e)
+    {
+        IsBeingDragged = true;
+        dragStartX = PositionX;
+        dragStartY = PositionY;
+        initialMouseX = e.ClientX;
+        initialMouseY = e.ClientY;
+
+        await OnNodeDragStart.InvokeAsync(new WorkflowNodeEventArgs
+        {
+            NodeId = Id,
+            X = PositionX,
+            Y = PositionY
+        });
+
+        // Add global mouse event listeners for dragging
+        await JSRuntime.InvokeVoidAsync("workflowNode.startDrag", DotNetObjectReference.Create(this));
+    }
+
+    [JSInvokable]
+    public async Task OnMouseMove(double clientX, double clientY)
+    {
+        if (IsBeingDragged)
+        {
+            var deltaX = clientX - initialMouseX;
+            var deltaY = clientY - initialMouseY;
+            
+            var newX = dragStartX + deltaX;
+            var newY = dragStartY + deltaY;
+
+            await OnNodeDrag.InvokeAsync(new WorkflowNodeEventArgs
+            {
+                NodeId = Id,
+                X = newX,
+                Y = newY,
+                DeltaX = deltaX,
+                DeltaY = deltaY
+            });
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnMouseUp()
+    {
+        if (IsBeingDragged)
+        {
+            IsBeingDragged = false;
+            
+            await OnNodeDragEnd.InvokeAsync(new WorkflowNodeEventArgs
+            {
+                NodeId = Id,
+                X = PositionX,
+                Y = PositionY
+            });
+        }
+    }
+}

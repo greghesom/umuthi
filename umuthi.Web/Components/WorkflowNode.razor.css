@@ -1,0 +1,250 @@
+/* Base WorkflowNode styles (extending existing styles) */
+.workflow-node {
+    background: white;
+    border: 2px solid #d0d7de;
+    border-radius: 8px;
+    min-width: 160px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    position: relative;
+    user-select: none;
+}
+
+.workflow-node:hover {
+    border-color: #0969da;
+    box-shadow: 0 4px 12px rgba(9, 105, 218, 0.2);
+    transform: translateY(-1px);
+}
+
+.workflow-node.selected {
+    border-color: #0969da;
+    box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.2);
+}
+
+.workflow-node.error {
+    border-color: #cf222e;
+}
+
+/* Node header and content */
+.node-header {
+    padding: 12px 16px;
+    background: #f6f8fa;
+    border-bottom: 1px solid #d0d7de;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #24292f;
+}
+
+.node-content {
+    padding: 12px 16px;
+}
+
+/* Email Node Type */
+.email-node {
+    border-color: #7c3aed;
+}
+
+.email-node .node-header {
+    background: #f6f8fa;
+    color: #7c3aed;
+}
+
+.email-node:hover {
+    border-color: #7c3aed;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+/* AI Node Type */
+.ai-node {
+    border-color: #059669;
+}
+
+.ai-node .node-header {
+    background: #f6f8fa;
+    color: #059669;
+}
+
+.ai-node:hover {
+    border-color: #059669;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+}
+
+/* Utility Node Type */
+.utility-node {
+    border-color: #0369a1;
+}
+
+.utility-node .node-header {
+    background: #f6f8fa;
+    color: #0369a1;
+}
+
+.utility-node:hover {
+    border-color: #0369a1;
+    box-shadow: 0 4px 12px rgba(3, 105, 161, 0.2);
+}
+
+/* Router Node Type */
+.router-node {
+    border-color: #dc2626;
+}
+
+.router-node .node-header {
+    background: #f6f8fa;
+    color: #dc2626;
+}
+
+.router-node:hover {
+    border-color: #dc2626;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+/* Integration Node Type */
+.integration-node {
+    border-color: #ea580c;
+}
+
+.integration-node .node-header {
+    background: #f6f8fa;
+    color: #ea580c;
+}
+
+.integration-node:hover {
+    border-color: #ea580c;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+}
+
+/* Error Badge */
+.node-error-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    background: #cf222e;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    z-index: 15;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Status Indicator */
+.node-status-indicator {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    z-index: 15;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.status-running {
+    background: #0969da;
+    color: white;
+}
+
+.status-completed {
+    background: #1f883d;
+    color: white;
+}
+
+.status-error {
+    background: #cf222e;
+    color: white;
+}
+
+.status-warning {
+    background: #fb8500;
+    color: white;
+}
+
+/* Spinning animation for running status */
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Connection points */
+.workflow-node::before,
+.workflow-node::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 2px solid #d0d7de;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.workflow-node::before {
+    top: 50%;
+    left: -8px;
+    transform: translateY(-50%);
+}
+
+.workflow-node::after {
+    top: 50%;
+    right: -8px;
+    transform: translateY(-50%);
+}
+
+.workflow-node:hover::before,
+.workflow-node:hover::after {
+    opacity: 1;
+}
+
+/* Dragging state */
+.workflow-node[style*="z-index: 1000"] {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    transform: scale(1.02);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .workflow-node {
+        min-width: 140px;
+    }
+    
+    .node-header {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .node-content {
+        padding: 10px 12px;
+    }
+    
+    .node-error-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
+    }
+    
+    .node-status-indicator {
+        width: 14px;
+        height: 14px;
+        font-size: 7px;
+    }
+}

@@ -23,6 +23,7 @@
     <ProjectReference Include="..\umuthi.Domain\umuthi.Domain.csproj" />
     <ProjectReference Include="..\umuthi.Application\umuthi.Application.csproj" />
     <ProjectReference Include="..\umuthi.Infrastructure\umuthi.Infrastructure.csproj" />
+    <ProjectReference Include="..\umuthi.Web\umuthi.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>
