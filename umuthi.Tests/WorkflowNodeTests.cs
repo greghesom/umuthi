@@ -15,6 +15,8 @@ public class WorkflowNodeTests
         var utilityType = WorkflowNode.NodeTypeCategory.Utility;
         var routerType = WorkflowNode.NodeTypeCategory.Router;
         var integrationType = WorkflowNode.NodeTypeCategory.Integration;
+        var sheetType = WorkflowNode.NodeTypeCategory.Sheet;
+        var gmailType = WorkflowNode.NodeTypeCategory.Gmail;
 
         // Assert
         Assert.AreEqual("Email", emailType.ToString());
@@ -22,6 +24,8 @@ public class WorkflowNodeTests
         Assert.AreEqual("Utility", utilityType.ToString());
         Assert.AreEqual("Router", routerType.ToString());
         Assert.AreEqual("Integration", integrationType.ToString());
+        Assert.AreEqual("Sheet", sheetType.ToString());
+        Assert.AreEqual("Gmail", gmailType.ToString());
     }
 
     [TestMethod]
@@ -69,7 +73,7 @@ public class WorkflowNodeTests
         // This test verifies that all required node types from the issue are supported
         // Arrange & Act & Assert
         var allTypes = Enum.GetValues<WorkflowNode.NodeTypeCategory>();
-        var expectedTypes = new[] { "Email", "AI", "Utility", "Router", "Integration" };
+        var expectedTypes = new[] { "Email", "AI", "Utility", "Router", "Integration", "Sheet", "Gmail" };
         
         foreach (var expectedType in expectedTypes)
         {

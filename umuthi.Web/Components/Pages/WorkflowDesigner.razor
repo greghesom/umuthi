@@ -661,21 +661,21 @@ else
 
     private double GetConnectionPointX(WorkflowNodeModel node, string port)
     {
-        // Assuming node width of ~160px based on CSS min-width
-        const double nodeWidth = 160;
+        // For circular nodes (80px diameter)
+        const double nodeCenterX = 40; // 80px diameter / 2
         return port switch
         {
-            "input" => node.PositionX, // Left side
-            "output" => node.PositionX + nodeWidth, // Right side
-            _ => node.PositionX + nodeWidth / 2 // Center
+            "input" => node.PositionX, // Left side of circle
+            "output" => node.PositionX + 80, // Right side of circle  
+            _ => node.PositionX + nodeCenterX // Center
         };
     }
 
     private double GetConnectionPointY(WorkflowNodeModel node, string port)
     {
-        // Assuming node height of ~80px based on typical node structure
-        const double nodeHeight = 80;
-        return node.PositionY + nodeHeight / 2; // Center vertically
+        // For circular nodes (80px diameter)
+        const double nodeCenterY = 40; // 80px diameter / 2
+        return node.PositionY + nodeCenterY; // Center vertically
     }
 
     private Task OnConnectionClicked(ConnectionLine.ConnectionEventArgs args)
