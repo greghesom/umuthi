@@ -2,36 +2,49 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 
-<div class="workflow-node @GetNodeTypeClass() @(IsSelected ? "selected" : "") @(HasError ? "error" : "")"
+<div class="workflow-node-container" 
      style="position: absolute; top: @(PositionY)px; left: @(PositionX)px; @(IsBeingDragged ? "z-index: 1000;" : "")"
      @onmousedown="OnMouseDown"
      @onclick="OnClick"
      @oncontextmenu="OnContextMenu"
      @oncontextmenu:preventDefault="true">
     
-    <!-- Error Badge -->
-    @if (HasError)
-    {
-        <div class="node-error-badge">
-            <i class="bi bi-exclamation-triangle"></i>
+    <!-- Circular Node -->
+    <div class="workflow-node @GetNodeTypeClass() @(IsSelected ? "selected" : "") @(HasError ? "error" : "") @(Status == NodeStatus.Running ? "running" : "")">
+        <!-- Error Badge -->
+        @if (HasError)
+        {
+            <div class="node-error-badge">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+        }
+        
+        <!-- Status Indicator -->
+        @if (Status != NodeStatus.None)
+        {
+            <div class="node-status-indicator @GetStatusClass()">
+                <i class="@GetStatusIcon()"></i>
+            </div>
+        }
+        
+        <!-- Filter Badge (for conditional nodes like Router) -->
+        @if (NodeType == NodeTypeCategory.Router)
+        {
+            <div class="node-filter-badge">
+                <i class="bi bi-funnel"></i>
+            </div>
+        }
+        
+        <!-- Node Icon -->
+        <div class="node-icon">
+            <i class="@GetNodeIcon()"></i>
         </div>
-    }
-    
-    <!-- Status Indicator -->
-    @if (Status != NodeStatus.None)
-    {
-        <div class="node-status-indicator @GetStatusClass()">
-            <i class="@GetStatusIcon()"></i>
-        </div>
-    }
-    
-    <div class="node-header">
-        <i class="@GetNodeIcon()"></i>
-        <span>@Label</span>
     </div>
     
-    <div class="node-content">
-        <small class="text-muted">@Description</small>
+    <!-- Node Label (below the circle) -->
+    <div class="node-label">
+        <div class="node-label-title">@Label</div>
+        <div class="node-label-description">@Description</div>
     </div>
 </div>
 
@@ -63,7 +76,9 @@
         AI,
         Utility,
         Router,
-        Integration
+        Integration,
+        Sheet,
+        Gmail
     }
 
     public enum NodeStatus
@@ -100,6 +115,8 @@
             NodeTypeCategory.Utility => "utility-node",
             NodeTypeCategory.Router => "router-node",
             NodeTypeCategory.Integration => "integration-node",
+            NodeTypeCategory.Sheet => "sheet-node",
+            NodeTypeCategory.Gmail => "gmail-node",
             _ => "utility-node"
         };
     }
@@ -113,6 +130,8 @@
             NodeTypeCategory.Utility => "bi bi-tools",
             NodeTypeCategory.Router => "bi bi-share",
             NodeTypeCategory.Integration => "bi bi-diagram-3",
+            NodeTypeCategory.Sheet => "bi bi-table",
+            NodeTypeCategory.Gmail => "bi bi-google",
             _ => "bi bi-gear"
         };
     }
