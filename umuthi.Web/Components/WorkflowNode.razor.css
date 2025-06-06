@@ -1,141 +1,123 @@
-/* Base WorkflowNode styles (extending existing styles) */
-.workflow-node {
-    background: white;
-    border: 2px solid #d0d7de;
-    border-radius: 8px;
-    min-width: 160px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Make.com Style Circular Workflow Nodes */
+
+/* Container for the entire node (circle + label) */
+.workflow-node-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    z-index: 10;
-    position: relative;
     user-select: none;
+    transition: transform 0.2s ease;
+    z-index: 10;
 }
 
-.workflow-node:hover {
-    border-color: #0969da;
-    box-shadow: 0 4px 12px rgba(9, 105, 218, 0.2);
-    transform: translateY(-1px);
-}
-
-.workflow-node.selected {
-    border-color: #0969da;
-    box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.2);
-}
-
-.workflow-node.error {
-    border-color: #cf222e;
-}
-
-/* Node header and content */
-.node-header {
-    padding: 12px 16px;
-    background: #f6f8fa;
-    border-bottom: 1px solid #d0d7de;
-    border-radius: 6px 6px 0 0;
+/* Main circular node */
+.workflow-node {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    overflow: visible;
+}
+
+/* Hover effect - scale to 105% */
+.workflow-node-container:hover .workflow-node {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Selected state - scale to 110% with blue outline */
+.workflow-node.selected {
+    transform: scale(1.1);
+    border: 3px solid #007bff;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2), 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Running animation - pulse effect */
+.workflow-node.running {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+}
+
+/* Node Icon */
+.node-icon {
+    font-size: 24px;
+    color: white;
+    z-index: 2;
+}
+
+/* Node Label (below circle) */
+.node-label {
+    margin-top: 8px;
+    text-align: center;
+    max-width: 120px;
+    z-index: 1;
+}
+
+.node-label-title {
+    font-size: 12px;
     font-weight: 600;
-    font-size: 14px;
     color: #24292f;
+    line-height: 1.2;
+    margin-bottom: 2px;
 }
 
-.node-content {
-    padding: 12px 16px;
+.node-label-description {
+    font-size: 10px;
+    color: #656d76;
+    line-height: 1.2;
 }
 
-/* Email Node Type */
-.email-node {
-    border-color: #7c3aed;
-}
-
-.email-node .node-header {
-    background: #f6f8fa;
-    color: #7c3aed;
-}
-
-.email-node:hover {
-    border-color: #7c3aed;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
-}
-
-/* AI Node Type */
-.ai-node {
-    border-color: #059669;
-}
-
-.ai-node .node-header {
-    background: #f6f8fa;
-    color: #059669;
-}
-
-.ai-node:hover {
-    border-color: #059669;
-    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
-}
-
-/* Utility Node Type */
-.utility-node {
-    border-color: #0369a1;
-}
-
-.utility-node .node-header {
-    background: #f6f8fa;
-    color: #0369a1;
-}
-
-.utility-node:hover {
-    border-color: #0369a1;
-    box-shadow: 0 4px 12px rgba(3, 105, 161, 0.2);
-}
-
-/* Router Node Type */
-.router-node {
-    border-color: #dc2626;
-}
-
-.router-node .node-header {
-    background: #f6f8fa;
-    color: #dc2626;
-}
-
-.router-node:hover {
-    border-color: #dc2626;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
-}
-
-/* Integration Node Type */
-.integration-node {
-    border-color: #ea580c;
-}
-
-.integration-node .node-header {
-    background: #f6f8fa;
-    color: #ea580c;
-}
-
-.integration-node:hover {
-    border-color: #ea580c;
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
-}
-
-/* Error Badge */
+/* Error Badge (top-right) */
 .node-error-badge {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 20px;
-    height: 20px;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
     background: #cf222e;
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 8px;
     z-index: 15;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Filter Badge (bottom-right) for conditional nodes */
+.node-filter-badge {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    background: #fb8500;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    z-index: 15;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Status Indicator */
@@ -184,7 +166,44 @@
     to { transform: rotate(360deg); }
 }
 
-/* Connection points */
+/* ========== NODE TYPE GRADIENTS ========== */
+
+/* Email nodes (red gradient: #ff6b6b to #ff5252) */
+.email-node {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+}
+
+/* Utility nodes (purple gradient: #9b59b6 to #8e44ad) */
+.utility-node {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+/* AI nodes (green gradient: #2ecc71 to #27ae60) */
+.ai-node {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+/* Router nodes (teal gradient: #95e1d3 to #74c69d) */
+.router-node {
+    background: linear-gradient(135deg, #95e1d3 0%, #74c69d 100%);
+}
+
+/* Integration nodes (blue gradient: #3498db to #2980b9) */
+.integration-node {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+/* Sheet nodes (blue gradient: #3498db to #2980b9) */
+.sheet-node {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+/* Gmail nodes (dark red gradient: #e74c3c to #c0392b) */
+.gmail-node {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+/* Connection points (input/output) */
 .workflow-node::before,
 .workflow-node::after {
     content: '';
@@ -216,7 +235,7 @@
 }
 
 /* Dragging state */
-.workflow-node[style*="z-index: 1000"] {
+.workflow-node-container[style*="z-index: 1000"] .workflow-node {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     transform: scale(1.02);
 }
@@ -224,27 +243,33 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .workflow-node {
-        min-width: 140px;
+        width: 70px;
+        height: 70px;
     }
     
-    .node-header {
-        padding: 10px 12px;
-        font-size: 13px;
+    .node-icon {
+        font-size: 20px;
     }
     
-    .node-content {
-        padding: 10px 12px;
+    .node-label-title {
+        font-size: 11px;
     }
     
-    .node-error-badge {
-        width: 18px;
-        height: 18px;
+    .node-label-description {
         font-size: 9px;
     }
-    
-    .node-status-indicator {
-        width: 14px;
-        height: 14px;
-        font-size: 7px;
-    }
+}
+
+/* Performance optimizations */
+.workflow-node-container {
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Smooth transitions for all interactions */
+.workflow-node,
+.node-error-badge,
+.node-filter-badge,
+.node-status-indicator {
+    will-change: transform;
 }
