@@ -63,6 +63,7 @@ else
                                   HasError="@node.HasError"
                                   Status="@node.Status"
                                   OnNodeClicked="OnNodeClicked"
+                                  OnNodeDoubleClicked="OnNodeDoubleClicked"
                                   OnNodeDragStart="OnNodeDragStart"
                                   OnNodeDrag="OnNodeDrag"
                                   OnNodeDragEnd="OnNodeDragEnd"
@@ -485,6 +486,15 @@ else
         selectedNodeId = args.NodeId;
         StateHasChanged();
         Logger.LogInformation("Node clicked: {NodeId}", args.NodeId);
+        return Task.CompletedTask;
+    }
+    
+    private Task OnNodeDoubleClicked(WorkflowNode.WorkflowNodeEventArgs args)
+    {
+        selectedNodeId = args.NodeId;
+        showConfigPanel = true;
+        StateHasChanged();
+        Logger.LogInformation("Node double-clicked: {NodeId} - Opening configuration panel", args.NodeId);
         return Task.CompletedTask;
     }
 

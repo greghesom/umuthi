@@ -164,4 +164,53 @@ public class NodeConfigPanelTests
         Assert.AreEqual(120, model.TimeoutSeconds);
         Assert.AreEqual(3, model.RetryCount);
     }
+
+    [TestMethod]
+    public void NodeConfigurationModel_CustomConfiguration_Should_AcceptValidJson()
+    {
+        // Arrange
+        var model = new NodeConfigPanel.NodeConfigurationModel();
+        var validJson = """
+        {
+            "customProperty": "value",
+            "nestedObject": {
+                "property1": "value1",
+                "property2": 123
+            },
+            "arrayProperty": [1, 2, 3]
+        }
+        """;
+
+        // Act
+        model.CustomConfiguration = validJson;
+
+        // Assert
+        Assert.AreEqual(validJson, model.CustomConfiguration);
+    }
+
+    [TestMethod]
+    public void NodeConfigurationModel_Validation_Should_EnforceConstraints()
+    {
+        // Arrange
+        var model = new NodeConfigPanel.NodeConfigurationModel
+        {
+            Name = "",  // Required field empty
+            TimeoutSeconds = 5000,  // Out of range
+            RetryCount = 10,  // Out of range
+            MaxInputConnections = 15  // Out of range
+        };
+
+        // Act
+        var context = new System.ComponentModel.DataAnnotations.ValidationContext(model);
+        var results = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+        var isValid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(model, context, results, true);
+
+        // Assert
+        Assert.IsFalse(isValid);
+        Assert.IsTrue(results.Count > 0);
+        Assert.IsTrue(results.Any(r => r.ErrorMessage?.Contains("Node name is required") == true));
+        Assert.IsTrue(results.Any(r => r.ErrorMessage?.Contains("Timeout must be between") == true));
+        Assert.IsTrue(results.Any(r => r.ErrorMessage?.Contains("Retry count must be between") == true));
+        Assert.IsTrue(results.Any(r => r.ErrorMessage?.Contains("Max input connections must be between") == true));
+    }
 }

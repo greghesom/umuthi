@@ -50,6 +50,40 @@
                     @RenderNodeTypeConfiguration()
                 </div>
                 
+                <!-- Custom JSON Configuration -->
+                @if (showAdvancedOptions)
+                {
+                    <div class="config-section">
+                        <h6><i class="bi bi-code-slash me-2"></i>JSON Configuration</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Raw JSON Configuration</label>
+                            <InputTextArea class="form-control font-monospace" @bind-Value="ConfigurationModel.CustomConfiguration" 
+                                          @oninput="OnFieldChanged" rows="6" />
+                            <div class="form-text">Advanced JSON configuration for this node</div>
+                            <ValidationMessage For="@(() => ConfigurationModel.CustomConfiguration)" />
+                            
+                            @if (!string.IsNullOrEmpty(jsonValidationError))
+                            {
+                                <div class="alert alert-danger mt-2 p-2">
+                                    <small><i class="bi bi-exclamation-triangle me-1"></i>@jsonValidationError</small>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" @onclick="ValidateJson">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Validate JSON
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="FormatJson">
+                                <i class="bi bi-code me-1"></i>
+                                Format JSON
+                            </button>
+                        </div>
+                    </div>
+                }
+                
                 <!-- Connection Settings -->
                 <div class="config-section">
                     <h6><i class="bi bi-diagram-3 me-2"></i>Connection Settings</h6>
@@ -136,6 +170,7 @@
     private bool showAdvancedOptions = false;
     private Timer? autoSaveTimer;
     private bool hasUnsavedChanges = false;
+    private string jsonValidationError = "";
     
     protected override void OnParametersSet()
     {
@@ -173,18 +208,74 @@
         {
             try
             {
-                var existingConfig = JsonSerializer.Deserialize<Dictionary<string, object>>(SelectedNode.Configuration);
+                var existingConfig = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(SelectedNode.Configuration);
                 if (existingConfig != null)
                 {
                     // Populate model from existing configuration
-                    // This would be more sophisticated in a real implementation
+                    PopulateModelFromConfiguration(existingConfig);
+                    
+                    // Set the raw JSON for advanced editing
+                    ConfigurationModel.CustomConfiguration = JsonSerializer.Serialize(existingConfig, new JsonSerializerOptions { WriteIndented = true });
                 }
             }
             catch (JsonException)
             {
-                // Handle invalid JSON gracefully
+                // Handle invalid JSON gracefully - just show the raw JSON
+                ConfigurationModel.CustomConfiguration = SelectedNode.Configuration;
             }
         }
+        
+        hasUnsavedChanges = false;
+    }
+    
+    private void PopulateModelFromConfiguration(Dictionary<string, JsonElement> config)
+    {
+        // Helper method to safely get values from JSON configuration
+        if (config.TryGetValue("isEnabled", out var isEnabled) && isEnabled.ValueKind == JsonValueKind.True)
+            ConfigurationModel.IsEnabled = isEnabled.GetBoolean();
+            
+        if (config.TryGetValue("maxInputConnections", out var maxInput) && maxInput.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.MaxInputConnections = maxInput.GetInt32();
+            
+        if (config.TryGetValue("maxOutputConnections", out var maxOutput) && maxOutput.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.MaxOutputConnections = maxOutput.GetInt32();
+            
+        if (config.TryGetValue("timeoutSeconds", out var timeout) && timeout.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.TimeoutSeconds = timeout.GetInt32();
+            
+        if (config.TryGetValue("retryCount", out var retry) && retry.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.RetryCount = retry.GetInt32();
+            
+        // Node-type specific configurations
+        if (config.TryGetValue("inputSource", out var inputSource) && inputSource.ValueKind == JsonValueKind.String)
+            ConfigurationModel.InputSource = inputSource.GetString() ?? "";
+            
+        if (config.TryGetValue("dataFormat", out var dataFormat) && dataFormat.ValueKind == JsonValueKind.String)
+            ConfigurationModel.DataFormat = dataFormat.GetString() ?? "";
+            
+        if (config.TryGetValue("processingAlgorithm", out var algorithm) && algorithm.ValueKind == JsonValueKind.String)
+            ConfigurationModel.ProcessingAlgorithm = algorithm.GetString() ?? "";
+            
+        if (config.TryGetValue("batchSize", out var batchSize) && batchSize.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.BatchSize = batchSize.GetInt32();
+            
+        if (config.TryGetValue("outputDestination", out var outputDest) && outputDest.ValueKind == JsonValueKind.String)
+            ConfigurationModel.OutputDestination = outputDest.GetString() ?? "";
+            
+        if (config.TryGetValue("outputPath", out var outputPath) && outputPath.ValueKind == JsonValueKind.String)
+            ConfigurationModel.OutputPath = outputPath.GetString() ?? "";
+            
+        if (config.TryGetValue("decisionLogic", out var decisionLogic) && decisionLogic.ValueKind == JsonValueKind.String)
+            ConfigurationModel.DecisionLogic = decisionLogic.GetString() ?? "";
+            
+        if (config.TryGetValue("comparisonValue", out var comparisonValue) && comparisonValue.ValueKind == JsonValueKind.String)
+            ConfigurationModel.ComparisonValue = comparisonValue.GetString() ?? "";
+            
+        if (config.TryGetValue("triggerType", out var triggerType) && triggerType.ValueKind == JsonValueKind.String)
+            ConfigurationModel.TriggerType = triggerType.GetString() ?? "";
+            
+        if (config.TryGetValue("scheduleCron", out var scheduleCron) && scheduleCron.ValueKind == JsonValueKind.String)
+            ConfigurationModel.ScheduleCron = scheduleCron.GetString() ?? "";
     }
     
     private RenderFragment RenderNodeTypeConfiguration()
@@ -349,6 +440,70 @@
     {
         if (ConfigurationModel.NodeId != null)
         {
+            // Create a comprehensive configuration object
+            var configurationObject = new
+            {
+                // Basic settings
+                isEnabled = ConfigurationModel.IsEnabled,
+                maxInputConnections = ConfigurationModel.MaxInputConnections,
+                maxOutputConnections = ConfigurationModel.MaxOutputConnections,
+                timeoutSeconds = ConfigurationModel.TimeoutSeconds,
+                retryCount = ConfigurationModel.RetryCount,
+                
+                // Node type specific settings
+                inputSource = ConfigurationModel.InputSource,
+                dataFormat = ConfigurationModel.DataFormat,
+                processingAlgorithm = ConfigurationModel.ProcessingAlgorithm,
+                batchSize = ConfigurationModel.BatchSize,
+                outputDestination = ConfigurationModel.OutputDestination,
+                outputPath = ConfigurationModel.OutputPath,
+                decisionLogic = ConfigurationModel.DecisionLogic,
+                comparisonValue = ConfigurationModel.ComparisonValue,
+                triggerType = ConfigurationModel.TriggerType,
+                scheduleCron = ConfigurationModel.ScheduleCron,
+                
+                // Metadata
+                lastModified = DateTime.UtcNow,
+                nodeType = ConfigurationModel.NodeType.ToString(),
+                moduleType = ConfigurationModel.ModuleType.ToString()
+            };
+            
+            // If there's custom JSON configuration, try to merge it
+            if (!string.IsNullOrEmpty(ConfigurationModel.CustomConfiguration))
+            {
+                try
+                {
+                    var customConfig = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(ConfigurationModel.CustomConfiguration);
+                    if (customConfig != null)
+                    {
+                        // Merge custom configuration with structured configuration
+                        var mergedConfig = JsonSerializer.Serialize(configurationObject);
+                        var structuredConfig = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(mergedConfig);
+                        
+                        if (structuredConfig != null)
+                        {
+                            // Add custom properties that don't conflict
+                            foreach (var kvp in customConfig)
+                            {
+                                if (!structuredConfig.ContainsKey(kvp.Key))
+                                {
+                                    structuredConfig[kvp.Key] = kvp.Value;
+                                }
+                            }
+                            
+                            var finalConfig = JsonSerializer.Serialize(structuredConfig, new JsonSerializerOptions { WriteIndented = true });
+                            await OnConfigurationChanged.InvokeAsync(ConfigurationModel);
+                            return;
+                        }
+                    }
+                }
+                catch (JsonException)
+                {
+                    // If custom JSON is invalid, just use the structured configuration
+                }
+            }
+            
+            // Use the structured configuration
             await OnConfigurationChanged.InvokeAsync(ConfigurationModel);
         }
     }
@@ -378,6 +533,53 @@
                 StateHasChanged();
             });
         }
+    }
+    
+    private void ValidateJson()
+    {
+        jsonValidationError = "";
+        
+        if (string.IsNullOrEmpty(ConfigurationModel.CustomConfiguration))
+        {
+            return;
+        }
+        
+        try
+        {
+            JsonDocument.Parse(ConfigurationModel.CustomConfiguration);
+            jsonValidationError = "";
+        }
+        catch (JsonException ex)
+        {
+            jsonValidationError = $"Invalid JSON: {ex.Message}";
+        }
+        
+        StateHasChanged();
+    }
+    
+    private void FormatJson()
+    {
+        if (string.IsNullOrEmpty(ConfigurationModel.CustomConfiguration))
+        {
+            return;
+        }
+        
+        try
+        {
+            var jsonDocument = JsonDocument.Parse(ConfigurationModel.CustomConfiguration);
+            ConfigurationModel.CustomConfiguration = JsonSerializer.Serialize(jsonDocument, new JsonSerializerOptions 
+            { 
+                WriteIndented = true 
+            });
+            jsonValidationError = "";
+            OnFieldChanged();
+        }
+        catch (JsonException ex)
+        {
+            jsonValidationError = $"Cannot format invalid JSON: {ex.Message}";
+        }
+        
+        StateHasChanged();
     }
     
     // Supporting classes

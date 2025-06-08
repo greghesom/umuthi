@@ -162,3 +162,37 @@
     margin-top: 0.25rem;
     font-style: italic;
 }
+
+/* JSON Editor specific styles */
+.font-monospace {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.alert {
+    border-radius: 0.375rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Unsaved changes indicator */
+.text-warning .bi-circle-fill {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}

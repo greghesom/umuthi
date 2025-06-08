@@ -6,6 +6,7 @@
      style="position: absolute; top: @(PositionY)px; left: @(PositionX)px; @(IsBeingDragged ? "z-index: 1000;" : "")"
      @onmousedown="OnMouseDown"
      @onclick="OnClick"
+     @ondblclick="OnDoubleClick"
      @oncontextmenu="OnContextMenu"
      @oncontextmenu:preventDefault="true">
     
@@ -59,6 +60,7 @@
     [Parameter] public bool HasError { get; set; } = false;
     [Parameter] public NodeStatus Status { get; set; } = NodeStatus.None;
     [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeClicked { get; set; }
+    [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDoubleClicked { get; set; }
     [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDragStart { get; set; }
     [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDrag { get; set; }
     [Parameter] public EventCallback<WorkflowNodeEventArgs> OnNodeDragEnd { get; set; }
@@ -181,6 +183,16 @@
                 Y = PositionY
             });
         }
+    }
+    
+    private async Task OnDoubleClick()
+    {
+        await OnNodeDoubleClicked.InvokeAsync(new WorkflowNodeEventArgs
+        {
+            NodeId = Id,
+            X = PositionX,
+            Y = PositionY
+        });
     }
 
     private async Task OnMouseDown(MouseEventArgs e)
