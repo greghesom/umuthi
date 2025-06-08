@@ -1,0 +1,164 @@
+.node-config-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    background: white;
+    border-left: 1px solid #dee2e6;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.node-config-panel.visible {
+    transform: translateX(0);
+}
+
+.node-config-panel.hidden {
+    transform: translateX(100%);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa;
+    flex-shrink: 0;
+}
+
+.panel-header h5 {
+    margin: 0;
+    font-weight: 600;
+    color: #495057;
+}
+
+.panel-body {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.config-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.config-section:last-of-type {
+    border-bottom: none;
+}
+
+.config-section h6 {
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.advanced-options {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid #e9ecef;
+}
+
+.panel-footer {
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+    flex-shrink: 0;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+.form-text {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.form-control, .form-select {
+    border-radius: 0.375rem;
+    border: 1px solid #ced4da;
+    font-size: 0.875rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.btn-close:hover {
+    opacity: 0.75;
+}
+
+.validation-summary {
+    margin-bottom: 1rem;
+}
+
+.validation-summary ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.btn-link {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.btn-link:hover {
+    color: #495057;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .node-config-panel {
+        width: 100%;
+        transform: translateX(100%);
+    }
+    
+    .node-config-panel.visible {
+        transform: translateX(0);
+    }
+}
+
+/* Animation for smooth transitions */
+.node-config-panel * {
+    transition: all 0.2s ease;
+}
+
+/* Custom styling for specific input types */
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.form-control[type="number"] {
+    text-align: right;
+}
+
+/* Help text styling */
+.form-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-style: italic;
+}
