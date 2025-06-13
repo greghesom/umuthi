@@ -64,6 +64,7 @@ else
                                   HasError="@node.HasError"
                                   Status="@node.Status"
                                   OnNodeClicked="OnNodeClicked"
+                                  OnNodeDoubleClicked="OnNodeDoubleClicked"
                                   OnNodeDragStart="OnNodeDragStart"
                                   OnNodeDrag="OnNodeDrag"
                                   OnNodeDragEnd="OnNodeDragEnd"
@@ -121,6 +122,13 @@ else
                 MenuItems="contextMenuItems"
                 OnItemSelected="OnContextMenuItemSelected"
                 OnHide="OnContextMenuHide" />
+    
+    <!-- Node Configuration Panel -->
+    <NodeConfigPanel IsVisible="showConfigPanel"
+                    SelectedNodeId="selectedNodeId"
+                    SelectedNode="GetSelectedNodeInfo()"
+                    OnClose="OnCloseConfigPanel"
+                    OnConfigurationChanged="OnNodeConfigurationChanged" />
 }
 
 @code {    [Parameter] public Guid WorkflowId { get; set; }
@@ -150,6 +158,9 @@ else
     private double contextMenuY = 0;
     private string? contextMenuNodeId = null;
     private List<ContextMenu.ContextMenuItem> contextMenuItems = new();
+    
+    // Config panel states
+    private bool showConfigPanel = false;
     
     // Node creation
     private double nextNodeX = 200;
@@ -521,6 +532,15 @@ else
         Logger.LogInformation("Node clicked: {NodeId}", args.NodeId);
         return Task.CompletedTask;
     }
+    
+    private Task OnNodeDoubleClicked(WorkflowNode.WorkflowNodeEventArgs args)
+    {
+        selectedNodeId = args.NodeId;
+        showConfigPanel = true;
+        StateHasChanged();
+        Logger.LogInformation("Node double-clicked: {NodeId} - Opening configuration panel", args.NodeId);
+        return Task.CompletedTask;
+    }
 
     private Task OnNodeDragStart(WorkflowNode.WorkflowNodeEventArgs args)
     {
@@ -637,8 +657,70 @@ else
         if (node != null)
         {
             Logger.LogInformation("Configure node: {NodeId}", nodeId);
-            // Here you would typically open a configuration modal
-            // For now, just log the action
+            selectedNodeId = nodeId;
+            showConfigPanel = true;
+            StateHasChanged();
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private NodeConfigPanel.WorkflowNodeInfo? GetSelectedNodeInfo()
+    {
+        if (string.IsNullOrEmpty(selectedNodeId))
+            return null;
+            
+        var node = workflowNodes.FirstOrDefault(n => n.Id == selectedNodeId);
+        if (node == null)
+            return null;
+            
+        return new NodeConfigPanel.WorkflowNodeInfo
+        {
+            Id = node.Id,
+            Label = node.Label,
+            Description = node.Description,
+            NodeType = ConvertToNodeType(node.NodeType),
+            ModuleType = ModuleType.Custom, // Default for now
+            Configuration = node.Configuration
+        };
+    }
+    
+    private NodeType ConvertToNodeType(WorkflowNode.NodeTypeCategory category)
+    {
+        return category switch
+        {
+            WorkflowNode.NodeTypeCategory.Email => NodeType.Input,
+            WorkflowNode.NodeTypeCategory.Utility => NodeType.Process,
+            WorkflowNode.NodeTypeCategory.Integration => NodeType.Output,
+            WorkflowNode.NodeTypeCategory.Router => NodeType.Decision,
+            WorkflowNode.NodeTypeCategory.AI => NodeType.Process,
+            WorkflowNode.NodeTypeCategory.Sheet => NodeType.Output,
+            WorkflowNode.NodeTypeCategory.Gmail => NodeType.Input,
+            _ => NodeType.Process
+        };
+    }
+    
+    private Task OnCloseConfigPanel()
+    {
+        showConfigPanel = false;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    
+    private Task OnNodeConfigurationChanged(NodeConfigPanel.NodeConfigurationModel config)
+    {
+        var node = workflowNodes.FirstOrDefault(n => n.Id == config.NodeId);
+        if (node != null)
+        {
+            node.Label = config.Name;
+            node.Description = config.Description;
+            
+            // Save configuration as JSON
+            var configJson = System.Text.Json.JsonSerializer.Serialize(config);
+            node.Configuration = configJson;
+            
+            Logger.LogInformation("Updated configuration for node: {NodeId}", config.NodeId);
+            StateHasChanged();
         }
         
         return Task.CompletedTask;
@@ -654,6 +736,7 @@ else
         public double PositionY { get; set; } = 0;
         public bool HasError { get; set; } = false;
         public WorkflowNode.NodeStatus Status { get; set; } = WorkflowNode.NodeStatus.None;
+        public string? Configuration { get; set; }
     }
 
     private void InitializeSampleConnections()

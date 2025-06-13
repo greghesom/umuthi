@@ -1,0 +1,645 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Text.Json
+@using umuthi.Domain.Enums
+@using System.ComponentModel.DataAnnotations
+@implements IDisposable
+
+<div class="node-config-panel @(IsVisible ? "visible" : "hidden")">
+    <div class="panel-header">
+        <h5>
+            <i class="bi bi-gear me-2"></i>
+            Node Configuration
+            @if (hasUnsavedChanges)
+            {
+                <small class="text-warning ms-2">
+                    <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                    Unsaved changes
+                </small>
+            }
+        </h5>
+        <button type="button" class="btn-close" @onclick="OnClose" aria-label="Close"></button>
+    </div>
+    
+    <div class="panel-body">
+        @if (SelectedNode != null)
+        {
+            <EditForm Model="ConfigurationModel" OnValidSubmit="SaveConfiguration">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="alert alert-danger" />
+                
+                <!-- Basic Node Information -->
+                <div class="config-section">
+                    <h6><i class="bi bi-info-circle me-2"></i>Basic Information</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Node Name</label>
+                        <InputText class="form-control" @bind-Value="ConfigurationModel.Name" @oninput="OnFieldChanged" />
+                        <ValidationMessage For="@(() => ConfigurationModel.Name)" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <InputTextArea class="form-control" @bind-Value="ConfigurationModel.Description" @oninput="OnFieldChanged" rows="2" />
+                        <ValidationMessage For="@(() => ConfigurationModel.Description)" />
+                    </div>
+                </div>
+                
+                <!-- Node Type Specific Configuration -->
+                <div class="config-section">
+                    <h6><i class="bi bi-sliders me-2"></i>Configuration</h6>
+                    @RenderNodeTypeConfiguration()
+                </div>
+                
+                <!-- Custom JSON Configuration -->
+                @if (showAdvancedOptions)
+                {
+                    <div class="config-section">
+                        <h6><i class="bi bi-code-slash me-2"></i>JSON Configuration</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Raw JSON Configuration</label>
+                            <InputTextArea class="form-control font-monospace" @bind-Value="ConfigurationModel.CustomConfiguration" 
+                                          @oninput="OnFieldChanged" rows="6" />
+                            <div class="form-text">Advanced JSON configuration for this node</div>
+                            <ValidationMessage For="@(() => ConfigurationModel.CustomConfiguration)" />
+                            
+                            @if (!string.IsNullOrEmpty(jsonValidationError))
+                            {
+                                <div class="alert alert-danger mt-2 p-2">
+                                    <small><i class="bi bi-exclamation-triangle me-1"></i>@jsonValidationError</small>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" @onclick="ValidateJson">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Validate JSON
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="FormatJson">
+                                <i class="bi bi-code me-1"></i>
+                                Format JSON
+                            </button>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Connection Settings -->
+                <div class="config-section">
+                    <h6><i class="bi bi-diagram-3 me-2"></i>Connection Settings</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Max Input Connections</label>
+                        <InputNumber class="form-control" @bind-Value="ConfigurationModel.MaxInputConnections" min="0" max="10" />
+                        <div class="form-text">Maximum number of incoming connections (0 = unlimited)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Max Output Connections</label>
+                        <InputNumber class="form-control" @bind-Value="ConfigurationModel.MaxOutputConnections" min="0" max="10" />
+                        <div class="form-text">Maximum number of outgoing connections (0 = unlimited)</div>
+                    </div>
+                </div>
+                
+                <!-- Advanced Options -->
+                <div class="config-section">
+                    <h6>
+                        <button type="button" class="btn btn-link p-0 text-decoration-none" @onclick="ToggleAdvancedOptions">
+                            <i class="bi @(showAdvancedOptions ? "bi-chevron-down" : "bi-chevron-right") me-2"></i>
+                            Advanced Options
+                        </button>
+                    </h6>
+                    
+                    @if (showAdvancedOptions)
+                    {
+                        <div class="advanced-options">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <InputCheckbox class="form-check-input" @bind-Value="ConfigurationModel.IsEnabled" />
+                                    <label class="form-check-label">Enabled</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Timeout (seconds)</label>
+                                <InputNumber class="form-control" @bind-Value="ConfigurationModel.TimeoutSeconds" min="1" max="3600" />
+                                <div class="form-text">Maximum execution time</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Retry Count</label>
+                                <InputNumber class="form-control" @bind-Value="ConfigurationModel.RetryCount" min="0" max="5" />
+                                <div class="form-text">Number of retry attempts on failure</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                <div class="panel-footer">
+                    <button type="submit" class="btn btn-primary btn-sm me-2">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" @onclick="ResetConfiguration">
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Reset
+                    </button>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <div class="text-muted text-center p-4">
+                <i class="bi bi-info-circle fs-4 d-block mb-2"></i>
+                Select a node to configure its settings
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string? SelectedNodeId { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<NodeConfigurationModel> OnConfigurationChanged { get; set; }
+    
+    // Mock node data - in real implementation this would come from a service
+    [Parameter] public WorkflowNodeInfo? SelectedNode { get; set; }
+    
+    private NodeConfigurationModel ConfigurationModel { get; set; } = new();
+    private bool showAdvancedOptions = false;
+    private Timer? autoSaveTimer;
+    private bool hasUnsavedChanges = false;
+    private string jsonValidationError = "";
+    
+    protected override void OnParametersSet()
+    {
+        if (SelectedNode != null && ConfigurationModel.NodeId != SelectedNode.Id)
+        {
+            LoadNodeConfiguration();
+        }
+    }
+    
+    public void Dispose()
+    {
+        autoSaveTimer?.Dispose();
+    }
+    
+    private void LoadNodeConfiguration()
+    {
+        if (SelectedNode == null) return;
+        
+        ConfigurationModel = new NodeConfigurationModel
+        {
+            NodeId = SelectedNode.Id,
+            Name = SelectedNode.Label,
+            Description = SelectedNode.Description,
+            NodeType = SelectedNode.NodeType,
+            ModuleType = SelectedNode.ModuleType,
+            IsEnabled = true,
+            MaxInputConnections = 0,
+            MaxOutputConnections = 0,
+            TimeoutSeconds = 30,
+            RetryCount = 1
+        };
+        
+        // Load existing configuration if available
+        if (!string.IsNullOrEmpty(SelectedNode.Configuration))
+        {
+            try
+            {
+                var existingConfig = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(SelectedNode.Configuration);
+                if (existingConfig != null)
+                {
+                    // Populate model from existing configuration
+                    PopulateModelFromConfiguration(existingConfig);
+                    
+                    // Set the raw JSON for advanced editing
+                    ConfigurationModel.CustomConfiguration = JsonSerializer.Serialize(existingConfig, new JsonSerializerOptions { WriteIndented = true });
+                }
+            }
+            catch (JsonException)
+            {
+                // Handle invalid JSON gracefully - just show the raw JSON
+                ConfigurationModel.CustomConfiguration = SelectedNode.Configuration;
+            }
+        }
+        
+        hasUnsavedChanges = false;
+    }
+    
+    private void PopulateModelFromConfiguration(Dictionary<string, JsonElement> config)
+    {
+        // Helper method to safely get values from JSON configuration
+        if (config.TryGetValue("isEnabled", out var isEnabled) && isEnabled.ValueKind == JsonValueKind.True)
+            ConfigurationModel.IsEnabled = isEnabled.GetBoolean();
+            
+        if (config.TryGetValue("maxInputConnections", out var maxInput) && maxInput.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.MaxInputConnections = maxInput.GetInt32();
+            
+        if (config.TryGetValue("maxOutputConnections", out var maxOutput) && maxOutput.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.MaxOutputConnections = maxOutput.GetInt32();
+            
+        if (config.TryGetValue("timeoutSeconds", out var timeout) && timeout.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.TimeoutSeconds = timeout.GetInt32();
+            
+        if (config.TryGetValue("retryCount", out var retry) && retry.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.RetryCount = retry.GetInt32();
+            
+        // Node-type specific configurations
+        if (config.TryGetValue("inputSource", out var inputSource) && inputSource.ValueKind == JsonValueKind.String)
+            ConfigurationModel.InputSource = inputSource.GetString() ?? "";
+            
+        if (config.TryGetValue("dataFormat", out var dataFormat) && dataFormat.ValueKind == JsonValueKind.String)
+            ConfigurationModel.DataFormat = dataFormat.GetString() ?? "";
+            
+        if (config.TryGetValue("processingAlgorithm", out var algorithm) && algorithm.ValueKind == JsonValueKind.String)
+            ConfigurationModel.ProcessingAlgorithm = algorithm.GetString() ?? "";
+            
+        if (config.TryGetValue("batchSize", out var batchSize) && batchSize.ValueKind == JsonValueKind.Number)
+            ConfigurationModel.BatchSize = batchSize.GetInt32();
+            
+        if (config.TryGetValue("outputDestination", out var outputDest) && outputDest.ValueKind == JsonValueKind.String)
+            ConfigurationModel.OutputDestination = outputDest.GetString() ?? "";
+            
+        if (config.TryGetValue("outputPath", out var outputPath) && outputPath.ValueKind == JsonValueKind.String)
+            ConfigurationModel.OutputPath = outputPath.GetString() ?? "";
+            
+        if (config.TryGetValue("decisionLogic", out var decisionLogic) && decisionLogic.ValueKind == JsonValueKind.String)
+            ConfigurationModel.DecisionLogic = decisionLogic.GetString() ?? "";
+            
+        if (config.TryGetValue("comparisonValue", out var comparisonValue) && comparisonValue.ValueKind == JsonValueKind.String)
+            ConfigurationModel.ComparisonValue = comparisonValue.GetString() ?? "";
+            
+        if (config.TryGetValue("triggerType", out var triggerType) && triggerType.ValueKind == JsonValueKind.String)
+            ConfigurationModel.TriggerType = triggerType.GetString() ?? "";
+            
+        if (config.TryGetValue("scheduleCron", out var scheduleCron) && scheduleCron.ValueKind == JsonValueKind.String)
+            ConfigurationModel.ScheduleCron = scheduleCron.GetString() ?? "";
+    }
+    
+    private RenderFragment RenderNodeTypeConfiguration()
+    {
+        return SelectedNode?.NodeType switch
+        {
+            NodeType.Input => RenderInputNodeConfiguration(),
+            NodeType.Process => RenderProcessNodeConfiguration(),
+            NodeType.Output => RenderOutputNodeConfiguration(),
+            NodeType.Decision => RenderDecisionNodeConfiguration(),
+            NodeType.Trigger => RenderTriggerNodeConfiguration(),
+            _ => RenderGenericConfiguration()
+        };
+    }
+    
+    private RenderFragment RenderInputNodeConfiguration()
+    {
+        return @<div>
+            <div class="mb-3">
+                <label class="form-label">Input Source</label>
+                <InputSelect class="form-select" @bind-Value="ConfigurationModel.InputSource" @onchange="OnFieldChanged">
+                    <option value="">Select source...</option>
+                    <option value="file">File Upload</option>
+                    <option value="api">API Endpoint</option>
+                    <option value="database">Database Query</option>
+                    <option value="webhook">Webhook</option>
+                </InputSelect>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Data Format</label>
+                <InputSelect class="form-select" @bind-Value="ConfigurationModel.DataFormat" @onchange="OnFieldChanged">
+                    <option value="json">JSON</option>
+                    <option value="xml">XML</option>
+                    <option value="csv">CSV</option>
+                    <option value="text">Plain Text</option>
+                    <option value="binary">Binary</option>
+                </InputSelect>
+            </div>
+        </div>;
+    }
+    
+    private RenderFragment RenderProcessNodeConfiguration()
+    {
+        return @<div>
+            <div class="mb-3">
+                <label class="form-label">Processing Algorithm</label>
+                <InputSelect class="form-select" @bind-Value="ConfigurationModel.ProcessingAlgorithm">
+                    <option value="">Select algorithm...</option>
+                    <option value="transform">Data Transform</option>
+                    <option value="filter">Data Filter</option>
+                    <option value="aggregate">Data Aggregation</option>
+                    <option value="validate">Data Validation</option>
+                </InputSelect>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Batch Size</label>
+                <InputNumber class="form-control" @bind-Value="ConfigurationModel.BatchSize" min="1" max="1000" />
+                <div class="form-text">Number of items to process at once</div>
+            </div>
+        </div>;
+    }
+    
+    private RenderFragment RenderOutputNodeConfiguration()
+    {
+        return @<div>
+            <div class="mb-3">
+                <label class="form-label">Output Destination</label>
+                <InputSelect class="form-select" @bind-Value="ConfigurationModel.OutputDestination">
+                    <option value="">Select destination...</option>
+                    <option value="file">File System</option>
+                    <option value="api">API Endpoint</option>
+                    <option value="database">Database</option>
+                    <option value="email">Email</option>
+                    <option value="webhook">Webhook</option>
+                </InputSelect>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Output Path/URL</label>
+                @if (ConfigurationModel.OutputDestination == "email")
+                {
+                    <InputText class="form-control" @bind-Value="ConfigurationModel.OutputPath" @oninput="OnFieldChanged" 
+                              type="email" placeholder="example@domain.com" />
+                    <div class="form-text">Email address to send the output to</div>
+                }
+                else
+                {
+                    <InputText class="form-control" @bind-Value="ConfigurationModel.OutputPath" @oninput="OnFieldChanged" />
+                    <div class="form-text">Where to send the output data</div>
+                }
+                <ValidationMessage For="@(() => ConfigurationModel.OutputPath)" />
+            </div>
+        </div>;
+    }
+    
+    private RenderFragment RenderDecisionNodeConfiguration()
+    {
+        return @<div>
+            <div class="mb-3">
+                <label class="form-label">Decision Logic</label>
+                <InputSelect class="form-select" @bind-Value="ConfigurationModel.DecisionLogic">
+                    <option value="">Select logic...</option>
+                    <option value="equals">Equals</option>
+                    <option value="contains">Contains</option>
+                    <option value="greater">Greater Than</option>
+                    <option value="less">Less Than</option>
+                    <option value="regex">Regular Expression</option>
+                </InputSelect>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Comparison Value</label>
+                <InputText class="form-control" @bind-Value="ConfigurationModel.ComparisonValue" />
+            </div>
+        </div>;
+    }
+    
+    private RenderFragment RenderTriggerNodeConfiguration()
+    {
+        return @<div>
+            <div class="mb-3">
+                <label class="form-label">Trigger Type</label>
+                <InputSelect class="form-select" @bind-Value="ConfigurationModel.TriggerType">
+                    <option value="">Select type...</option>
+                    <option value="schedule">Scheduled</option>
+                    <option value="manual">Manual</option>
+                    <option value="webhook">Webhook</option>
+                    <option value="file">File Watcher</option>
+                </InputSelect>
+            </div>
+            
+            @if (ConfigurationModel.TriggerType == "schedule")
+            {
+                <div class="mb-3">
+                    <label class="form-label">Schedule (Cron Expression)</label>
+                    <InputText class="form-control" @bind-Value="ConfigurationModel.ScheduleCron" />
+                    <div class="form-text">e.g., "0 0 * * *" for daily at midnight</div>
+                </div>
+            }
+        </div>;
+    }
+    
+    private RenderFragment RenderGenericConfiguration()
+    {
+        return @<div>
+            <div class="mb-3">
+                <label class="form-label">Custom Configuration</label>
+                <InputTextArea class="form-control" @bind-Value="ConfigurationModel.CustomConfiguration" rows="4" />
+                <div class="form-text">JSON configuration for this node type</div>
+            </div>
+        </div>;
+    }
+    
+    private void ToggleAdvancedOptions()
+    {
+        showAdvancedOptions = !showAdvancedOptions;
+    }
+    
+    private async Task SaveConfiguration()
+    {
+        if (ConfigurationModel.NodeId != null)
+        {
+            // Create a comprehensive configuration object
+            var configurationObject = new
+            {
+                // Basic settings
+                isEnabled = ConfigurationModel.IsEnabled,
+                maxInputConnections = ConfigurationModel.MaxInputConnections,
+                maxOutputConnections = ConfigurationModel.MaxOutputConnections,
+                timeoutSeconds = ConfigurationModel.TimeoutSeconds,
+                retryCount = ConfigurationModel.RetryCount,
+                
+                // Node type specific settings
+                inputSource = ConfigurationModel.InputSource,
+                dataFormat = ConfigurationModel.DataFormat,
+                processingAlgorithm = ConfigurationModel.ProcessingAlgorithm,
+                batchSize = ConfigurationModel.BatchSize,
+                outputDestination = ConfigurationModel.OutputDestination,
+                outputPath = ConfigurationModel.OutputPath,
+                decisionLogic = ConfigurationModel.DecisionLogic,
+                comparisonValue = ConfigurationModel.ComparisonValue,
+                triggerType = ConfigurationModel.TriggerType,
+                scheduleCron = ConfigurationModel.ScheduleCron,
+                
+                // Metadata
+                lastModified = DateTime.UtcNow,
+                nodeType = ConfigurationModel.NodeType.ToString(),
+                moduleType = ConfigurationModel.ModuleType.ToString()
+            };
+            
+            // If there's custom JSON configuration, try to merge it
+            if (!string.IsNullOrEmpty(ConfigurationModel.CustomConfiguration))
+            {
+                try
+                {
+                    var customConfig = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(ConfigurationModel.CustomConfiguration);
+                    if (customConfig != null)
+                    {
+                        // Merge custom configuration with structured configuration
+                        var mergedConfig = JsonSerializer.Serialize(configurationObject);
+                        var structuredConfig = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(mergedConfig);
+                        
+                        if (structuredConfig != null)
+                        {
+                            // Add custom properties that don't conflict
+                            foreach (var kvp in customConfig)
+                            {
+                                if (!structuredConfig.ContainsKey(kvp.Key))
+                                {
+                                    structuredConfig[kvp.Key] = kvp.Value;
+                                }
+                            }
+                            
+                            var finalConfig = JsonSerializer.Serialize(structuredConfig, new JsonSerializerOptions { WriteIndented = true });
+                            await OnConfigurationChanged.InvokeAsync(ConfigurationModel);
+                            return;
+                        }
+                    }
+                }
+                catch (JsonException)
+                {
+                    // If custom JSON is invalid, just use the structured configuration
+                }
+            }
+            
+            // Use the structured configuration
+            await OnConfigurationChanged.InvokeAsync(ConfigurationModel);
+        }
+    }
+    
+    private void ResetConfiguration()
+    {
+        LoadNodeConfiguration();
+    }
+    
+    private void OnFieldChanged()
+    {
+        hasUnsavedChanges = true;
+        
+        // Reset the timer for auto-save (debounce)
+        autoSaveTimer?.Dispose();
+        autoSaveTimer = new Timer(AutoSave, null, TimeSpan.FromSeconds(2), TimeSpan.FromMilliseconds(-1));
+    }
+    
+    private async void AutoSave(object? state)
+    {
+        if (hasUnsavedChanges && ConfigurationModel.NodeId != null)
+        {
+            await InvokeAsync(async () =>
+            {
+                await SaveConfiguration();
+                hasUnsavedChanges = false;
+                StateHasChanged();
+            });
+        }
+    }
+    
+    private void ValidateJson()
+    {
+        jsonValidationError = "";
+        
+        if (string.IsNullOrEmpty(ConfigurationModel.CustomConfiguration))
+        {
+            return;
+        }
+        
+        try
+        {
+            JsonDocument.Parse(ConfigurationModel.CustomConfiguration);
+            jsonValidationError = "";
+        }
+        catch (JsonException ex)
+        {
+            jsonValidationError = $"Invalid JSON: {ex.Message}";
+        }
+        
+        StateHasChanged();
+    }
+    
+    private void FormatJson()
+    {
+        if (string.IsNullOrEmpty(ConfigurationModel.CustomConfiguration))
+        {
+            return;
+        }
+        
+        try
+        {
+            var jsonDocument = JsonDocument.Parse(ConfigurationModel.CustomConfiguration);
+            ConfigurationModel.CustomConfiguration = JsonSerializer.Serialize(jsonDocument, new JsonSerializerOptions 
+            { 
+                WriteIndented = true 
+            });
+            jsonValidationError = "";
+            OnFieldChanged();
+        }
+        catch (JsonException ex)
+        {
+            jsonValidationError = $"Cannot format invalid JSON: {ex.Message}";
+        }
+        
+        StateHasChanged();
+    }
+    
+    // Supporting classes
+    public class WorkflowNodeInfo
+    {
+        public string Id { get; set; } = "";
+        public string Label { get; set; } = "";
+        public string Description { get; set; } = "";
+        public NodeType NodeType { get; set; }
+        public ModuleType ModuleType { get; set; }
+        public string? Configuration { get; set; }
+    }
+    
+    public class NodeConfigurationModel
+    {
+        public string? NodeId { get; set; }
+        
+        [Required(ErrorMessage = "Node name is required")]
+        [StringLength(100, ErrorMessage = "Node name cannot exceed 100 characters")]
+        public string Name { get; set; } = "";
+        
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+        public string Description { get; set; } = "";
+        
+        public NodeType NodeType { get; set; }
+        public ModuleType ModuleType { get; set; }
+        public bool IsEnabled { get; set; } = true;
+        
+        [Range(0, 10, ErrorMessage = "Max input connections must be between 0 and 10")]
+        public int MaxInputConnections { get; set; } = 0;
+        
+        [Range(0, 10, ErrorMessage = "Max output connections must be between 0 and 10")]
+        public int MaxOutputConnections { get; set; } = 0;
+        
+        [Range(1, 3600, ErrorMessage = "Timeout must be between 1 and 3600 seconds")]
+        public int TimeoutSeconds { get; set; } = 30;
+        
+        [Range(0, 5, ErrorMessage = "Retry count must be between 0 and 5")]
+        public int RetryCount { get; set; } = 1;
+        
+        // Type-specific properties
+        public string InputSource { get; set; } = "";
+        public string DataFormat { get; set; } = "json";
+        public string ProcessingAlgorithm { get; set; } = "";
+        
+        [Range(1, 1000, ErrorMessage = "Batch size must be between 1 and 1000")]
+        public int BatchSize { get; set; } = 100;
+        
+        public string OutputDestination { get; set; } = "";
+        
+        public string OutputPath { get; set; } = "";
+        
+        public string DecisionLogic { get; set; } = "";
+        public string ComparisonValue { get; set; } = "";
+        public string TriggerType { get; set; } = "";
+        
+        [RegularExpression(@"^(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|[01]?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[01]?[0-9]|[12][0-9]|3[01]|\*\/[0-9]+)\s+(\*|[01]?[0-9]|1[0-2]|\*\/[0-9]+)\s+(\*|[0-6]|\*\/[0-9]+)$", 
+            ErrorMessage = "Please enter a valid cron expression (e.g., '0 0 * * *')")]
+        public string ScheduleCron { get; set; } = "";
+        
+        public string CustomConfiguration { get; set; } = "";
+    }
+}
