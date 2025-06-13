@@ -12,13 +12,25 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Web", "umuthi.Web\um
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Tests", "umuthi.Tests\umuthi.Tests.csproj", "{83F51199-20D3-2D28-5B61-B262A31290FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Functions", "umuthi.Functions\umuthi.Functions.csproj", "{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Functions", "src\umuthi.Functions\umuthi.Functions.csproj", "{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Domain", "umuthi.Domain\umuthi.Domain.csproj", "{51FC62FA-4E6F-400B-9FCF-6BE6CE1192D9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Application", "umuthi.Application\umuthi.Application.csproj", "{63081341-1384-4CFD-80E9-98C585C230D5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Infrastructure", "umuthi.Infrastructure\umuthi.Infrastructure.csproj", "{67A39D4A-DDE7-4758-8334-62734D23294C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Core", "src\umuthi.Core\umuthi.Core.csproj", "{7A1B2C3D-4E5F-6789-ABCD-EF0123456789}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Contracts", "src\umuthi.Contracts\umuthi.Contracts.csproj", "{8B2C3D4E-5F67-89AB-CDEF-0123456789AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Shared", "src\umuthi.Shared\umuthi.Shared.csproj", "{9C3D4E5F-6789-ABCD-EF01-23456789ABCD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Functions.Tests", "tests\umuthi.Functions.Tests\umuthi.Functions.Tests.csproj", "{AD4E5F67-89AB-CDEF-0123-456789ABCDEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Core.Tests", "tests\umuthi.Core.Tests\umuthi.Core.Tests.csproj", "{BE5F6789-ABCD-EF01-2345-6789ABCDEF01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Infrastructure.Tests", "tests\umuthi.Infrastructure.Tests\umuthi.Infrastructure.Tests.csproj", "{CF67890A-BCDE-F012-3456-789ABCDEF012}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +74,30 @@ Global
 		{67A39D4A-DDE7-4758-8334-62734D23294C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67A39D4A-DDE7-4758-8334-62734D23294C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67A39D4A-DDE7-4758-8334-62734D23294C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A1B2C3D-4E5F-6789-ABCD-EF0123456789}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A1B2C3D-4E5F-6789-ABCD-EF0123456789}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A1B2C3D-4E5F-6789-ABCD-EF0123456789}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A1B2C3D-4E5F-6789-ABCD-EF0123456789}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B2C3D4E-5F67-89AB-CDEF-0123456789AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B2C3D4E-5F67-89AB-CDEF-0123456789AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B2C3D4E-5F67-89AB-CDEF-0123456789AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B2C3D4E-5F67-89AB-CDEF-0123456789AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C3D4E5F-6789-ABCD-EF01-23456789ABCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C3D4E5F-6789-ABCD-EF01-23456789ABCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C3D4E5F-6789-ABCD-EF01-23456789ABCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C3D4E5F-6789-ABCD-EF01-23456789ABCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD4E5F67-89AB-CDEF-0123-456789ABCDEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD4E5F67-89AB-CDEF-0123-456789ABCDEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD4E5F67-89AB-CDEF-0123-456789ABCDEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD4E5F67-89AB-CDEF-0123-456789ABCDEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE5F6789-ABCD-EF01-2345-6789ABCDEF01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE5F6789-ABCD-EF01-2345-6789ABCDEF01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE5F6789-ABCD-EF01-2345-6789ABCDEF01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE5F6789-ABCD-EF01-2345-6789ABCDEF01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF67890A-BCDE-F012-3456-789ABCDEF012}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF67890A-BCDE-F012-3456-789ABCDEF012}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF67890A-BCDE-F012-3456-789ABCDEF012}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF67890A-BCDE-F012-3456-789ABCDEF012}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
