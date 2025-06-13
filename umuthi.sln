@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Web", "umuthi.Web\um
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Tests", "umuthi.Tests\umuthi.Tests.csproj", "{83F51199-20D3-2D28-5B61-B262A31290FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Functions", "umuthi.Functions\umuthi.Functions.csproj", "{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Functions", "src\umuthi.Functions\umuthi.Functions.csproj", "{55D8EAA5-FFDE-2D9B-6458-E8B23DDDB425}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umuthi.Domain", "umuthi.Domain\umuthi.Domain.csproj", "{51FC62FA-4E6F-400B-9FCF-6BE6CE1192D9}"
 EndProject
