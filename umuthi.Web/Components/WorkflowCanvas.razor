@@ -1,6 +1,7 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
+@implements IAsyncDisposable
 
 <div class="workflow-canvas-container" @ref="canvasContainer">
     <!-- Viewport Controls -->
@@ -47,8 +48,7 @@
     
     private ElementReference canvasContainer;
     private ElementReference canvasElement;
-    
-    private ViewportState viewport = new()
+      private ViewportState viewport = new()
     {
         OffsetX = 0,
         OffsetY = 0,
@@ -56,22 +56,58 @@
         MinScale = 0.1,
         MaxScale = 3.0
     };
-    
     private bool isDragging = false;
     private double lastMouseX = 0;
     private double lastMouseY = 0;
-    
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private bool isJsInitialized = false;
+    private bool isInteractiveMode = false;
+
+    private bool IsJavaScriptAvailable()
+    {
+        return isInteractiveMode && JSRuntime != null;
+    }
+      protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await InitializeCanvasInteractions();
+            // Check if we're in interactive mode by testing if JSRuntime is available
+            try
+            {
+                // Try a simple JS interop call to detect if we're in interactive mode
+                await JSRuntime.InvokeVoidAsync("eval", "void(0)");
+                isInteractiveMode = true;
+                await InitializeCanvasInteractions();
+            }
+            catch (InvalidOperationException)
+            {
+                // Static rendering mode - JavaScript interop not available
+                isInteractiveMode = false;
+                isJsInitialized = false;
+            }
         }
-    }
-    
-    private async Task InitializeCanvasInteractions()
+    }    private async Task InitializeCanvasInteractions()
     {
-        await JSRuntime.InvokeVoidAsync("workflowCanvas.initialize", canvasContainer, DotNetObjectReference.Create(this));
+        if (!IsJavaScriptAvailable())
+        {
+            isJsInitialized = false;
+            return;
+        }
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workflowCanvas.initialize", canvasContainer, DotNetObjectReference.Create(this));
+            isJsInitialized = true;
+        }
+        catch (InvalidOperationException)
+        {
+            // JavaScript interop not available during prerendering, skip initialization
+            isJsInitialized = false;
+        }
+        catch (Exception)
+        {
+            // Other errors during initialization, mark as not initialized
+            isJsInitialized = false;
+        }
     }
     
     [JSInvokable]
@@ -168,13 +204,45 @@
         viewport.OffsetX = Math.Max(minOffset, Math.Min(maxOffset, viewport.OffsetX));
         viewport.OffsetY = Math.Max(minOffset, Math.Min(maxOffset, viewport.OffsetY));
     }
-    
-    private class ViewportState
+      private class ViewportState
     {
         public double OffsetX { get; set; }
         public double OffsetY { get; set; }
         public double Scale { get; set; }
         public double MinScale { get; set; }
         public double MaxScale { get; set; }
+    }    public async ValueTask DisposeAsync()
+    {
+        // Only attempt JavaScript disposal if we successfully initialized JS interop
+        // and we're in interactive mode
+        if (isJsInitialized && IsJavaScriptAvailable())
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("workflowCanvas.dispose");
+            }
+            catch (JSDisconnectedException)
+            {
+                // Component is being disposed, ignore JS disconnection
+            }
+            catch (TaskCanceledException)
+            {
+                // Circuit is being torn down, ignore cancellation
+            }
+            catch (ObjectDisposedException)
+            {
+                // JSRuntime is already disposed
+            }
+            catch (InvalidOperationException)
+            {
+                // Circuit may be in invalid state during disposal or static rendering
+            }
+            catch (Exception ex)
+            {
+                // Log any other unexpected exceptions during disposal but don't rethrow
+                Console.WriteLine($"Error during WorkflowCanvas disposal: {ex.Message}");
+            }
+        }
+        // If JS was never initialized (e.g., during static rendering), no cleanup needed
     }
 }

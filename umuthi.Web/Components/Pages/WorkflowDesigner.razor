@@ -4,6 +4,7 @@
 @using umuthi.Application.Interfaces
 @using umuthi.Domain.Enums
 @using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Web
 @inject IWorkflowService WorkflowService
 @inject ILogger<WorkflowDesigner> Logger
 @inject IJSRuntime JSRuntime
@@ -122,13 +123,16 @@ else
                 OnHide="OnContextMenuHide" />
 }
 
-@code {
-    [Parameter] public Guid WorkflowId { get; set; }
+@code {    [Parameter] public Guid WorkflowId { get; set; }
     
     private WorkflowDto? workflow;
     private string? selectedNodeId;
     private List<WorkflowNodeModel> workflowNodes = new();
     private List<WorkflowConnectionModel> workflowConnections = new();
+    
+    // JavaScript interop tracking
+    private bool isJsInitialized = false;
+    private bool isInteractiveMode = false;
     
     // Modal states
     private bool showNodeTypeModal = false;
@@ -158,16 +162,27 @@ else
         InitializeSampleNodes();
         InitializeSampleConnections();
     }
-    
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+      protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("workflowDesigner.initialize", DotNetObjectReference.Create(this));
+            // Check if we're in interactive mode by testing if JSRuntime is available
+            try
+            {
+                // Try a simple JS interop call to detect if we're in interactive mode
+                await JSRuntime.InvokeVoidAsync("eval", "void(0)");
+                isInteractiveMode = true;
+                await InitializeJavaScript();
+            }
+            catch (InvalidOperationException)
+            {
+                // Static rendering mode - JavaScript interop not available
+                isInteractiveMode = false;
+                isJsInitialized = false;
+            }
         }
     }
-    
-    private async Task LoadWorkflow()
+      private async Task LoadWorkflow()
     {
         try
         {
@@ -176,6 +191,35 @@ else
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error loading workflow {WorkflowId}", WorkflowId);
+        }
+    }    private bool IsJavaScriptAvailable()
+    {
+        return isInteractiveMode && JSRuntime != null;
+    }
+
+    private async Task InitializeJavaScript()
+    {
+        if (!IsJavaScriptAvailable())
+        {
+            isJsInitialized = false;
+            return;
+        }
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workflowDesigner.initialize", DotNetObjectReference.Create(this));
+            isJsInitialized = true;
+        }
+        catch (InvalidOperationException)
+        {
+            // JavaScript interop not available during prerendering, skip initialization
+            isJsInitialized = false;
+        }
+        catch (Exception ex)
+        {
+            // Other errors during initialization, mark as not initialized
+            Logger?.LogWarning(ex, "Error initializing WorkflowDesigner JavaScript");
+            isJsInitialized = false;
         }
     }
 
@@ -705,17 +749,38 @@ else
         public string TargetPort { get; set; } = "input";
         public ConnectionLine.ConnectionStyle Style { get; set; } = ConnectionLine.ConnectionStyle.Solid;
         public ConnectionLine.ConnectionStatus Status { get; set; } = ConnectionLine.ConnectionStatus.Normal;
-    }
-    
-    public async ValueTask DisposeAsync()
+    }    public async ValueTask DisposeAsync()
     {
-        try
+        // Only attempt JavaScript disposal if we successfully initialized JS interop
+        // and we're in interactive mode
+        if (isJsInitialized && IsJavaScriptAvailable())
         {
-            await JSRuntime.InvokeVoidAsync("workflowDesigner.dispose");
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("workflowDesigner.dispose");
+            }
+            catch (JSDisconnectedException)
+            {
+                // Component is being disposed, ignore JS disconnection
+            }
+            catch (TaskCanceledException)
+            {
+                // Circuit is being torn down, ignore cancellation
+            }
+            catch (ObjectDisposedException)
+            {
+                // JSRuntime is already disposed
+            }
+            catch (InvalidOperationException)
+            {
+                // Circuit may be in invalid state during disposal
+            }
+            catch (Exception ex)
+            {
+                // Log any other unexpected exceptions during disposal but don't rethrow
+                Logger?.LogWarning(ex, "Error during WorkflowDesigner disposal, continuing with cleanup");
+            }
         }
-        catch (JSDisconnectedException)
-        {
-            // Component is being disposed, ignore JS disconnection
-        }
+        // If JS was never initialized (e.g., during static rendering), no cleanup needed
     }
 }
