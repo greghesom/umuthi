@@ -25,13 +25,14 @@ public static class Startup
     /// Configure services for dependency injection
     /// </summary>
     /// <param name="services">Service collection to configure</param>
-    private static void ConfigureServices(IServiceCollection services)
+    /// <param name="context">Host builder context</param>
+    private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
         // Add Application Insights telemetry
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
         // Add umuthi function services
-        services.AddUmuthiFunctionServices();
+        services.AddUmuthiFunctionServices(context.Configuration);
     }
 }

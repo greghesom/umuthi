@@ -37,3 +37,12 @@ public enum ModuleType
     Loop = 7,
     Custom = 8
 }
+
+public enum ProcessingStatus
+{
+    Pending = 0,
+    Processing = 1,
+    Completed = 2,
+    Failed = 3,
+    Retrying = 4
+}
