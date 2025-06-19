@@ -1,0 +1,88 @@
+### Umuthi Functions Tests - HTTP Requests
+@baseUrl = http://localhost:7071
+@apiKey = umuthi-dev-api-key
+
+### =====================================================
+### Health Check and API Information
+### =====================================================
+
+### Health Check
+GET {{baseUrl}}/api/HealthCheck
+Accept: application/json
+
+### Get Supported Formats
+GET {{baseUrl}}/api/GetSupportedFormats
+Accept: application/json
+
+### =====================================================
+### Webhooks
+### =====================================================
+
+### Test Fillout Webhook - Valid Request
+POST {{baseUrl}}/api/webhooks/fillout
+Content-Type: application/json
+
+{
+  "submissionId": "test-submission-123",
+  "formId": "test-form-456",
+  "formName": "Test Form",
+  "submissionTime": "2023-05-15T14:30:00Z",
+  "fields": {
+    "field1": "value1",
+    "field2": "value2"
+  }
+}
+
+### Test Fillout Webhook - Invalid Request (Missing Required Fields)
+POST {{baseUrl}}/api/webhooks/fillout
+Content-Type: application/json
+
+{
+  "formName": "Test Form",
+  "submissionTime": "2023-05-15T14:30:00Z",
+  "fields": {}
+}
+
+### Test Fillout Webhook - With Signature
+POST {{baseUrl}}/api/webhooks/fillout
+Content-Type: application/json
+X-Fillout-Signature: test-signature-for-validation
+
+{
+  "submissionId": "test-submission-123",
+  "formId": "test-form-456",
+  "formName": "Test Form",
+  "submissionTime": "2023-05-15T14:30:00Z",
+  "fields": {
+    "field1": "value1",
+    "field2": "value2"
+  }
+}
+
+### =====================================================
+### Audio Processing - Simplified Tests (Mocks Expected)
+### =====================================================
+
+### Test Convert WAV to MP3 (Minimal)
+POST {{baseUrl}}/api/ConvertWavToMp3
+x-api-key: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.wav"
+Content-Type: audio/wav
+
+< ./test-data/test.wav
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Test Convert Audio to Transcript (Minimal)
+POST {{baseUrl}}/api/ConvertAudioToTranscript
+x-api-key: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.mp3"
+Content-Type: audio/mp3
+
+< ./test-data/test.mp3
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
