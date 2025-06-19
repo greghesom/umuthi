@@ -19,10 +19,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\umuthi.Core\umuthi.Core.csproj" />
+    <ProjectReference Include="..\..\src\umuthi.Contracts\umuthi.Contracts.csproj" />
+    <ProjectReference Include="..\..\umuthi.Domain\umuthi.Domain.csproj" />
   </ItemGroup>
 
 </Project>

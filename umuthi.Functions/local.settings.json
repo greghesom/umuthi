@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "SpeechServiceKey": "9l7vM4k8ujCmyk4zIKjHl2SH5FobsEseG8W4eMU9orSDfMl7rqkKJQQJ99BFACYeBjFXJ3w3AAAEACOGGqKG",
+    "SpeechServiceRegion": "eastus",
+    "ApiKey": "umuthi-dev-api-key",
+    "AdditionalApiKeys": "make-integration-key,test-key-1,test-key-2"
+  }
+}

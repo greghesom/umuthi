@@ -14,7 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\umuthi.ApiService\umuthi.ApiService.csproj" />
     <ProjectReference Include="..\umuthi.Web\umuthi.Web.csproj" />
-	<ProjectReference Include="..\umuthi.Functions\umuthi.Functions.csproj" />
+	<ProjectReference Include="..\src\umuthi.Functions\umuthi.Functions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.0" />

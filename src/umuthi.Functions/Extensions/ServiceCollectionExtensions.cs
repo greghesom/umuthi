@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using umuthi.Contracts.Interfaces;
 using umuthi.Core.Services;
+using umuthi.Infrastructure.Configuration;
 
 namespace umuthi.Functions.Extensions;
 
@@ -40,11 +42,27 @@ public static class ServiceCollectionExtensions
     /// Add all umuthi function services to the DI container
     /// </summary>
     /// <param name="services">The service collection</param>
+    /// <param name="configuration">Configuration instance</param>
     /// <returns>The service collection for chaining</returns>
-    public static IServiceCollection AddUmuthiFunctionServices(this IServiceCollection services)
+    public static IServiceCollection AddUmuthiFunctionServices(this IServiceCollection services, IConfiguration configuration)
     {
         return services
+            .AddInfrastructure(configuration)
             .AddAudioProcessingServices()
-            .AddUsageTrackingServices();
+            .AddUsageTrackingServices()
+            .AddFilloutServices();
+    }
+    
+    /// <summary>
+    /// Add Fillout webhook processing services to the DI container
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddFilloutServices(this IServiceCollection services)
+    {
+        // Register Fillout services
+        services.AddScoped<IFilloutService, FilloutService>();
+        
+        return services;
     }
 }

@@ -144,3 +144,42 @@ public class NodeTemplateConfiguration : IEntityTypeConfiguration<NodeTemplate>
         builder.HasIndex(t => t.IsActive);
     }
 }
+
+public class FilloutSubmissionConfiguration : IEntityTypeConfiguration<FilloutSubmission>
+{
+    public void Configure(EntityTypeBuilder<FilloutSubmission> builder)
+    {
+        builder.HasKey(s => s.Id);
+        
+        builder.Property(s => s.SubmissionId)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.Property(s => s.FormId)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.Property(s => s.FormName)
+            .HasMaxLength(255);
+            
+        builder.Property(s => s.RawData)
+            .IsRequired()
+            .HasColumnType("nvarchar(max)");
+            
+        builder.Property(s => s.LastErrorMessage)
+            .HasMaxLength(2000);
+            
+        builder.Property(s => s.CorrelationId)
+            .HasMaxLength(50);
+            
+        // Indexes for performance
+        builder.HasIndex(s => s.SubmissionId)
+            .IsUnique(); // Enforce uniqueness for idempotency
+            
+        builder.HasIndex(s => s.FormId);
+        builder.HasIndex(s => s.SubmissionTime);
+        builder.HasIndex(s => s.ProcessingStatus);
+        builder.HasIndex(s => s.CorrelationId);
+        builder.HasIndex(s => s.CreatedAt);
+    }
+}

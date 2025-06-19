@@ -5,6 +5,7 @@ using umuthi.Application.Interfaces;
 using umuthi.Application.Services;
 using umuthi.Domain.Interfaces;
 using umuthi.Infrastructure.Data;
+using umuthi.Infrastructure.Data.Repositories;
 
 namespace umuthi.Infrastructure.Configuration;
 
@@ -27,6 +28,9 @@ public static class ServiceCollectionExtensions
 
         // Register repositories and unit of work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IWorkflowRepository, WorkflowRepository>();
+        services.AddScoped<IWorkflowExecutionRepository, WorkflowExecutionRepository>();
+        services.AddScoped<IFilloutSubmissionRepository, FilloutSubmissionRepository>();
 
         // Register application services
         services.AddScoped<IWorkflowService, WorkflowService>();
