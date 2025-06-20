@@ -1,10 +1,10 @@
-# Umuthi - Audio Processing & Workflow Management Platform
+# Umuthi - Audio Processing, SEO Analytics & Workflow Management Platform
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](https://dotnet.microsoft.com/)
 [![Azure Functions](https://img.shields.io/badge/Azure-Functions-blue.svg)](https://azure.microsoft.com/en-us/products/functions/)
 [![.NET Aspire](https://img.shields.io/badge/.NET-Aspire-orange.svg)](https://learn.microsoft.com/en-us/dotnet/aspire/)
 
-Umuthi is a comprehensive cloud-native platform that combines audio processing capabilities with workflow management. The platform provides powerful audio conversion and speech-to-text transcription services through Azure Functions, alongside a robust workflow management system built with .NET Aspire.
+Umuthi is a comprehensive cloud-native platform that combines audio processing, SEO analytics, and workflow management capabilities. The platform provides powerful audio conversion, speech-to-text transcription, and SEO data retrieval services through Azure Functions, alongside a robust workflow management system built with .NET Aspire.
 
 ## 🚀 Features
 
@@ -15,6 +15,14 @@ Umuthi is a comprehensive cloud-native platform that combines audio processing c
 - **Multi-language Support**: Support for multiple languages including English, Spanish, French, German, and more
 - **Batch Processing**: Process multiple audio files simultaneously
 - **API Key Authentication**: Secure API access with key-based authentication
+
+### **NEW: SEO Analytics & Reporting**
+- **SEO Audit Reports**: Comprehensive domain SEO analysis with technical and content insights
+- **Keywords Tracking**: Monitor keyword rankings and performance metrics from SE Ranking
+- **Competitor Analysis**: Compare your SEO performance against competitors
+- **Long-running Reports**: Async comprehensive reports with webhook notifications for Make.com
+- **Caching Layer**: Sub-5-second responses for cached data, optimized API usage
+- **Billing Integration**: Complete usage tracking for all SEO API calls
 
 ### Workflow Management System
 - **Workflow Creation & Management**: Create, edit, and manage complex workflows
@@ -192,6 +200,15 @@ The project includes:
 - `POST /api/FastTranscribeAudio` - Fast audio transcription
 - `GET /api/GetSupportedFormats` - Get supported audio formats
 
+#### **NEW: SEO Analytics Functions (`/api/`)**
+- `GET /api/GetSEOAuditReport` - Get domain SEO audit report
+- `GET /api/GetSEOKeywordsData` - Get keywords ranking data
+- `GET /api/GetSEOCompetitorAnalysis` - Get competitor analysis
+- `POST /api/RequestSEOComprehensiveReport` - Request long-running report
+- `GET /api/GetSEOReportStatus` - Check report status
+- `GET /api/GetSEOComprehensiveReport` - Retrieve completed report
+- `POST /api/webhooks/seo-report` - SEO report completion webhook
+
 ## 🔧 Configuration
 
 ### Application Settings
@@ -206,6 +223,8 @@ Key configuration files:
 Required for Azure Functions:
 - `SpeechServiceKey` - Azure Speech Service API key
 - `SpeechServiceRegion` - Azure Speech Service region
+- **NEW:** `SEORanking:ApiKey` - SE Ranking API key for SEO data
+- **NEW:** `SEORanking:BaseUrl` - SE Ranking API base URL (optional, defaults to https://api.seranking.com/)
 
 ## 📊 Monitoring & Logging
 
