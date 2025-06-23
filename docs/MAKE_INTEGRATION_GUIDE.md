@@ -1,12 +1,27 @@
 # Make.com Integration Guide
 
-This guide explains how to integrate the Audio Conversion API with make.com (formerly Integromat).
+This guide explains how to integrate the Umuthi API with make.com (formerly Integromat) for audio processing and SEO data retrieval.
 
 ## Prerequisites
 
 - A make.com account
-- Your Audio Conversion API deployed (or running locally for testing)
+- Your Umuthi API deployed (or running locally for testing)
 - Your API key (default: `umuthi-dev-api-key`)
+- For SEO functions: SE Ranking API access and project IDs
+
+## API Capabilities
+
+### Audio Processing
+- WAV to MP3 conversion
+- MPEG to MP3 conversion  
+- Audio to transcript conversion
+- Fast transcription with timestamps
+
+### SEO Data Retrieval
+- **NEW:** SEO audit reports for domains
+- **NEW:** Keywords ranking data for SE Ranking projects
+- **NEW:** Competitor analysis and comparison
+- **NEW:** Long-running comprehensive reports with webhook notifications
 
 ## Setting Up the Integration
 
@@ -76,12 +91,65 @@ Multipart:
   - Value: Select "Map" and map to your file data
 ```
 
+For SEO audit report:
+
+```
+Method: GET
+URL: https://your-function-app.azurewebsites.net/api/GetSEOAuditReport?domain=example.com
+Headers:
+  - Name: x-api-key
+  - Value: umuthi-dev-api-key (or your custom API key)
+```
+
+For SEO keywords data:
+
+```
+Method: GET
+URL: https://your-function-app.azurewebsites.net/api/GetSEOKeywordsData?projectId=your-se-ranking-project-id
+Headers:
+  - Name: x-api-key
+  - Value: umuthi-dev-api-key (or your custom API key)
+```
+
+For SEO competitor analysis:
+
+```
+Method: GET
+URL: https://your-function-app.azurewebsites.net/api/GetSEOCompetitorAnalysis?projectId=your-project-id&competitorDomain=competitor.com
+Headers:
+  - Name: x-api-key
+  - Value: umuthi-dev-api-key (or your custom API key)
+```
+
+For long-running SEO comprehensive reports:
+
+```
+Method: POST
+URL: https://your-function-app.azurewebsites.net/api/RequestSEOComprehensiveReport?webhookUrl=https://your-webhook-endpoint.com/seo-ready
+Headers:
+  - Name: x-api-key
+  - Value: umuthi-dev-api-key (or your custom API key)
+  - Name: Content-Type
+  - Value: application/json
+Body type: Raw
+Body:
+{
+  "projectId": "your-se-ranking-project-id",
+  "reportType": "comprehensive",
+  "historicalDays": 90,
+  "includeCompetitors": true,
+  "competitorDomains": ["competitor1.com", "competitor2.com"]
+}
+```
+
 ### 4. Process the Response
 
 After the HTTP request, you'll get a response that you can process in subsequent modules:
 
 - For MP3 conversions: The response will be binary data (the MP3 file)
 - For transcript conversions: The response will be text or JSON (depending on timestamps parameter)
+- **For SEO data**: The response will be JSON containing SEO metrics, rankings, and analysis data
+- **For async SEO reports**: Initial response contains tracking ID, final data comes via webhook
 
 ## Example Scenarios
 
@@ -102,13 +170,47 @@ This scenario extracts audio from video files and archives them:
 2. **HTTP Module**: Configure as shown above for "MPEG to MP3 conversion"
 3. **Dropbox/Google Drive Module**: Save the resulting MP3 file to an archive folder
 
+### 3. **NEW: SEO Monitoring Dashboard**
+
+This scenario creates an automated SEO monitoring workflow:
+
+1. **Schedule Trigger**: Run daily or weekly
+2. **HTTP Module**: Get SEO audit report for your domain
+3. **HTTP Module**: Get keywords data for your SE Ranking project
+4. **HTTP Module**: Get competitor analysis data
+5. **Data Store/Google Sheets**: Save historical SEO data
+6. **Email/Slack**: Send alerts for significant ranking changes
+
+### 4. **NEW: Comprehensive SEO Report Automation**
+
+This scenario handles long-running SEO reports:
+
+1. **Schedule Trigger**: Run monthly for comprehensive analysis
+2. **HTTP Module**: Request comprehensive SEO report (POST)
+3. **Webhook**: Wait for report completion notification
+4. **HTTP Module**: Retrieve completed report data
+5. **Google Drive/Email**: Distribute the comprehensive report
+
 ## Troubleshooting
 
 If you encounter issues with the integration, check the following:
 
+### General Issues
 - **401 Unauthorized**: Verify your API key is correct and properly formatted in the header
 - **400 Bad Request**: Check that you're sending the correct file format and staying within size limits
 - **500 Server Error**: Contact the API administrator for assistance
+
+### SEO-Specific Issues
+- **"SE Ranking API key not configured"**: Ensure SE Ranking API credentials are set in the function app
+- **"Invalid project ID"**: Verify the SE Ranking project ID exists and you have access
+- **"Failed to fetch SEO data"**: Check SE Ranking account limits and API status
+- **Webhook not received for long reports**: Verify webhook URL is accessible and accepts POST requests
+- **Slow SEO responses**: First call may be slow (fresh data), subsequent calls are faster (cached)
+
+### SEO Data Interpretation
+- **Empty keywords data**: Project may not have keywords set up in SE Ranking
+- **No competitor data**: Verify competitor domain is set up in SE Ranking project
+- **Missing audit data**: Domain may not be accessible for crawling or may have robots.txt restrictions
 
 ## API Key for make.com
 

@@ -26,6 +26,21 @@ public static class ServiceCollectionExtensions
     }
     
     /// <summary>
+    /// Add SEO data services to the DI container
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddSEOServices(this IServiceCollection services)
+    {
+        // Register SEO services
+        services.AddScoped<ISEORankingService, SEORankingService>();
+        services.AddHttpClient<SEORankingService>();
+        services.AddMemoryCache(); // For caching SEO data
+        
+        return services;
+    }
+    
+    /// <summary>
     /// Add usage tracking and analytics services to the DI container
     /// </summary>
     /// <param name="services">The service collection</param>
@@ -49,6 +64,7 @@ public static class ServiceCollectionExtensions
         return services
             .AddInfrastructure(configuration)
             .AddAudioProcessingServices()
+            .AddSEOServices()
             .AddUsageTrackingServices()
             .AddFilloutServices();
     }

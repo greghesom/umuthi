@@ -26,4 +26,24 @@ public static class OperationTypes
     /// Usage analytics and billing operations
     /// </summary>
     public const string UsageAnalytics = "UsageAnalytics";
+    
+    /// <summary>
+    /// SEO audit report operations
+    /// </summary>
+    public const string SEOAuditReport = "SEOAuditReport";
+    
+    /// <summary>
+    /// SEO keywords data operations
+    /// </summary>
+    public const string SEOKeywordsData = "SEOKeywordsData";
+    
+    /// <summary>
+    /// SEO competitor analysis operations
+    /// </summary>
+    public const string SEOCompetitorAnalysis = "SEOCompetitorAnalysis";
+    
+    /// <summary>
+    /// SEO comprehensive report operations (long-running)
+    /// </summary>
+    public const string SEOComprehensiveReport = "SEOComprehensiveReport";
 }
