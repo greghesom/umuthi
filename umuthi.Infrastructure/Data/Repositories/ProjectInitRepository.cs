@@ -16,14 +16,13 @@ public class ProjectInitRepository : Repository<ProjectInitialization>, IProject
     }
 
     /// <summary>
-    /// Check if a project initialization already exists for the given email and Google Sheet row ID
+    /// Check if a project initialization already exists for the given Google Sheet row ID
     /// </summary>
-    /// <param name="email">Customer email</param>
     /// <param name="googleSheetRowId">Google Sheet row ID</param>
     /// <returns>True if a duplicate exists</returns>
-    public async Task<bool> ExistsByEmailAndRowIdAsync(string email, string googleSheetRowId)
+    public async Task<bool> ExistsByGoogleSheetRowIdAsync(string googleSheetRowId)
     {
-        return await _dbSet.AnyAsync(p => p.CustomerEmail == email && p.GoogleSheetRowId == googleSheetRowId);
+        return await _dbSet.AnyAsync(p => p.GoogleSheetRowId == googleSheetRowId);
     }
 
     /// <summary>

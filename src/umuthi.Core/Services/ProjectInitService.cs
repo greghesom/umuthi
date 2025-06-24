@@ -39,19 +39,19 @@ public class ProjectInitService : IProjectInitService
     {
         try
         {
-            _logger.LogInformation("Starting project initialization for email: {Email}, GoogleSheetRowId: {GoogleSheetRowId}", 
-                request.Email, request.GoogleSheetRowId);
+            _logger.LogInformation("Starting project initialization for GoogleSheetRowId: {GoogleSheetRowId}", 
+                request.GoogleSheetRowId);
 
             // Check for duplicate project
-            if (await _repository.ExistsByEmailAndRowIdAsync(request.Email, request.GoogleSheetRowId))
+            if (await _repository.ExistsByGoogleSheetRowIdAsync(request.GoogleSheetRowId))
             {
-                _logger.LogWarning("Duplicate project initialization attempt for email: {Email}, GoogleSheetRowId: {GoogleSheetRowId}", 
-                    request.Email, request.GoogleSheetRowId);
+                _logger.LogWarning("Duplicate project initialization attempt for GoogleSheetRowId: {GoogleSheetRowId}", 
+                    request.GoogleSheetRowId);
                 
                 return new ProjectInitResponse
                 {
                     Success = false,
-                    Message = "A project with the same email and Google Sheet row ID already exists.",
+                    Message = "A project with the same Google Sheet row ID already exists.",
                     CorrelationId = Guid.Empty,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -60,7 +60,7 @@ public class ProjectInitService : IProjectInitService
             // Validate JSON
             if (!ValidateJsonString(request.FilloutData))
             {
-                _logger.LogWarning("Invalid JSON provided in FilloutData for email: {Email}", request.Email);
+                _logger.LogWarning("Invalid JSON provided in FilloutData for GoogleSheetRowId: {GoogleSheetRowId}", request.GoogleSheetRowId);
                 
                 return new ProjectInitResponse
                 {
@@ -78,7 +78,6 @@ public class ProjectInitService : IProjectInitService
             var projectInit = new ProjectInitialization
             {
                 CorrelationId = correlationId,
-                CustomerEmail = request.Email,
                 GoogleSheetRowId = request.GoogleSheetRowId,
                 FilloutData = request.FilloutData,
                 MakeCustomerId = request.MakeCustomerId
@@ -100,7 +99,7 @@ public class ProjectInitService : IProjectInitService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error initializing project for email: {Email}", request.Email);
+            _logger.LogError(ex, "Error initializing project for GoogleSheetRowId: {GoogleSheetRowId}", request.GoogleSheetRowId);
             
             return new ProjectInitResponse
             {

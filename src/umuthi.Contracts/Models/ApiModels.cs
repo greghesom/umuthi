@@ -199,13 +199,6 @@ public class FileUploadRequest
 public class ProjectInitRequest
 {
     /// <summary>
-    /// Customer email address
-    /// </summary>
-    [Required]
-    [EmailAddress]
-    public string Email { get; set; } = string.Empty;
-    
-    /// <summary>
     /// Google Sheet row identifier
     /// </summary>
     [Required]

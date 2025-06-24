@@ -193,10 +193,6 @@ public class ProjectInitializationConfiguration : IEntityTypeConfiguration<Proje
         builder.Property(p => p.CorrelationId)
             .IsRequired();
             
-        builder.Property(p => p.CustomerEmail)
-            .IsRequired()
-            .HasMaxLength(255);
-            
         builder.Property(p => p.GoogleSheetRowId)
             .IsRequired()
             .HasMaxLength(100);
@@ -213,12 +209,10 @@ public class ProjectInitializationConfiguration : IEntityTypeConfiguration<Proje
         builder.HasIndex(p => p.CorrelationId)
             .IsUnique(); // Ensure correlation ID uniqueness
             
-        builder.HasIndex(p => p.CustomerEmail);
+        builder.HasIndex(p => p.GoogleSheetRowId)
+            .IsUnique(); // Ensure Google Sheet row ID uniqueness
+            
         builder.HasIndex(p => p.MakeCustomerId);
         builder.HasIndex(p => p.CreatedAt);
-        
-        // Unique constraint to prevent duplicate projects
-        builder.HasIndex(p => new { p.CustomerEmail, p.GoogleSheetRowId })
-            .IsUnique();
     }
 }

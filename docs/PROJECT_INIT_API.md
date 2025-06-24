@@ -21,7 +21,6 @@ This endpoint requires API key authentication:
 
 ```json
 {
-  "email": "customer@example.com",
   "googleSheetRowId": "ROW123",
   "filloutData": "{\"formId\":\"abc123\",\"submissionId\":\"xyz789\"}",
   "makeCustomerId": "MAKE456"
@@ -32,7 +31,6 @@ This endpoint requires API key authentication:
 
 | Field | Type | Required | Description | Validation |
 |-------|------|----------|-------------|------------|
-| `email` | string | Yes | Customer email address | Must be valid email format |
 | `googleSheetRowId` | string | Yes | Google Sheet row identifier | Must be alphanumeric characters only |
 | `filloutData` | string | Yes | Fillout form data as JSON string | Must be valid JSON format |
 | `makeCustomerId` | string | Yes | Make.com customer identifier | Required, non-empty string |
@@ -44,7 +42,7 @@ This endpoint requires API key authentication:
 | 200 | Project initialized successfully |
 | 400 | Validation error (invalid request data) |
 | 401 | Authentication failed (invalid or missing API key) |
-| 409 | Duplicate project (same email + googleSheetRowId combination already exists) |
+| 409 | Duplicate project (same googleSheetRowId already exists) |
 | 500 | Internal server error |
 
 #### Success Response (200)
@@ -63,7 +61,7 @@ This endpoint requires API key authentication:
 ```json
 {
   "success": false,
-  "message": "Validation failed: Email is required, Invalid email format",
+  "message": "Validation failed: GoogleSheetRowId is required",
   "correlationId": "",
   "createdAt": "2025-01-01T10:30:00Z"
 }
@@ -74,7 +72,7 @@ This endpoint requires API key authentication:
 ```json
 {
   "success": false,
-  "message": "A project with the same email and Google Sheet row ID already exists.",
+  "message": "A project with the same Google Sheet row ID already exists.",
   "correlationId": "",
   "createdAt": "2025-01-01T10:30:00Z"
 }
@@ -102,7 +100,7 @@ This endpoint requires API key authentication:
 
 ### Duplicate Detection
 
-- Prevents duplicate projects based on email + googleSheetRowId combination
+- Prevents duplicate projects based on googleSheetRowId uniqueness
 - Returns 409 Conflict status for duplicates
 - Helps maintain data integrity
 
@@ -118,7 +116,6 @@ This endpoint requires API key authentication:
 
 ### Validation
 
-- Email format validation using standard email validation
 - JSON format validation for filloutData field
 - Alphanumeric validation for googleSheetRowId
 - Required field validation for all inputs
@@ -132,7 +129,6 @@ curl -X POST "https://your-function-app.azurewebsites.net/api/project/init" \
   -H "Content-Type: application/json" \
   -H "x-api-key: umuthi-dev-api-key" \
   -d '{
-    "email": "customer@example.com",
     "googleSheetRowId": "ROW123",
     "filloutData": "{\"formId\":\"abc123\",\"submissionId\":\"xyz789\"}",
     "makeCustomerId": "MAKE456"
@@ -156,9 +152,8 @@ The endpoint creates records in the `ProjectInitializations` table with the foll
 | Column | Type | Description |
 |--------|------|-------------|
 | `Id` | uniqueidentifier | Primary key |
-| `CorrelationId` | nvarchar(8) | Unique correlation ID (indexed) |
-| `CustomerEmail` | nvarchar(255) | Customer email (indexed) |
-| `GoogleSheetRowId` | nvarchar(100) | Google Sheet row ID |
+| `CorrelationId` | uniqueidentifier | Unique correlation ID (indexed) |
+| `GoogleSheetRowId` | nvarchar(100) | Google Sheet row ID (unique index) |
 | `FilloutData` | nvarchar(max) | JSON data from Fillout |
 | `MakeCustomerId` | nvarchar(100) | Make.com customer ID (indexed) |
 | `CreatedAt` | datetime2 | Record creation timestamp |
@@ -169,8 +164,8 @@ The endpoint creates records in the `ProjectInitializations` table with the foll
 ### Indexes
 
 - Unique index on `CorrelationId`
-- Unique composite index on `CustomerEmail` + `GoogleSheetRowId`
-- Standard indexes on `CustomerEmail`, `MakeCustomerId`, and `CreatedAt`
+- Unique index on `GoogleSheetRowId`
+- Standard indexes on `MakeCustomerId` and `CreatedAt`
 
 ## Error Handling
 

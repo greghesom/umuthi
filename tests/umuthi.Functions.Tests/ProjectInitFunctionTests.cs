@@ -37,7 +37,6 @@ public class ProjectInitFunctionTests
         // Arrange
         var request = new ProjectInitRequest
         {
-            Email = "test@example.com",
             GoogleSheetRowId = "ROW123",
             FilloutData = "{\"test\": \"data\"}",
             MakeCustomerId = "MAKE456"
@@ -86,7 +85,6 @@ public class ProjectInitFunctionTests
         // Arrange
         var request = new ProjectInitRequest
         {
-            Email = "test@example.com",
             GoogleSheetRowId = "ROW123",
             FilloutData = "{\"test\": \"data\"}",
             MakeCustomerId = "MAKE456"
@@ -95,7 +93,7 @@ public class ProjectInitFunctionTests
         var response = new ProjectInitResponse
         {
             Success = false,
-            Message = "A project with the same email and Google Sheet row ID already exists.",
+            Message = "A project with the same Google Sheet row ID already exists.",
             CorrelationId = Guid.Empty,
             CreatedAt = DateTime.UtcNow
         };
@@ -132,13 +130,12 @@ public class ProjectInitFunctionTests
     }
 
     [Fact]
-    public async Task InitializeProject_MissingEmail_ReturnsBadRequest()
+    public async Task InitializeProject_MissingGoogleSheetRowId_ReturnsBadRequest()
     {
         // Arrange
         var request = new ProjectInitRequest
         {
-            Email = "", // Invalid
-            GoogleSheetRowId = "ROW123",
+            GoogleSheetRowId = "", // Invalid
             FilloutData = "{\"test\": \"data\"}",
             MakeCustomerId = "MAKE456"
         };
@@ -161,7 +158,6 @@ public class ProjectInitFunctionTests
         // Arrange
         var request = new ProjectInitRequest
         {
-            Email = "test@example.com",
             GoogleSheetRowId = "ROW-123!", // Non-alphanumeric
             FilloutData = "{\"test\": \"data\"}",
             MakeCustomerId = "MAKE456"
@@ -185,7 +181,6 @@ public class ProjectInitFunctionTests
         // Arrange
         var request = new ProjectInitRequest
         {
-            Email = "test@example.com",
             GoogleSheetRowId = "ROW123",
             FilloutData = "{\"test\": \"data\"}",
             MakeCustomerId = "MAKE456"

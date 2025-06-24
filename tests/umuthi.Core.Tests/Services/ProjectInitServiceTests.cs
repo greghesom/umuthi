@@ -33,13 +33,12 @@ public class ProjectInitServiceTests
         // Arrange
         var request = new ProjectInitRequest
         {
-            Email = "test@example.com",
             GoogleSheetRowId = "ROW123",
             FilloutData = "{\"test\": \"data\"}",
             MakeCustomerId = "MAKE456"
         };
 
-        _repositoryMock.Setup(r => r.ExistsByEmailAndRowIdAsync(request.Email, request.GoogleSheetRowId))
+        _repositoryMock.Setup(r => r.ExistsByGoogleSheetRowIdAsync(request.GoogleSheetRowId))
             .ReturnsAsync(false);
         _repositoryMock.Setup(r => r.ExistsByCorrelationIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(false);
@@ -63,13 +62,12 @@ public class ProjectInitServiceTests
         // Arrange
         var request = new ProjectInitRequest
         {
-            Email = "test@example.com",
             GoogleSheetRowId = "ROW123",
             FilloutData = "{\"test\": \"data\"}",
             MakeCustomerId = "MAKE456"
         };
 
-        _repositoryMock.Setup(r => r.ExistsByEmailAndRowIdAsync(request.Email, request.GoogleSheetRowId))
+        _repositoryMock.Setup(r => r.ExistsByGoogleSheetRowIdAsync(request.GoogleSheetRowId))
             .ReturnsAsync(true);
 
         // Act
@@ -89,13 +87,12 @@ public class ProjectInitServiceTests
         // Arrange
         var request = new ProjectInitRequest
         {
-            Email = "test@example.com",
             GoogleSheetRowId = "ROW123",
             FilloutData = "invalid json",
             MakeCustomerId = "MAKE456"
         };
 
-        _repositoryMock.Setup(r => r.ExistsByEmailAndRowIdAsync(request.Email, request.GoogleSheetRowId))
+        _repositoryMock.Setup(r => r.ExistsByGoogleSheetRowIdAsync(request.GoogleSheetRowId))
             .ReturnsAsync(false);
 
         // Act

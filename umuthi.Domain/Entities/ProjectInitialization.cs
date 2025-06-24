@@ -13,11 +13,6 @@ public class ProjectInitialization : BaseEntity
     public Guid CorrelationId { get; set; } = Guid.Empty;
     
     /// <summary>
-    /// Customer email address
-    /// </summary>
-    public string CustomerEmail { get; set; } = string.Empty;
-    
-    /// <summary>
     /// Google Sheet row identifier
     /// </summary>
     public string GoogleSheetRowId { get; set; } = string.Empty;

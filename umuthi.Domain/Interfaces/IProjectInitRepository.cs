@@ -9,12 +9,11 @@ namespace umuthi.Domain.Interfaces;
 public interface IProjectInitRepository : IRepository<ProjectInitialization>
 {
     /// <summary>
-    /// Check if a project initialization already exists for the given email and Google Sheet row ID
+    /// Check if a project initialization already exists for the given Google Sheet row ID
     /// </summary>
-    /// <param name="email">Customer email</param>
     /// <param name="googleSheetRowId">Google Sheet row ID</param>
     /// <returns>True if a duplicate exists</returns>
-    Task<bool> ExistsByEmailAndRowIdAsync(string email, string googleSheetRowId);
+    Task<bool> ExistsByGoogleSheetRowIdAsync(string googleSheetRowId);
     
     /// <summary>
     /// Check if a correlation ID already exists
