@@ -21,12 +21,12 @@ public interface IProjectInitRepository : IRepository<ProjectInitialization>
     /// </summary>
     /// <param name="correlationId">Correlation ID to check</param>
     /// <returns>True if the correlation ID exists</returns>
-    Task<bool> ExistsByCorrelationIdAsync(string correlationId);
+    Task<bool> ExistsByCorrelationIdAsync(Guid correlationId);
     
     /// <summary>
     /// Get project initialization by correlation ID
     /// </summary>
     /// <param name="correlationId">Correlation ID</param>
     /// <returns>Project initialization if found</returns>
-    Task<ProjectInitialization?> GetByCorrelationIdAsync(string correlationId);
+    Task<ProjectInitialization?> GetByCorrelationIdAsync(Guid correlationId);
 }

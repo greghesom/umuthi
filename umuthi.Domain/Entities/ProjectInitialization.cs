@@ -10,7 +10,7 @@ public class ProjectInitialization : BaseEntity
     /// <summary>
     /// Unique correlation ID for tracking the project (PROJ + 4 chars)
     /// </summary>
-    public string CorrelationId { get; set; } = string.Empty;
+    public Guid CorrelationId { get; set; } = Guid.Empty;
     
     /// <summary>
     /// Customer email address

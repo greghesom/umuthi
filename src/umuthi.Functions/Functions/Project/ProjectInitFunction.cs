@@ -66,7 +66,7 @@ public class ProjectInitFunction
                 {
                     Success = false,
                     Message = "Invalid request body",
-                    CorrelationId = string.Empty
+                    CorrelationId = Guid.Empty
                 });
             }
 
@@ -89,7 +89,7 @@ public class ProjectInitFunction
                 {
                     Success = false,
                     Message = "Invalid JSON format",
-                    CorrelationId = string.Empty
+                    CorrelationId = Guid.Empty
                 });
             }
 
@@ -101,7 +101,7 @@ public class ProjectInitFunction
                 {
                     Success = false,
                     Message = "Request cannot be null",
-                    CorrelationId = string.Empty
+                    CorrelationId = Guid.Empty
                 });
             }
 
@@ -118,7 +118,7 @@ public class ProjectInitFunction
                 {
                     Success = false,
                     Message = validationMessage,
-                    CorrelationId = string.Empty
+                    CorrelationId = Guid.Empty
                 });
             }
 
@@ -134,7 +134,7 @@ public class ProjectInitFunction
                 {
                     Success = false,
                     Message = message,
-                    CorrelationId = string.Empty
+                    CorrelationId = Guid.Empty
                 });
             }
 
@@ -168,7 +168,7 @@ public class ProjectInitFunction
             {
                 Success = false,
                 Message = "An unexpected error occurred",
-                CorrelationId = string.Empty
+                CorrelationId = Guid.Empty
             })
             {
                 StatusCode = 500

@@ -31,7 +31,7 @@ public class ProjectInitRepository : Repository<ProjectInitialization>, IProject
     /// </summary>
     /// <param name="correlationId">Correlation ID to check</param>
     /// <returns>True if the correlation ID exists</returns>
-    public async Task<bool> ExistsByCorrelationIdAsync(string correlationId)
+    public async Task<bool> ExistsByCorrelationIdAsync(Guid correlationId)
     {
         return await _dbSet.AnyAsync(p => p.CorrelationId == correlationId);
     }
@@ -41,7 +41,7 @@ public class ProjectInitRepository : Repository<ProjectInitialization>, IProject
     /// </summary>
     /// <param name="correlationId">Correlation ID</param>
     /// <returns>Project initialization if found</returns>
-    public async Task<ProjectInitialization?> GetByCorrelationIdAsync(string correlationId)
+    public async Task<ProjectInitialization?> GetByCorrelationIdAsync(Guid correlationId)
     {
         return await _dbSet.FirstOrDefaultAsync(p => p.CorrelationId == correlationId);
     }

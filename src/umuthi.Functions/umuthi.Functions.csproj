@@ -29,4 +29,8 @@
   <ItemGroup>
     <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="local.settings.json" />
+  </ItemGroup>
 </Project>

@@ -42,21 +42,6 @@ public class ProjectInitService : IProjectInitService
             _logger.LogInformation("Starting project initialization for email: {Email}, GoogleSheetRowId: {GoogleSheetRowId}", 
                 request.Email, request.GoogleSheetRowId);
 
-            // Check for duplicates
-            var existingProject = await _repository.ExistsByEmailAndRowIdAsync(request.Email, request.GoogleSheetRowId);
-            if (existingProject)
-            {
-                _logger.LogWarning("Duplicate project initialization attempt for email: {Email}, GoogleSheetRowId: {GoogleSheetRowId}", 
-                    request.Email, request.GoogleSheetRowId);
-                
-                return new ProjectInitResponse
-                {
-                    Success = false,
-                    Message = "A project with the same email and Google Sheet row ID already exists.",
-                    CorrelationId = string.Empty,
-                    CreatedAt = DateTime.UtcNow
-                };
-            }
 
             // Validate JSON
             if (!ValidateJsonString(request.FilloutData))
@@ -67,13 +52,13 @@ public class ProjectInitService : IProjectInitService
                 {
                     Success = false,
                     Message = "FilloutData must be valid JSON format.",
-                    CorrelationId = string.Empty,
+                    CorrelationId = Guid.Empty,
                     CreatedAt = DateTime.UtcNow
                 };
             }
 
             // Generate unique correlation ID
-            var correlationId = await GenerateCorrelationIdAsync();
+            var correlationId = Guid.NewGuid();
 
             // Create entity
             var projectInit = new ProjectInitialization
@@ -107,40 +92,12 @@ public class ProjectInitService : IProjectInitService
             {
                 Success = false,
                 Message = "An error occurred while initializing the project.",
-                CorrelationId = string.Empty,
+                CorrelationId = Guid.Empty,
                 CreatedAt = DateTime.UtcNow
             };
         }
     }
 
-    /// <summary>
-    /// Generate a unique correlation ID
-    /// </summary>
-    /// <returns>8-character correlation ID in format PROJ1234</returns>
-    public async Task<string> GenerateCorrelationIdAsync()
-    {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        const int maxAttempts = 10;
-        
-        for (int attempt = 0; attempt < maxAttempts; attempt++)
-        {
-            var randomPart = new string(Enumerable.Repeat(chars, 4)
-                .Select(s => s[_random.Next(s.Length)]).ToArray());
-            
-            var correlationId = $"PROJ{randomPart}";
-            
-            // Check if this ID already exists
-            var exists = await _repository.ExistsByCorrelationIdAsync(correlationId);
-            if (!exists)
-            {
-                return correlationId;
-            }
-        }
-        
-        // Fallback to GUID-based approach if we can't generate unique ID
-        var guidPart = Guid.NewGuid().ToString("N")[..4].ToUpper();
-        return $"PROJ{guidPart}";
-    }
 
     /// <summary>
     /// Validate if FilloutData contains valid JSON

@@ -242,7 +242,7 @@ public class ProjectInitResponse
     /// <summary>
     /// Unique correlation ID for tracking the project
     /// </summary>
-    public string CorrelationId { get; set; } = string.Empty;
+    public Guid CorrelationId { get; set; } = Guid.Empty;
     
     /// <summary>
     /// When the project was created

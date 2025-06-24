@@ -15,11 +15,6 @@ public interface IProjectInitService
     /// <returns>Project initialization response with correlation ID</returns>
     Task<ProjectInitResponse> InitializeProjectAsync(ProjectInitRequest request);
     
-    /// <summary>
-    /// Generate a unique correlation ID
-    /// </summary>
-    /// <returns>8-character correlation ID in format PROJ1234</returns>
-    Task<string> GenerateCorrelationIdAsync();
     
     /// <summary>
     /// Validate if FilloutData contains valid JSON
