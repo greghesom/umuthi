@@ -57,20 +57,6 @@ public class ProjectInitService : IProjectInitService
                 };
             }
 
-            // Validate JSON
-            if (!ValidateJsonString(request.FilloutData))
-            {
-                _logger.LogWarning("Invalid JSON provided in FilloutData for GoogleSheetRowId: {GoogleSheetRowId}", request.GoogleSheetRowId);
-                
-                return new ProjectInitResponse
-                {
-                    Success = false,
-                    Message = "FilloutData must be valid JSON format.",
-                    CorrelationId = Guid.Empty,
-                    CreatedAt = DateTime.UtcNow
-                };
-            }
-
             // Generate unique correlation ID
             var correlationId = Guid.NewGuid();
 
@@ -112,26 +98,4 @@ public class ProjectInitService : IProjectInitService
     }
 
 
-    /// <summary>
-    /// Validate if FilloutData contains valid JSON
-    /// </summary>
-    /// <param name="filloutData">JSON string to validate</param>
-    /// <returns>True if valid JSON</returns>
-    public bool ValidateJsonString(string filloutData)
-    {
-        if (string.IsNullOrWhiteSpace(filloutData))
-        {
-            return false;
-        }
-
-        try
-        {
-            JsonDocument.Parse(filloutData);
-            return true;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
-    }
 }

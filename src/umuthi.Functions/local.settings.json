@@ -2,10 +2,9 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "ConnectionStrings:DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=UmuthiDb;Trusted_Connection=true;MultipleActiveResultSets=true",
-    
-    // Fillout Webhook Configuration
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "DOTNET_ENVIRONMENT": "Development",
+    "FUNCTIONS_INPROC_NET8_ENABLED": 1,
     "FilloutWebhook:Secret": "your-webhook-secret-here",
     "FilloutWebhook:MaxPayloadSize": "1048576",
     "FilloutWebhook:EnableSignatureValidation": "true"

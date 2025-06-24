@@ -16,10 +16,4 @@ public interface IProjectInitService
     Task<ProjectInitResponse> InitializeProjectAsync(ProjectInitRequest request);
     
     
-    /// <summary>
-    /// Validate if FilloutData contains valid JSON
-    /// </summary>
-    /// <param name="filloutData">JSON string to validate</param>
-    /// <returns>True if valid JSON</returns>
-    bool ValidateJsonString(string filloutData);
 }
