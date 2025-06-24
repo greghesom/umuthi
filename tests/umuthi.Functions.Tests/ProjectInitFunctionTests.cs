@@ -43,11 +43,12 @@ public class ProjectInitFunctionTests
             MakeCustomerId = "MAKE456"
         };
 
+        var testGuid = Guid.NewGuid();
         var response = new ProjectInitResponse
         {
             Success = true,
             Message = "Project initialized successfully",
-            CorrelationId = "PROJ1234",
+            CorrelationId = testGuid,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -63,7 +64,7 @@ public class ProjectInitFunctionTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var actualResponse = Assert.IsType<ProjectInitResponse>(okResult.Value);
         Assert.True(actualResponse.Success);
-        Assert.Equal("PROJ1234", actualResponse.CorrelationId);
+        Assert.Equal(testGuid, actualResponse.CorrelationId);
         
         _mockProjectInitService.Verify(s => s.InitializeProjectAsync(It.IsAny<ProjectInitRequest>()), Times.Once);
         _mockUsageTrackingService.Verify(s => s.TrackUsageAsync(
@@ -95,7 +96,7 @@ public class ProjectInitFunctionTests
         {
             Success = false,
             Message = "A project with the same email and Google Sheet row ID already exists.",
-            CorrelationId = string.Empty,
+            CorrelationId = Guid.Empty,
             CreatedAt = DateTime.UtcNow
         };
 

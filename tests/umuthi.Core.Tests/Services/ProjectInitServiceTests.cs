@@ -41,7 +41,7 @@ public class ProjectInitServiceTests
 
         _repositoryMock.Setup(r => r.ExistsByEmailAndRowIdAsync(request.Email, request.GoogleSheetRowId))
             .ReturnsAsync(false);
-        _repositoryMock.Setup(r => r.ExistsByCorrelationIdAsync(It.IsAny<string>()))
+        _repositoryMock.Setup(r => r.ExistsByCorrelationIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(false);
         _repositoryMock.Setup(r => r.AddAsync(It.IsAny<ProjectInitialization>()))
             .ReturnsAsync((ProjectInitialization p) => p);
@@ -52,9 +52,7 @@ public class ProjectInitServiceTests
         // Assert
         Assert.True(result.Success);
         Assert.Equal("Project initialized successfully", result.Message);
-        Assert.NotEmpty(result.CorrelationId);
-        Assert.StartsWith("PROJ", result.CorrelationId);
-        Assert.Equal(8, result.CorrelationId.Length);
+        Assert.NotEqual(Guid.Empty, result.CorrelationId);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<ProjectInitialization>()), Times.Once);
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
@@ -80,7 +78,7 @@ public class ProjectInitServiceTests
         // Assert
         Assert.False(result.Success);
         Assert.Contains("already exists", result.Message);
-        Assert.Empty(result.CorrelationId);
+        Assert.Equal(Guid.Empty, result.CorrelationId);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<ProjectInitialization>()), Times.Never);
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Never);
     }
@@ -106,25 +104,9 @@ public class ProjectInitServiceTests
         // Assert
         Assert.False(result.Success);
         Assert.Contains("valid JSON", result.Message);
-        Assert.Empty(result.CorrelationId);
+        Assert.Equal(Guid.Empty, result.CorrelationId);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<ProjectInitialization>()), Times.Never);
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Never);
-    }
-
-    [Fact]
-    public async Task GenerateCorrelationIdAsync_ReturnsValidFormat()
-    {
-        // Act
-        var correlationId = await _service.GenerateCorrelationIdAsync();
-
-        // Assert
-        Assert.NotNull(correlationId);
-        Assert.Equal(8, correlationId.Length);
-        Assert.StartsWith("PROJ", correlationId);
-        
-        // Verify last 4 characters are alphanumeric uppercase
-        var lastFour = correlationId.Substring(4);
-        Assert.All(lastFour, c => Assert.True(char.IsLetterOrDigit(c)));
     }
 
     [Theory]
@@ -143,24 +125,5 @@ public class ProjectInitServiceTests
 
         // Assert
         Assert.Equal(expected, result);
-    }
-
-    [Fact]
-    public async Task GenerateCorrelationIdAsync_HandlesDuplicates_ReturnsUniqueId()
-    {
-        // Arrange
-        _repositoryMock.SetupSequence(r => r.ExistsByCorrelationIdAsync(It.IsAny<string>()))
-            .ReturnsAsync(true)  // First attempt exists
-            .ReturnsAsync(true)  // Second attempt exists
-            .ReturnsAsync(false); // Third attempt is unique
-
-        // Act
-        var correlationId = await _service.GenerateCorrelationIdAsync();
-
-        // Assert
-        Assert.NotNull(correlationId);
-        Assert.Equal(8, correlationId.Length);
-        Assert.StartsWith("PROJ", correlationId);
-        _repositoryMock.Verify(r => r.ExistsByCorrelationIdAsync(It.IsAny<string>()), Times.Exactly(3));
     }
 }

@@ -42,6 +42,20 @@ public class ProjectInitService : IProjectInitService
             _logger.LogInformation("Starting project initialization for email: {Email}, GoogleSheetRowId: {GoogleSheetRowId}", 
                 request.Email, request.GoogleSheetRowId);
 
+            // Check for duplicate project
+            if (await _repository.ExistsByEmailAndRowIdAsync(request.Email, request.GoogleSheetRowId))
+            {
+                _logger.LogWarning("Duplicate project initialization attempt for email: {Email}, GoogleSheetRowId: {GoogleSheetRowId}", 
+                    request.Email, request.GoogleSheetRowId);
+                
+                return new ProjectInitResponse
+                {
+                    Success = false,
+                    Message = "A project with the same email and Google Sheet row ID already exists.",
+                    CorrelationId = Guid.Empty,
+                    CreatedAt = DateTime.UtcNow
+                };
+            }
 
             // Validate JSON
             if (!ValidateJsonString(request.FilloutData))

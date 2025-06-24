@@ -191,8 +191,7 @@ public class ProjectInitializationConfiguration : IEntityTypeConfiguration<Proje
         builder.HasKey(p => p.Id);
         
         builder.Property(p => p.CorrelationId)
-            .IsRequired()
-            .HasMaxLength(8);
+            .IsRequired();
             
         builder.Property(p => p.CustomerEmail)
             .IsRequired()
