@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkflowConnection> WorkflowConnections { get; set; }
     public DbSet<NodeTemplate> NodeTemplates { get; set; }
     public DbSet<FilloutSubmission> FilloutSubmissions { get; set; }
+    public DbSet<ProjectInitialization> ProjectInitializations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

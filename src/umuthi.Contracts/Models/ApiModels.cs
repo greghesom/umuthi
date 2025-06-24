@@ -192,3 +192,60 @@ public class FileUploadRequest
     /// </summary>
     public string? Quality { get; set; }
 }
+
+/// <summary>
+/// Request model for project initialization
+/// </summary>
+public class ProjectInitRequest
+{
+    /// <summary>
+    /// Customer email address
+    /// </summary>
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Google Sheet row identifier
+    /// </summary>
+    [Required]
+    public string GoogleSheetRowId { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Fillout form data as JSON string
+    /// </summary>
+    [Required]
+    public string FilloutData { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Make.com customer identifier
+    /// </summary>
+    [Required]
+    public string MakeCustomerId { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Response model for project initialization
+/// </summary>
+public class ProjectInitResponse
+{
+    /// <summary>
+    /// Indicates if the initialization was successful
+    /// </summary>
+    public bool Success { get; set; }
+    
+    /// <summary>
+    /// Success or error message
+    /// </summary>
+    public string Message { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Unique correlation ID for tracking the project
+    /// </summary>
+    public string CorrelationId { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// When the project was created
+    /// </summary>
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}

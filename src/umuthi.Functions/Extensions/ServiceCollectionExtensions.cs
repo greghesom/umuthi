@@ -66,7 +66,8 @@ public static class ServiceCollectionExtensions
             .AddAudioProcessingServices()
             .AddSEOServices()
             .AddUsageTrackingServices()
-            .AddFilloutServices();
+            .AddFilloutServices()
+            .AddProjectServices();
     }
     
     /// <summary>
@@ -78,6 +79,19 @@ public static class ServiceCollectionExtensions
     {
         // Register Fillout services
         services.AddScoped<IFilloutService, FilloutService>();
+        
+        return services;
+    }
+    
+    /// <summary>
+    /// Add project initialization services to the DI container
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddProjectServices(this IServiceCollection services)
+    {
+        // Register project services
+        services.AddScoped<IProjectInitService, ProjectInitService>();
         
         return services;
     }
