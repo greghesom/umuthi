@@ -86,3 +86,78 @@ Content-Type: audio/mp3
 
 < ./test-data/test.mp3
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### =====================================================
+### Project Initialization API
+### =====================================================
+
+### Test Project Initialization - Valid Request
+POST {{baseUrl}}/api/project/init
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "googleSheetRowId": "ROW123",
+  "filloutData": "{\"formId\":\"abc123\",\"submissionId\":\"xyz789\"}",
+  "makeCustomerId": "MAKE456"
+}
+
+### Test Project Initialization - Invalid Email
+POST {{baseUrl}}/api/project/init
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "googleSheetRowId": "ROW123",
+  "filloutData": "{\"formId\":\"abc123\",\"submissionId\":\"xyz789\"}",
+  "makeCustomerId": "MAKE456"
+}
+
+### Test Project Initialization - Missing Required Fields
+POST {{baseUrl}}/api/project/init
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "googleSheetRowId": "",
+  "filloutData": "{\"formId\":\"abc123\",\"submissionId\":\"xyz789\"}",
+  "makeCustomerId": "MAKE456"
+}
+
+### Test Project Initialization - Invalid JSON in FilloutData
+POST {{baseUrl}}/api/project/init
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "googleSheetRowId": "ROW123",
+  "filloutData": "invalid json",
+  "makeCustomerId": "MAKE456"
+}
+
+### Test Project Initialization - Non-alphanumeric GoogleSheetRowId
+POST {{baseUrl}}/api/project/init
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "googleSheetRowId": "ROW-123!",
+  "filloutData": "{\"formId\":\"abc123\",\"submissionId\":\"xyz789\"}",
+  "makeCustomerId": "MAKE456"
+}
+
+### Test Project Initialization - Unauthorized (No API Key)
+POST {{baseUrl}}/api/project/init
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "googleSheetRowId": "ROW123",
+  "filloutData": "{\"formId\":\"abc123\",\"submissionId\":\"xyz789\"}",
+  "makeCustomerId": "MAKE456"
+}
