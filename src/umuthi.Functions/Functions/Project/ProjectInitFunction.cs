@@ -122,28 +122,11 @@ public class ProjectInitFunction
                 });
             }
 
-            // Validate GoogleSheetRowId is alphanumeric
-            if (!IsAlphanumeric(request.GoogleSheetRowId))
-            {
-                const string message = "GoogleSheetRowId must be alphanumeric";
-                _logger.LogWarning(message);
-                
-                await TrackUsageAsync(req, startTime, 400, false, message, requestSize);
-                
-                return new BadRequestObjectResult(new ProjectInitResponse
-                {
-                    Success = false,
-                    Message = message,
-                    CorrelationId = Guid.Empty
-                });
-            }
-
             // Call service to initialize project
             var response = await _projectInitService.InitializeProjectAsync(request);
 
-            // Determine HTTP status code based on response
-            var statusCode = response.Success ? 200 : 
-                           response.Message.Contains("already exists") ? 409 : 400;
+            // Always return 200 for successful responses, even if it's a duplicate
+            var statusCode = response.Success ? 200 : 400;
 
             await TrackUsageAsync(req, startTime, statusCode, response.Success, 
                 response.Success ? null : response.Message, requestSize);
@@ -151,12 +134,10 @@ public class ProjectInitFunction
             _logger.LogInformation("Project initialization completed with status: {Success}, CorrelationId: {CorrelationId}", 
                 response.Success, response.CorrelationId);
 
-            return statusCode switch
-            {
-                200 => new OkObjectResult(response),
-                409 => new ConflictObjectResult(response),
-                _ => new BadRequestObjectResult(response)
-            };
+            // Return appropriate status code
+            return response.Success
+                ? new OkObjectResult(response)
+                : new BadRequestObjectResult(response);
         }
         catch (Exception ex)
         {
@@ -211,8 +192,4 @@ public class ProjectInitFunction
         return results;
     }
 
-    private static bool IsAlphanumeric(string input)
-    {
-        return !string.IsNullOrEmpty(input) && input.All(char.IsLetterOrDigit);
-    }
 }

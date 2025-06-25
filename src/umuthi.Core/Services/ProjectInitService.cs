@@ -45,15 +45,27 @@ public class ProjectInitService : IProjectInitService
             // Check for duplicate project
             if (await _repository.ExistsByGoogleSheetRowIdAsync(request.GoogleSheetRowId))
             {
-                _logger.LogWarning("Duplicate project initialization attempt for GoogleSheetRowId: {GoogleSheetRowId}", 
+                _logger.LogInformation("Existing project found for GoogleSheetRowId: {GoogleSheetRowId}. Returning existing correlation ID.", 
                     request.GoogleSheetRowId);
+                
+                // Retrieve the existing project
+                var existingProject = await _repository.FindAsync(p => p.GoogleSheetRowId == request.GoogleSheetRowId);
+
+                // With this corrected line:
+                if (existingProject == null || !existingProject.Any())
+                {
+                    _logger.LogError("Inconsistent state: ExistsByGoogleSheetRowIdAsync returned true but GetAsync found no records");
+                    throw new InvalidOperationException("Database inconsistency detected");
+                }
+                
+                var project = existingProject.First();
                 
                 return new ProjectInitResponse
                 {
-                    Success = false,
-                    Message = "A project with the same Google Sheet row ID already exists.",
-                    CorrelationId = Guid.Empty,
-                    CreatedAt = DateTime.UtcNow
+                    Success = true, // Change to true as requested
+                    Message = "Project with this Google Sheet row ID already exists.",
+                    CorrelationId = project.CorrelationId, // Return the existing correlation ID
+                    CreatedAt = project.CreatedAt
                 };
             }
 
@@ -96,6 +108,4 @@ public class ProjectInitService : IProjectInitService
             };
         }
     }
-
-
 }

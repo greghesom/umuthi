@@ -79,8 +79,9 @@ public class ProjectInitFunctionTests
             It.IsAny<UsageMetadata>()), Times.Once);
     }
 
+
     [Fact]
-    public async Task InitializeProject_DuplicateProject_ReturnsConflict()
+    public async Task InitializeProject_DuplicateProject_ReturnsOkWithExistingCorrelationId()
     {
         // Arrange
         var request = new ProjectInitRequest
@@ -90,12 +91,16 @@ public class ProjectInitFunctionTests
             MakeCustomerId = "MAKE456"
         };
 
+        // Create a non-empty correlation ID to simulate an existing project
+        var existingCorrelationId = Guid.NewGuid();
+        var createdAt = DateTime.UtcNow.AddDays(-1); // Created in the past
+        
         var response = new ProjectInitResponse
         {
-            Success = false,
-            Message = "A project with the same Google Sheet row ID already exists.",
-            CorrelationId = Guid.Empty,
-            CreatedAt = DateTime.UtcNow
+            Success = true, // Changed from false to true
+            Message = "Project with this Google Sheet row ID already exists.",
+            CorrelationId = existingCorrelationId, // Use the existing correlation ID
+            CreatedAt = createdAt
         };
 
         _mockProjectInitService.Setup(s => s.InitializeProjectAsync(It.IsAny<ProjectInitRequest>()))
@@ -107,10 +112,32 @@ public class ProjectInitFunctionTests
         var result = await _function.InitializeProject(httpRequest);
 
         // Assert
-        var conflictResult = Assert.IsType<ConflictObjectResult>(result);
-        var actualResponse = Assert.IsType<ProjectInitResponse>(conflictResult.Value);
-        Assert.False(actualResponse.Success);
+        var okResult = Assert.IsType<OkObjectResult>(result); // Changed from ConflictObjectResult to OkObjectResult
+        var actualResponse = Assert.IsType<ProjectInitResponse>(okResult.Value);
+        
+        Assert.True(actualResponse.Success);
         Assert.Contains("already exists", actualResponse.Message);
+        Assert.Equal(existingCorrelationId, actualResponse.CorrelationId); // Verify the correlation ID matches
+        Assert.Equal(createdAt, actualResponse.CreatedAt); // Verify the creation timestamp is preserved
+        
+        // Verify service method was called
+        _mockProjectInitService.Verify(s => s.InitializeProjectAsync(
+            It.Is<ProjectInitRequest>(r => r.GoogleSheetRowId == "ROW123")), 
+            Times.Once);
+        
+        // Verify usage tracking was called with correct parameters
+        _mockUsageTrackingService.Verify(s => s.TrackUsageAsync(
+            It.IsAny<HttpRequest>(),
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<long>(),
+            It.IsAny<long>(),
+            It.IsAny<long>(),
+            It.Is<int>(code => code == 200), // Verify status code is 200
+            It.Is<bool>(success => success == true), // Verify success is true
+            It.IsAny<string>(),
+            It.IsAny<UsageMetadata>()),
+            Times.Once);
     }
 
     [Fact]
@@ -150,29 +177,6 @@ public class ProjectInitFunctionTests
         var actualResponse = Assert.IsType<ProjectInitResponse>(badRequestResult.Value);
         Assert.False(actualResponse.Success);
         Assert.Contains("Validation failed", actualResponse.Message);
-    }
-
-    [Fact]
-    public async Task InitializeProject_NonAlphanumericGoogleSheetRowId_ReturnsBadRequest()
-    {
-        // Arrange
-        var request = new ProjectInitRequest
-        {
-            GoogleSheetRowId = "ROW-123!", // Non-alphanumeric
-            FilloutData = "{\"test\": \"data\"}",
-            MakeCustomerId = "MAKE456"
-        };
-
-        var httpRequest = CreateHttpRequest(request);
-
-        // Act
-        var result = await _function.InitializeProject(httpRequest);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        var actualResponse = Assert.IsType<ProjectInitResponse>(badRequestResult.Value);
-        Assert.False(actualResponse.Success);
-        Assert.Contains("alphanumeric", actualResponse.Message);
     }
 
     [Fact]
