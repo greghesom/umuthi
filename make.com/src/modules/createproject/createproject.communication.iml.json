@@ -1,0 +1,18 @@
+{
+	"url": "/project/init", 
+	"method": "POST",
+	"headers": {
+		"Content-Type": "application/json"
+	},
+	"qs": {},
+	"body": { 
+		// "MakeCustomerId": "{{common.clientId}}",  
+		"MakeCustomerId": "fdsfdf",  
+		"GoogleSheetRowId": "{{parameters.googlesheetRowId}}", 
+		// "FilloutData": "{{parameters.filloutData}}"
+		"FilloutData": "{{common}}"
+	},
+	"response": {
+		"output": "{{body}}"  
+    }
+}
