@@ -7,10 +7,9 @@
 	"qs": {},
 	"body": { 
 		// "MakeCustomerId": "{{common.clientId}}",  
-		"MakeCustomerId": "fdsfdf",  
+		"MakeCustomerId": "{{parameters.makeCustomerId}}",  
 		"GoogleSheetRowId": "{{parameters.googlesheetRowId}}", 
-		// "FilloutData": "{{parameters.filloutData}}"
-		"FilloutData": "{{common}}"
+		"FilloutData": "{{parameters.filloutData}}"
 	},
 	"response": {
 		"output": "{{body}}"  

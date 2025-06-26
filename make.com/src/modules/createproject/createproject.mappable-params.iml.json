@@ -11,5 +11,11 @@
 		"type": "text",
 		"label": "RootScan request data",
 		"required": true
+	},
+	{
+		"name": "makeCustomerId",
+		"type": "text",
+		"label": "Make.com Organisation ID",
+		"required": true
 	}
 ]

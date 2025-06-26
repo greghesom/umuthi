@@ -20,8 +20,8 @@
         },
         "module": {
             "createproject": {
-                "label": "Initialise Project",
-                "description": "Each new RootScan project needs to be setup with a customer and billing link",
+                "label": "Start RootScan",
+                "description": "RootScans are saved for billing and usage tracking",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",
@@ -42,7 +42,7 @@
     },
     "origins": [
         {
-            "label": "Origin",
+            "label": "Make.com Production",
             "baseUrl": "https://eu2.make.com/api",
             "appId": "umuthi-api-egw5bu",
             "appVersion": 1,
