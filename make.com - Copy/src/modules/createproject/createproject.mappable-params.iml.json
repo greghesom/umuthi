@@ -1,0 +1,21 @@
+// Defines "email", "name" and "birthday" as module input parameters.
+[
+	{
+		"name": "googlesheetRowId",
+		"type": "text",
+		"label": "Google Row ID",
+		"required": true
+	},
+	{
+		"name": "filloutData",
+		"type": "text",
+		"label": "RootScan request data",
+		"required": true
+	},
+	{
+		"name": "makeCustomerId",
+		"type": "text",
+		"label": "Make.com Organisation ID",
+		"required": true
+	}
+]

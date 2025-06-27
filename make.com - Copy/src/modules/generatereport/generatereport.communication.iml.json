@@ -1,0 +1,11 @@
+{
+    "url": "/rootscan/generate-report?correlationId={{parameters.correlationId}}",
+    "method": "POST",
+    "body": {
+        "rootScanRequest": "{{parameters.rootScanRequest}}",
+        "keywordResearchResult": "{{parameters.keywordResearchResult}}",
+        "competitiveAnalysisResult": "{{parameters.competitiveAnalysisResult}}",
+        "marketInsightResult": "{{parameters.marketInsightResult}}",
+        "technicalAuditResult": "{{parameters.technicalAuditResult}}"
+    }
+}

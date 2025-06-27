@@ -1,0 +1,4 @@
+{
+    "url": "/GetSEODomainOverview?domain={{parameters.domain}}",
+    "method": "GET"
+}

@@ -8,7 +8,7 @@
     },
     {
         "name": "rootScanRequest",
-        "type": "any",
+        "type": "object",
         "label": "RootScan Request Data",
         "required": true,
         "help": "The full RootScan request object from the 'Create Project' module.",
@@ -45,7 +45,7 @@
             },
             {
                 "name": "clientInfo",
-                "type": "any",
+                "type": "object",
                 "label": "Client Information",
                 "required": true,
                 "spec": [
@@ -66,8 +66,54 @@
         ]
     },
     {
+        "name": "keywordResearchResult",
+        "type": "object",
+        "label": "Keyword Research Result",
+        "required": true,
+        "help": "The result object from the 'Get Keyword Intelligence' module.",
+        "spec": [
+            {
+                "name": "status",
+                "type": "text",
+                "label": "Status"
+            },
+            {
+                "name": "summary",
+                "type": "text",
+                "label": "Summary"
+            },
+            {
+                "name": "chartUrl",
+                "type": "url",
+                "label": "Chart URL"
+            },
+            {
+                "name": "clusters",
+                "type": "array",
+                "label": "Keyword Clusters",
+                "spec": [
+                    {
+                        "name": "title",
+                        "type": "text",
+                        "label": "Title"
+                    },
+                    {
+                        "name": "strategicValue",
+                        "type": "text",
+                        "label": "Strategic Value"
+                    },
+                    {
+                        "name": "keywords",
+                        "type": "array",
+                        "label": "Keywords"
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "name": "competitiveAnalysisResult",
-        "type": "any",
+        "type": "object",
         "label": "Competitive Analysis Result",
         "required": true,
         "help": "The result object from the 'Get Competitive Intelligence' module.",
@@ -101,7 +147,7 @@
             },
             {
                 "name": "shareOfVoice",
-                "type": "any",
+                "type": "object",
                 "label": "Share of Voice",
                 "spec": [
                     {
@@ -115,6 +161,54 @@
                         "label": "Analysis"
                     }
                 ]
+            }
+        ]
+    },
+    {
+        "name": "marketInsightResult",
+        "type": "object",
+        "label": "Market Insight Result",
+        "required": true,
+        "help": "The result object from the 'Get Market Intelligence' module.",
+        "spec": [
+            {
+                "name": "industryTrendsSummary",
+                "type": "text",
+                "label": "Industry Trends Summary"
+            },
+            {
+                "name": "strategicOpportunities",
+                "type": "array",
+                "label": "Strategic Opportunities"
+            },
+            {
+                "name": "contentOpportunities",
+                "type": "array",
+                "label": "Content Opportunities"
+            }
+        ]
+    },
+    {
+        "name": "technicalAuditResult",
+        "type": "object",
+        "label": "Technical Audit Result",
+        "required": true,
+        "help": "The result object from the 'Get Technical Audit' module.",
+        "spec": [
+            {
+                "name": "healthScore",
+                "type": "number",
+                "label": "Health Score"
+            },
+            {
+                "name": "topIssues",
+                "type": "array",
+                "label": "Top Issues"
+            },
+            {
+                "name": "auditReportUrl",
+                "type": "url",
+                "label": "Audit Report URL"
             }
         ]
     }

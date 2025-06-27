@@ -1,26 +1,16 @@
 [
-    {
-        "label": "Other",
-        "modules": [
-            "createproject"
-        ]
-    },
-    {
-        "label": "SEO Analysis",
-        "modules": [
-            "generatereport",
-            "getkeywordintelligence",
-            "getcompetitiveintelligence",
-            "gettechnicalaudit",
-            "getmarketintelligence"
-        ]
-    },
-    {
-        "label": "SE Ranking Data API",
-        "modules": [
-            "seranking/getdomaindata",
-            "seranking/getkeywordsdata",
-            "seranking/getcompetitorsdata"
-        ]
-    }
+	{
+		"label": "Other",
+		"modules": [
+			"createproject",
+			"generatereport",
+			"getcompetitiveintelligence",
+			"getcompetitorsdata",
+			"getdomaindata",
+			"getkeywordintelligence",
+			"getkeywordsdata",
+			"getmarketintelligence",
+			"gettechnicalaudit"
+		]
+	}
 ]

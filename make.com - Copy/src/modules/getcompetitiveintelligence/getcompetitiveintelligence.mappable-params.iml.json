@@ -8,7 +8,7 @@
     },
     {
         "name": "rootScanRequest",
-        "type": "any",
+        "type": "object",
         "label": "RootScan Request Data",
         "required": true,
         "help": "The full RootScan request object from the 'Create Project' module.",
@@ -45,7 +45,7 @@
             },
             {
                 "name": "clientInfo",
-                "type": "any",
+                "type": "object",
                 "label": "Client Information",
                 "required": true,
                 "spec": [
@@ -66,53 +66,46 @@
         ]
     },
     {
-        "name": "competitiveAnalysisResult",
-        "type": "any",
-        "label": "Competitive Analysis Result",
+        "name": "keywordResearchResult",
+        "type": "object",
+        "label": "Keyword Research Result",
         "required": true,
-        "help": "The result object from the 'Get Competitive Intelligence' module.",
+        "help": "The result object from the 'Get Keyword Intelligence' module.",
         "spec": [
             {
-                "name": "competitors",
-                "type": "array",
-                "label": "Competitors",
-                "spec": [
-                    {
-                        "name": "domain",
-                        "type": "text",
-                        "label": "Domain"
-                    },
-                    {
-                        "name": "domainTrust",
-                        "type": "number",
-                        "label": "Domain Trust"
-                    },
-                    {
-                        "name": "organicTraffic",
-                        "type": "number",
-                        "label": "Organic Traffic"
-                    },
-                    {
-                        "name": "screenshotUrl",
-                        "type": "url",
-                        "label": "Screenshot URL"
-                    }
-                ]
+                "name": "status",
+                "type": "text",
+                "label": "Status"
             },
             {
-                "name": "shareOfVoice",
-                "type": "any",
-                "label": "Share of Voice",
+                "name": "summary",
+                "type": "text",
+                "label": "Summary"
+            },
+            {
+                "name": "chartUrl",
+                "type": "url",
+                "label": "Chart URL"
+            },
+            {
+                "name": "clusters",
+                "type": "array",
+                "label": "Keyword Clusters",
                 "spec": [
                     {
-                        "name": "bubbleChartUrl",
-                        "type": "url",
-                        "label": "Bubble Chart URL"
+                        "name": "title",
+                        "type": "text",
+                        "label": "Title"
                     },
                     {
-                        "name": "analysis",
+                        "name": "strategicValue",
                         "type": "text",
-                        "label": "Analysis"
+                        "label": "Strategic Value"
+                    },
+                    {
+                        "name": "keywords",
+                        "type": "array",
+                        "label": "Keywords"
                     }
                 ]
             }

@@ -8,7 +8,7 @@
     },
     {
         "name": "rootScanRequest",
-        "type": "any",
+        "type": "object",
         "label": "RootScan Request Data",
         "required": true,
         "help": "The full RootScan request object from the 'Create Project' module.",
@@ -45,7 +45,7 @@
             },
             {
                 "name": "clientInfo",
-                "type": "any",
+                "type": "object",
                 "label": "Client Information",
                 "required": true,
                 "spec": [
@@ -60,59 +60,6 @@
                         "type": "text",
                         "label": "Client Email",
                         "required": true
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "competitiveAnalysisResult",
-        "type": "any",
-        "label": "Competitive Analysis Result",
-        "required": true,
-        "help": "The result object from the 'Get Competitive Intelligence' module.",
-        "spec": [
-            {
-                "name": "competitors",
-                "type": "array",
-                "label": "Competitors",
-                "spec": [
-                    {
-                        "name": "domain",
-                        "type": "text",
-                        "label": "Domain"
-                    },
-                    {
-                        "name": "domainTrust",
-                        "type": "number",
-                        "label": "Domain Trust"
-                    },
-                    {
-                        "name": "organicTraffic",
-                        "type": "number",
-                        "label": "Organic Traffic"
-                    },
-                    {
-                        "name": "screenshotUrl",
-                        "type": "url",
-                        "label": "Screenshot URL"
-                    }
-                ]
-            },
-            {
-                "name": "shareOfVoice",
-                "type": "any",
-                "label": "Share of Voice",
-                "spec": [
-                    {
-                        "name": "bubbleChartUrl",
-                        "type": "url",
-                        "label": "Bubble Chart URL"
-                    },
-                    {
-                        "name": "analysis",
-                        "type": "text",
-                        "label": "Analysis"
                     }
                 ]
             }
