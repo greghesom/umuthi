@@ -1,14 +1,17 @@
-{
-    "healthScore": {
+[
+    {
+        "name": "healthScore",
         "type": "number",
         "label": "Health Score"
     },
-    "topIssues": {
+    {
+        "name": "topIssues",
         "type": "array",
         "label": "Top Issues"
     },
-    "auditReportUrl": {
+    {
+        "name": "auditReportUrl",
         "type": "url",
         "label": "Audit Report URL"
     }
-}
+]

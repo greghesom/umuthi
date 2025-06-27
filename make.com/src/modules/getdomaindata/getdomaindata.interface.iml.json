@@ -1,38 +1,47 @@
-{
-    "domain": {
+[
+    {
+        "name": "domain",
         "type": "text",
         "label": "Domain"
     },
-    "domainAuthority": {
+    {
+        "name": "domainAuthority",
         "type": "number",
         "label": "Domain Authority"
     },
-    "organicKeywords": {
+    {
+        "name": "organicKeywords",
         "type": "number",
         "label": "Organic Keywords"
     },
-    "organicTraffic": {
+    {
+        "name": "organicTraffic",
         "type": "number",
         "label": "Organic Traffic"
     },
-    "backlinksCount": {
+    {
+        "name": "backlinksCount",
         "type": "number",
         "label": "Backlinks Count"
     },
-    "referringDomains": {
+    {
+        "name": "referringDomains",
         "type": "number",
         "label": "Referring Domains"
     },
-    "domainRating": {
+    {
+        "name": "domainRating",
         "type": "number",
         "label": "Domain Rating"
     },
-    "generatedAt": {
+    {
+        "name": "generatedAt",
         "type": "date",
         "label": "Generated At"
     },
-    "cachedAt": {
+    {
+        "name": "cachedAt",
         "type": "date",
         "label": "Cached At"
     }
-}
+]

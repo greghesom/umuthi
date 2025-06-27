@@ -1,9 +1,11 @@
-{
-    "domain": {
+[
+    {
+        "name": "domain",
         "type": "text",
         "label": "Domain"
     },
-    "topCompetitors": {
+    {
+        "name": "topCompetitors",
         "type": "array",
         "label": "Top Competitors",
         "spec": [
@@ -39,12 +41,14 @@
             }
         ]
     },
-    "generatedAt": {
+    {
+        "name": "generatedAt",
         "type": "date",
         "label": "Generated At"
     },
-    "cachedAt": {
+    {
+        "name": "cachedAt",
         "type": "date",
         "label": "Cached At"
     }
-}
+]

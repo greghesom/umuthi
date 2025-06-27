@@ -1,42 +1,52 @@
-{
-    "projectId": {
+[
+    {
+        "name": "projectId",
         "type": "text",
         "label": "Project ID"
     },
-    "totalKeywords": {
+    {
+        "name": "totalKeywords",
         "type": "number",
         "label": "Total Keywords"
     },
-    "improvedKeywords": {
+    {
+        "name": "improvedKeywords",
         "type": "number",
         "label": "Improved Keywords"
     },
-    "declinedKeywords": {
+    {
+        "name": "declinedKeywords",
         "type": "number",
         "label": "Declined Keywords"
     },
-    "newKeywords": {
+    {
+        "name": "newKeywords",
         "type": "number",
         "label": "New Keywords"
     },
-    "lostKeywords": {
+    {
+        "name": "lostKeywords",
         "type": "number",
         "label": "Lost Keywords"
     },
-    "averagePosition": {
+    {
+        "name": "averagePosition",
         "type": "number",
         "label": "Average Position"
     },
-    "visibilityScore": {
+    {
+        "name": "visibilityScore",
         "type": "number",
         "label": "Visibility Score"
     },
-    "generatedAt": {
+    {
+        "name": "generatedAt",
         "type": "date",
         "label": "Generated At"
     },
-    "cachedAt": {
+    {
+        "name": "cachedAt",
         "type": "date",
         "label": "Cached At"
     }
-}
+]

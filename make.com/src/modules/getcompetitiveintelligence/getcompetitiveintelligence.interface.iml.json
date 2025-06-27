@@ -1,5 +1,6 @@
-{
-    "competitors": {
+[
+    {
+        "name": "competitors",
         "type": "array",
         "label": "Competitors",
         "spec": [
@@ -25,7 +26,8 @@
             }
         ]
     },
-    "shareOfVoice": {
+    {
+        "name": "shareOfVoice",
         "type": "object",
         "label": "Share of Voice",
         "spec": [
@@ -41,4 +43,4 @@
             }
         ]
     }
-}
+]

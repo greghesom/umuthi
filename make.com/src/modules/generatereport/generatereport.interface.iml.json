@@ -1,10 +1,12 @@
-{
-    "reportUrl": {
+[
+    {
+        "name": "reportUrl",
         "type": "url",
         "label": "Report URL"
     },
-    "presentationUrl": {
+    {
+        "name": "presentationUrl",
         "type": "url",
         "label": "Presentation URL"
     }
-}
+]
