@@ -79,7 +79,7 @@ public class KeywordIntelligenceFunction
         
         await _usageTrackingService.TrackUsageAsync(
             req,
-            "GetKeywordIntelligence",
+            OperationTypes.KeywordIntelligence,
             "RootScan",
             requestSize,
             0,

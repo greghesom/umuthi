@@ -52,6 +52,11 @@ public static class OperationTypes
     /// </summary>
     public const string ProjectInit = "PROJECT_INIT";
     
+    /// <summary>
+    /// Keyword intelligence and research operations
+    /// </summary>
+    public const string KeywordIntelligence = "KEYWORD_INTELLIGENCE";
+    
     // SE Ranking Data API Operation Types
     
     /// <summary>
