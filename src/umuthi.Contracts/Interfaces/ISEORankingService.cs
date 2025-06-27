@@ -59,4 +59,144 @@ public interface ISEORankingService
     /// <param name="logger">Logger for tracking the operation</param>
     /// <returns>Complete SEO report data</returns>
     Task<SEOComprehensiveReport> GetComprehensiveReportAsync(string trackingId, ILogger logger);
+    
+    #region SE Ranking Data API Methods
+    
+    // Domain Data API Methods
+    
+    /// <summary>
+    /// Get domain overview data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Domain to analyze</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Domain overview data</returns>
+    Task<DomainOverviewData> GetDomainOverviewAsync(string domain, ILogger logger);
+    
+    /// <summary>
+    /// Get domain keyword positions data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Domain to analyze</param>
+    /// <param name="searchEngine">Search engine (google, bing, yahoo)</param>
+    /// <param name="location">Location/country code</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Domain positions data</returns>
+    Task<DomainPositionsData> GetDomainPositionsAsync(string domain, string searchEngine, string location, ILogger logger);
+    
+    /// <summary>
+    /// Get domain competitors data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Domain to analyze</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Domain competitors data</returns>
+    Task<DomainCompetitorsData> GetDomainCompetitorsAsync(string domain, ILogger logger);
+    
+    // Keywords Data API Methods
+    
+    /// <summary>
+    /// Get keywords overview data from SE Ranking Data API
+    /// </summary>
+    /// <param name="projectId">SE Ranking project ID</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Keywords overview data</returns>
+    Task<KeywordsOverviewData> GetKeywordsOverviewAsync(string projectId, ILogger logger);
+    
+    /// <summary>
+    /// Get keyword positions tracking data from SE Ranking Data API
+    /// </summary>
+    /// <param name="projectId">SE Ranking project ID</param>
+    /// <param name="searchEngine">Search engine (google, bing, yahoo)</param>
+    /// <param name="location">Location/country code</param>
+    /// <param name="device">Device type (desktop, mobile)</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Keyword positions data</returns>
+    Task<KeywordPositionsData> GetKeywordPositionsAsync(string projectId, string searchEngine, string location, string device, ILogger logger);
+    
+    /// <summary>
+    /// Get SERP features data from SE Ranking Data API
+    /// </summary>
+    /// <param name="keyword">Keyword to analyze</param>
+    /// <param name="searchEngine">Search engine (google, bing, yahoo)</param>
+    /// <param name="location">Location/country code</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>SERP features data</returns>
+    Task<SerpFeaturesData> GetSerpFeaturesAsync(string keyword, string searchEngine, string location, ILogger logger);
+    
+    /// <summary>
+    /// Get search volume data from SE Ranking Data API
+    /// </summary>
+    /// <param name="keywords">List of keywords to get volume for</param>
+    /// <param name="location">Location/country code</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Keywords overview data with search volumes</returns>
+    Task<KeywordsOverviewData> GetSearchVolumeAsync(List<string> keywords, string location, ILogger logger);
+    
+    // Backlinks Data API Methods
+    
+    /// <summary>
+    /// Get backlinks overview data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Domain to analyze</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Backlinks overview data</returns>
+    Task<BacklinksOverviewData> GetBacklinksOverviewAsync(string domain, ILogger logger);
+    
+    /// <summary>
+    /// Get detailed backlinks data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Domain to analyze</param>
+    /// <param name="limit">Maximum number of backlinks to return</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Detailed backlinks data</returns>
+    Task<BacklinksDetailedData> GetBacklinksDetailedAsync(string domain, int limit, ILogger logger);
+    
+    /// <summary>
+    /// Get anchor text analysis data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Domain to analyze</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Anchor text analysis data</returns>
+    Task<AnchorTextData> GetAnchorTextAsync(string domain, ILogger logger);
+    
+    // Competitors Data API Methods
+    
+    /// <summary>
+    /// Get competitors overview data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Domain to analyze</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Competitors overview data</returns>
+    Task<CompetitorsOverviewData> GetCompetitorsOverviewAsync(string domain, ILogger logger);
+    
+    /// <summary>
+    /// Get shared keywords analysis data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Your domain</param>
+    /// <param name="competitorDomain">Competitor domain</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Shared keywords data</returns>
+    Task<SharedKeywordsData> GetSharedKeywordsAsync(string domain, string competitorDomain, ILogger logger);
+    
+    /// <summary>
+    /// Get keyword gap analysis data from SE Ranking Data API
+    /// </summary>
+    /// <param name="domain">Your domain</param>
+    /// <param name="competitorDomain">Competitor domain</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Keyword gap analysis data</returns>
+    Task<KeywordGapData> GetKeywordGapAsync(string domain, string competitorDomain, ILogger logger);
+    
+    // SERP Data API Methods
+    
+    /// <summary>
+    /// Get SERP results data from SE Ranking Data API
+    /// </summary>
+    /// <param name="keyword">Keyword to search</param>
+    /// <param name="searchEngine">Search engine (google, bing, yahoo)</param>
+    /// <param name="location">Location/country code</param>
+    /// <param name="device">Device type (desktop, mobile)</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>SERP results data</returns>
+    Task<SerpResultsData> GetSerpResultsAsync(string keyword, string searchEngine, string location, string device, ILogger logger);
+    
+    #endregion
 }

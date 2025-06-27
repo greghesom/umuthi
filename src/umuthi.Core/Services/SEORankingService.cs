@@ -22,6 +22,8 @@ public class SEORankingService : ISEORankingService
     private readonly IConfiguration _configuration;
     private readonly string _seRankingApiKey;
     private readonly string _seRankingBaseUrl;
+    private readonly string _seRankingDataApiKey;
+    private readonly string _seRankingDataApiUrl;
     private readonly Dictionary<string, SEOReportRequestStatus> _pendingReports;
 
     public SEORankingService(
@@ -34,6 +36,11 @@ public class SEORankingService : ISEORankingService
         _configuration = configuration;
         _seRankingApiKey = configuration["SEORanking:ApiKey"] ?? throw new InvalidOperationException("SE Ranking API key not configured");
         _seRankingBaseUrl = configuration["SEORanking:BaseUrl"] ?? "https://api.seranking.com/";
+        
+        // Data API configuration (use regular API as fallback)
+        _seRankingDataApiKey = configuration["SEORanking:DataApiKey"] ?? _seRankingApiKey;
+        _seRankingDataApiUrl = configuration["SEORanking:DataApiUrl"] ?? "https://api4.seranking.com/";
+        
         _pendingReports = new Dictionary<string, SEOReportRequestStatus>();
 
         // Configure HTTP client
@@ -326,6 +333,717 @@ public class SEORankingService : ISEORankingService
         }
     }
 
+    #region SE Ranking Data API Methods
+
+    /// <summary>
+    /// Get domain overview data from SE Ranking Data API
+    /// </summary>
+    public async Task<DomainOverviewData> GetDomainOverviewAsync(string domain, ILogger logger)
+    {
+        var cacheKey = $"seo_domain_overview_{domain}";
+        
+        // Check cache first - 6 hours for domain data
+        if (_memoryCache.TryGetValue(cacheKey, out DomainOverviewData? cachedData))
+        {
+            logger.LogInformation("Returning cached domain overview data for domain {Domain}", domain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh domain overview data for domain {Domain}", domain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var response = await dataClient.GetAsync($"domain/overview?domain={Uri.EscapeDataString(domain)}");
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapDomainOverviewData(jsonContent, domain);
+
+            // Cache for 6 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached domain overview data for domain {Domain}", domain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch domain overview data for domain {Domain}", domain);
+            throw new InvalidOperationException($"Failed to fetch domain overview data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching domain overview data for domain {Domain}", domain);
+            throw new InvalidOperationException("Timeout while fetching domain overview data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get domain keyword positions data from SE Ranking Data API
+    /// </summary>
+    public async Task<DomainPositionsData> GetDomainPositionsAsync(string domain, string searchEngine, string location, ILogger logger)
+    {
+        var cacheKey = $"seo_domain_positions_{domain}_{searchEngine}_{location}";
+        
+        // Check cache first - 6 hours for domain data
+        if (_memoryCache.TryGetValue(cacheKey, out DomainPositionsData? cachedData))
+        {
+            logger.LogInformation("Returning cached domain positions data for domain {Domain}", domain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh domain positions data for domain {Domain}", domain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var url = $"domain/positions?domain={Uri.EscapeDataString(domain)}&se={Uri.EscapeDataString(searchEngine)}&location={Uri.EscapeDataString(location)}";
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapDomainPositionsData(jsonContent, domain, searchEngine, location);
+
+            // Cache for 6 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached domain positions data for domain {Domain}", domain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch domain positions data for domain {Domain}", domain);
+            throw new InvalidOperationException($"Failed to fetch domain positions data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching domain positions data for domain {Domain}", domain);
+            throw new InvalidOperationException("Timeout while fetching domain positions data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get domain competitors data from SE Ranking Data API
+    /// </summary>
+    public async Task<DomainCompetitorsData> GetDomainCompetitorsAsync(string domain, ILogger logger)
+    {
+        var cacheKey = $"seo_domain_competitors_{domain}";
+        
+        // Check cache first - 6 hours for domain data
+        if (_memoryCache.TryGetValue(cacheKey, out DomainCompetitorsData? cachedData))
+        {
+            logger.LogInformation("Returning cached domain competitors data for domain {Domain}", domain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh domain competitors data for domain {Domain}", domain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var response = await dataClient.GetAsync($"domain/competitors?domain={Uri.EscapeDataString(domain)}");
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapDomainCompetitorsData(jsonContent, domain);
+
+            // Cache for 6 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached domain competitors data for domain {Domain}", domain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch domain competitors data for domain {Domain}", domain);
+            throw new InvalidOperationException($"Failed to fetch domain competitors data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching domain competitors data for domain {Domain}", domain);
+            throw new InvalidOperationException("Timeout while fetching domain competitors data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get keywords overview data from SE Ranking Data API
+    /// </summary>
+    public async Task<KeywordsOverviewData> GetKeywordsOverviewAsync(string projectId, ILogger logger)
+    {
+        var cacheKey = $"seo_keywords_overview_{projectId}";
+        
+        // Check cache first - 2 hours for keywords data
+        if (_memoryCache.TryGetValue(cacheKey, out KeywordsOverviewData? cachedData))
+        {
+            logger.LogInformation("Returning cached keywords overview data for project {ProjectId}", projectId);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh keywords overview data for project {ProjectId}", projectId);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var response = await dataClient.GetAsync($"keywords/overview?project_id={Uri.EscapeDataString(projectId)}");
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapKeywordsOverviewData(jsonContent, projectId);
+
+            // Cache for 2 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached keywords overview data for project {ProjectId}", projectId);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch keywords overview data for project {ProjectId}", projectId);
+            throw new InvalidOperationException($"Failed to fetch keywords overview data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching keywords overview data for project {ProjectId}", projectId);
+            throw new InvalidOperationException("Timeout while fetching keywords overview data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get keyword positions tracking data from SE Ranking Data API
+    /// </summary>
+    public async Task<KeywordPositionsData> GetKeywordPositionsAsync(string projectId, string searchEngine, string location, string device, ILogger logger)
+    {
+        var cacheKey = $"seo_keyword_positions_{projectId}_{searchEngine}_{location}_{device}";
+        
+        // Check cache first - 2 hours for keywords data
+        if (_memoryCache.TryGetValue(cacheKey, out KeywordPositionsData? cachedData))
+        {
+            logger.LogInformation("Returning cached keyword positions data for project {ProjectId}", projectId);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh keyword positions data for project {ProjectId}", projectId);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var url = $"keywords/positions?project_id={Uri.EscapeDataString(projectId)}&se={Uri.EscapeDataString(searchEngine)}&location={Uri.EscapeDataString(location)}&device={Uri.EscapeDataString(device)}";
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapKeywordPositionsData(jsonContent, projectId, searchEngine, location, device);
+
+            // Cache for 2 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached keyword positions data for project {ProjectId}", projectId);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch keyword positions data for project {ProjectId}", projectId);
+            throw new InvalidOperationException($"Failed to fetch keyword positions data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching keyword positions data for project {ProjectId}", projectId);
+            throw new InvalidOperationException("Timeout while fetching keyword positions data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get SERP features data from SE Ranking Data API
+    /// </summary>
+    public async Task<SerpFeaturesData> GetSerpFeaturesAsync(string keyword, string searchEngine, string location, ILogger logger)
+    {
+        var cacheKey = $"seo_serp_features_{keyword}_{searchEngine}_{location}";
+        
+        // Check cache first - 1 hour for SERP data
+        if (_memoryCache.TryGetValue(cacheKey, out SerpFeaturesData? cachedData))
+        {
+            logger.LogInformation("Returning cached SERP features data for keyword {Keyword}", keyword);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh SERP features data for keyword {Keyword}", keyword);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var url = $"keywords/serp-features?keyword={Uri.EscapeDataString(keyword)}&se={Uri.EscapeDataString(searchEngine)}&location={Uri.EscapeDataString(location)}";
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapSerpFeaturesData(jsonContent, keyword, searchEngine, location);
+
+            // Cache for 1 hour
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached SERP features data for keyword {Keyword}", keyword);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch SERP features data for keyword {Keyword}", keyword);
+            throw new InvalidOperationException($"Failed to fetch SERP features data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching SERP features data for keyword {Keyword}", keyword);
+            throw new InvalidOperationException("Timeout while fetching SERP features data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get search volume data from SE Ranking Data API
+    /// </summary>
+    public async Task<KeywordsOverviewData> GetSearchVolumeAsync(List<string> keywords, string location, ILogger logger)
+    {
+        var keywordsList = string.Join(",", keywords);
+        var cacheKey = $"seo_search_volume_{keywordsList.GetHashCode()}_{location}";
+        
+        // Check cache first - 2 hours for keywords data
+        if (_memoryCache.TryGetValue(cacheKey, out KeywordsOverviewData? cachedData))
+        {
+            logger.LogInformation("Returning cached search volume data for keywords");
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh search volume data for {Count} keywords", keywords.Count);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var url = $"keywords/search-volume?keywords={Uri.EscapeDataString(keywordsList)}&location={Uri.EscapeDataString(location)}";
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapSearchVolumeData(jsonContent, keywords, location);
+
+            // Cache for 2 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached search volume data for {Count} keywords", keywords.Count);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch search volume data for keywords");
+            throw new InvalidOperationException($"Failed to fetch search volume data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching search volume data for keywords");
+            throw new InvalidOperationException("Timeout while fetching search volume data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get backlinks overview data from SE Ranking Data API
+    /// </summary>
+    public async Task<BacklinksOverviewData> GetBacklinksOverviewAsync(string domain, ILogger logger)
+    {
+        var cacheKey = $"seo_backlinks_overview_{domain}";
+        
+        // Check cache first - 12 hours for backlinks data
+        if (_memoryCache.TryGetValue(cacheKey, out BacklinksOverviewData? cachedData))
+        {
+            logger.LogInformation("Returning cached backlinks overview data for domain {Domain}", domain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh backlinks overview data for domain {Domain}", domain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var response = await dataClient.GetAsync($"backlinks/overview?domain={Uri.EscapeDataString(domain)}");
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapBacklinksOverviewData(jsonContent, domain);
+
+            // Cache for 12 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached backlinks overview data for domain {Domain}", domain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch backlinks overview data for domain {Domain}", domain);
+            throw new InvalidOperationException($"Failed to fetch backlinks overview data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching backlinks overview data for domain {Domain}", domain);
+            throw new InvalidOperationException("Timeout while fetching backlinks overview data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get detailed backlinks data from SE Ranking Data API
+    /// </summary>
+    public async Task<BacklinksDetailedData> GetBacklinksDetailedAsync(string domain, int limit, ILogger logger)
+    {
+        var cacheKey = $"seo_backlinks_detailed_{domain}_{limit}";
+        
+        // Check cache first - 12 hours for backlinks data
+        if (_memoryCache.TryGetValue(cacheKey, out BacklinksDetailedData? cachedData))
+        {
+            logger.LogInformation("Returning cached detailed backlinks data for domain {Domain}", domain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh detailed backlinks data for domain {Domain}", domain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var url = $"backlinks/detailed?domain={Uri.EscapeDataString(domain)}&limit={limit}";
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapBacklinksDetailedData(jsonContent, domain);
+
+            // Cache for 12 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached detailed backlinks data for domain {Domain}", domain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch detailed backlinks data for domain {Domain}", domain);
+            throw new InvalidOperationException($"Failed to fetch detailed backlinks data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching detailed backlinks data for domain {Domain}", domain);
+            throw new InvalidOperationException("Timeout while fetching detailed backlinks data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get anchor text analysis data from SE Ranking Data API
+    /// </summary>
+    public async Task<AnchorTextData> GetAnchorTextAsync(string domain, ILogger logger)
+    {
+        var cacheKey = $"seo_anchor_text_{domain}";
+        
+        // Check cache first - 12 hours for backlinks data
+        if (_memoryCache.TryGetValue(cacheKey, out AnchorTextData? cachedData))
+        {
+            logger.LogInformation("Returning cached anchor text data for domain {Domain}", domain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh anchor text data for domain {Domain}", domain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var response = await dataClient.GetAsync($"backlinks/anchors?domain={Uri.EscapeDataString(domain)}");
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapAnchorTextData(jsonContent, domain);
+
+            // Cache for 12 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached anchor text data for domain {Domain}", domain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch anchor text data for domain {Domain}", domain);
+            throw new InvalidOperationException($"Failed to fetch anchor text data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching anchor text data for domain {Domain}", domain);
+            throw new InvalidOperationException("Timeout while fetching anchor text data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get competitors overview data from SE Ranking Data API
+    /// </summary>
+    public async Task<CompetitorsOverviewData> GetCompetitorsOverviewAsync(string domain, ILogger logger)
+    {
+        var cacheKey = $"seo_competitors_overview_{domain}";
+        
+        // Check cache first - 6 hours for domain data
+        if (_memoryCache.TryGetValue(cacheKey, out CompetitorsOverviewData? cachedData))
+        {
+            logger.LogInformation("Returning cached competitors overview data for domain {Domain}", domain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh competitors overview data for domain {Domain}", domain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var response = await dataClient.GetAsync($"competitors/overview?domain={Uri.EscapeDataString(domain)}");
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapCompetitorsOverviewData(jsonContent, domain);
+
+            // Cache for 6 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached competitors overview data for domain {Domain}", domain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch competitors overview data for domain {Domain}", domain);
+            throw new InvalidOperationException($"Failed to fetch competitors overview data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching competitors overview data for domain {Domain}", domain);
+            throw new InvalidOperationException("Timeout while fetching competitors overview data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get shared keywords analysis data from SE Ranking Data API
+    /// </summary>
+    public async Task<SharedKeywordsData> GetSharedKeywordsAsync(string domain, string competitorDomain, ILogger logger)
+    {
+        var cacheKey = $"seo_shared_keywords_{domain}_{competitorDomain}";
+        
+        // Check cache first - 6 hours for domain data
+        if (_memoryCache.TryGetValue(cacheKey, out SharedKeywordsData? cachedData))
+        {
+            logger.LogInformation("Returning cached shared keywords data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh shared keywords data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var url = $"competitors/keywords?domain={Uri.EscapeDataString(domain)}&competitor={Uri.EscapeDataString(competitorDomain)}";
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapSharedKeywordsData(jsonContent, domain, competitorDomain);
+
+            // Cache for 6 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached shared keywords data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch shared keywords data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+            throw new InvalidOperationException($"Failed to fetch shared keywords data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching shared keywords data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+            throw new InvalidOperationException("Timeout while fetching shared keywords data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get keyword gap analysis data from SE Ranking Data API
+    /// </summary>
+    public async Task<KeywordGapData> GetKeywordGapAsync(string domain, string competitorDomain, ILogger logger)
+    {
+        var cacheKey = $"seo_keyword_gap_{domain}_{competitorDomain}";
+        
+        // Check cache first - 6 hours for domain data
+        if (_memoryCache.TryGetValue(cacheKey, out KeywordGapData? cachedData))
+        {
+            logger.LogInformation("Returning cached keyword gap data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh keyword gap data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var url = $"competitors/gaps?domain={Uri.EscapeDataString(domain)}&competitor={Uri.EscapeDataString(competitorDomain)}";
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapKeywordGapData(jsonContent, domain, competitorDomain);
+
+            // Cache for 6 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached keyword gap data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch keyword gap data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+            throw new InvalidOperationException($"Failed to fetch keyword gap data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching keyword gap data for domains {Domain} vs {CompetitorDomain}", domain, competitorDomain);
+            throw new InvalidOperationException("Timeout while fetching keyword gap data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Get SERP results data from SE Ranking Data API
+    /// </summary>
+    public async Task<SerpResultsData> GetSerpResultsAsync(string keyword, string searchEngine, string location, string device, ILogger logger)
+    {
+        var cacheKey = $"seo_serp_results_{keyword}_{searchEngine}_{location}_{device}";
+        
+        // Check cache first - 1 hour for SERP data
+        if (_memoryCache.TryGetValue(cacheKey, out SerpResultsData? cachedData))
+        {
+            logger.LogInformation("Returning cached SERP results data for keyword {Keyword}", keyword);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh SERP results data for keyword {Keyword}", keyword);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            var url = $"serp/results?keyword={Uri.EscapeDataString(keyword)}&se={Uri.EscapeDataString(searchEngine)}&location={Uri.EscapeDataString(location)}&device={Uri.EscapeDataString(device)}";
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapSerpResultsData(jsonContent, keyword, searchEngine, location, device);
+
+            // Cache for 1 hour
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached SERP results data for keyword {Keyword}", keyword);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch SERP results data for keyword {Keyword}", keyword);
+            throw new InvalidOperationException($"Failed to fetch SERP results data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching SERP results data for keyword {Keyword}", keyword);
+            throw new InvalidOperationException("Timeout while fetching SERP results data", ex);
+        }
+    }
+
+    /// <summary>
+    /// Create HTTP client configured for SE Ranking Data API
+    /// </summary>
+    private HttpClient CreateDataApiClient()
+    {
+        var client = new HttpClient();
+        client.BaseAddress = new Uri(_seRankingDataApiUrl);
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_seRankingDataApiKey}");
+        client.Timeout = TimeSpan.FromSeconds(30);
+        return client;
+    }
+
+    #endregion
+
     #region Private Mapping Methods
 
     private static SEOAuditReport MapAuditReport(SERAuditApiResponse apiResponse, string domain)
@@ -441,6 +1159,416 @@ public class SEORankingService : ISEORankingService
         }
 
         return report;
+    }
+
+    #endregion
+
+    #region Data API Mapping Methods
+
+    private static DomainOverviewData MapDomainOverviewData(string jsonContent, string domain)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        return new DomainOverviewData
+        {
+            Domain = domain,
+            DomainAuthority = root.TryGetProperty("domain_authority", out var da) ? da.GetInt32() : 0,
+            OrganicKeywords = root.TryGetProperty("organic_keywords", out var ok) ? ok.GetInt32() : 0,
+            OrganicTraffic = root.TryGetProperty("organic_traffic", out var ot) ? ot.GetInt32() : 0,
+            BacklinksCount = root.TryGetProperty("backlinks_count", out var bc) ? bc.GetInt32() : 0,
+            ReferringDomains = root.TryGetProperty("referring_domains", out var rd) ? rd.GetInt32() : 0,
+            DomainRating = root.TryGetProperty("domain_rating", out var dr) ? dr.GetInt32() : 0
+        };
+    }
+
+    private static DomainPositionsData MapDomainPositionsData(string jsonContent, string domain, string searchEngine, string location)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new DomainPositionsData
+        {
+            Domain = domain,
+            SearchEngine = searchEngine,
+            Location = location,
+            TotalKeywords = root.TryGetProperty("total_keywords", out var tk) ? tk.GetInt32() : 0,
+            AveragePosition = root.TryGetProperty("average_position", out var ap) ? ap.GetDouble() : 0,
+            Top3Keywords = root.TryGetProperty("top3_keywords", out var t3) ? t3.GetInt32() : 0,
+            Top10Keywords = root.TryGetProperty("top10_keywords", out var t10) ? t10.GetInt32() : 0,
+            Top50Keywords = root.TryGetProperty("top50_keywords", out var t50) ? t50.GetInt32() : 0
+        };
+
+        if (root.TryGetProperty("keywords", out var keywordsArray) && keywordsArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var keywordElement in keywordsArray.EnumerateArray())
+            {
+                data.KeywordPositions.Add(new DomainKeywordPosition
+                {
+                    Keyword = keywordElement.TryGetProperty("keyword", out var k) ? k.GetString() ?? string.Empty : string.Empty,
+                    Position = keywordElement.TryGetProperty("position", out var p) ? p.GetInt32() : 0,
+                    PreviousPosition = keywordElement.TryGetProperty("previous_position", out var pp) ? pp.GetInt32() : 0,
+                    SearchVolume = keywordElement.TryGetProperty("search_volume", out var sv) ? sv.GetInt32() : 0,
+                    RankingUrl = keywordElement.TryGetProperty("ranking_url", out var ru) ? ru.GetString() ?? string.Empty : string.Empty,
+                    EstimatedTraffic = keywordElement.TryGetProperty("estimated_traffic", out var et) ? et.GetInt32() : 0
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static DomainCompetitorsData MapDomainCompetitorsData(string jsonContent, string domain)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new DomainCompetitorsData
+        {
+            Domain = domain
+        };
+
+        if (root.TryGetProperty("competitors", out var competitorsArray) && competitorsArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var competitorElement in competitorsArray.EnumerateArray())
+            {
+                data.Competitors.Add(new DomainCompetitor
+                {
+                    Domain = competitorElement.TryGetProperty("domain", out var d) ? d.GetString() ?? string.Empty : string.Empty,
+                    CommonKeywords = competitorElement.TryGetProperty("common_keywords", out var ck) ? ck.GetInt32() : 0,
+                    CompetitionLevel = competitorElement.TryGetProperty("competition_level", out var cl) ? cl.GetDouble() : 0,
+                    EstimatedTraffic = competitorElement.TryGetProperty("estimated_traffic", out var et) ? et.GetInt32() : 0,
+                    DomainAuthority = competitorElement.TryGetProperty("domain_authority", out var da) ? da.GetInt32() : 0
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static KeywordsOverviewData MapKeywordsOverviewData(string jsonContent, string projectId)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        return new KeywordsOverviewData
+        {
+            ProjectId = projectId,
+            TotalKeywords = root.TryGetProperty("total_keywords", out var tk) ? tk.GetInt32() : 0,
+            ImprovedKeywords = root.TryGetProperty("improved_keywords", out var ik) ? ik.GetInt32() : 0,
+            DeclinedKeywords = root.TryGetProperty("declined_keywords", out var dk) ? dk.GetInt32() : 0,
+            NewKeywords = root.TryGetProperty("new_keywords", out var nk) ? nk.GetInt32() : 0,
+            LostKeywords = root.TryGetProperty("lost_keywords", out var lk) ? lk.GetInt32() : 0,
+            AveragePosition = root.TryGetProperty("average_position", out var ap) ? ap.GetDouble() : 0,
+            VisibilityScore = root.TryGetProperty("visibility_score", out var vs) ? vs.GetDouble() : 0
+        };
+    }
+
+    private static KeywordPositionsData MapKeywordPositionsData(string jsonContent, string projectId, string searchEngine, string location, string device)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new KeywordPositionsData
+        {
+            ProjectId = projectId,
+            SearchEngine = searchEngine,
+            Location = location,
+            Device = device
+        };
+
+        if (root.TryGetProperty("keywords", out var keywordsArray) && keywordsArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var keywordElement in keywordsArray.EnumerateArray())
+            {
+                data.Keywords.Add(new KeywordPositionDetail
+                {
+                    Keyword = keywordElement.TryGetProperty("keyword", out var k) ? k.GetString() ?? string.Empty : string.Empty,
+                    Position = keywordElement.TryGetProperty("position", out var p) ? p.GetInt32() : 0,
+                    PreviousPosition = keywordElement.TryGetProperty("previous_position", out var pp) ? pp.GetInt32() : 0,
+                    BestPosition = keywordElement.TryGetProperty("best_position", out var bp) ? bp.GetInt32() : 0,
+                    SearchVolume = keywordElement.TryGetProperty("search_volume", out var sv) ? sv.GetInt32() : 0,
+                    Difficulty = keywordElement.TryGetProperty("difficulty", out var d) ? d.GetInt32() : 0,
+                    Competition = keywordElement.TryGetProperty("competition", out var c) ? c.GetString() ?? string.Empty : string.Empty,
+                    CostPerClick = keywordElement.TryGetProperty("cost_per_click", out var cpc) ? cpc.GetDecimal() : 0,
+                    RankingUrl = keywordElement.TryGetProperty("ranking_url", out var ru) ? ru.GetString() ?? string.Empty : string.Empty,
+                    LandingPage = keywordElement.TryGetProperty("landing_page", out var lp) ? lp.GetString() ?? string.Empty : string.Empty
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static SerpFeaturesData MapSerpFeaturesData(string jsonContent, string keyword, string searchEngine, string location)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new SerpFeaturesData
+        {
+            Keyword = keyword,
+            SearchEngine = searchEngine,
+            Location = location
+        };
+
+        if (root.TryGetProperty("features", out var featuresArray) && featuresArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var featureElement in featuresArray.EnumerateArray())
+            {
+                data.Features.Add(new SerpFeature
+                {
+                    Type = featureElement.TryGetProperty("type", out var t) ? t.GetString() ?? string.Empty : string.Empty,
+                    Title = featureElement.TryGetProperty("title", out var title) ? title.GetString() ?? string.Empty : string.Empty,
+                    Url = featureElement.TryGetProperty("url", out var url) ? url.GetString() ?? string.Empty : string.Empty,
+                    Position = featureElement.TryGetProperty("position", out var p) ? p.GetInt32() : 0,
+                    Snippet = featureElement.TryGetProperty("snippet", out var s) ? s.GetString() ?? string.Empty : string.Empty
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static KeywordsOverviewData MapSearchVolumeData(string jsonContent, List<string> keywords, string location)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        return new KeywordsOverviewData
+        {
+            ProjectId = $"search_volume_{location}",
+            TotalKeywords = keywords.Count,
+            AveragePosition = 0, // Not applicable for search volume
+            VisibilityScore = 0 // Not applicable for search volume
+        };
+    }
+
+    private static BacklinksOverviewData MapBacklinksOverviewData(string jsonContent, string domain)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new BacklinksOverviewData
+        {
+            Domain = domain,
+            TotalBacklinks = root.TryGetProperty("total_backlinks", out var tb) ? tb.GetInt32() : 0,
+            ReferringDomains = root.TryGetProperty("referring_domains", out var rd) ? rd.GetInt32() : 0,
+            NewBacklinks = root.TryGetProperty("new_backlinks", out var nb) ? nb.GetInt32() : 0,
+            LostBacklinks = root.TryGetProperty("lost_backlinks", out var lb) ? lb.GetInt32() : 0,
+            DomainRating = root.TryGetProperty("domain_rating", out var dr) ? dr.GetInt32() : 0,
+            OrganicTraffic = root.TryGetProperty("organic_traffic", out var ot) ? ot.GetInt32() : 0
+        };
+
+        if (root.TryGetProperty("distribution", out var distElement))
+        {
+            data.Distribution = new BacklinksDistribution
+            {
+                Dofollow = distElement.TryGetProperty("dofollow", out var df) ? df.GetInt32() : 0,
+                Nofollow = distElement.TryGetProperty("nofollow", out var nf) ? nf.GetInt32() : 0,
+                Government = distElement.TryGetProperty("government", out var gov) ? gov.GetInt32() : 0,
+                Educational = distElement.TryGetProperty("educational", out var edu) ? edu.GetInt32() : 0,
+                Text = distElement.TryGetProperty("text", out var text) ? text.GetInt32() : 0,
+                Image = distElement.TryGetProperty("image", out var img) ? img.GetInt32() : 0
+            };
+        }
+
+        return data;
+    }
+
+    private static BacklinksDetailedData MapBacklinksDetailedData(string jsonContent, string domain)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new BacklinksDetailedData
+        {
+            Domain = domain
+        };
+
+        if (root.TryGetProperty("backlinks", out var backlinksArray) && backlinksArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var backlinkElement in backlinksArray.EnumerateArray())
+            {
+                data.Backlinks.Add(new BacklinkDetail
+                {
+                    SourceUrl = backlinkElement.TryGetProperty("source_url", out var su) ? su.GetString() ?? string.Empty : string.Empty,
+                    TargetUrl = backlinkElement.TryGetProperty("target_url", out var tu) ? tu.GetString() ?? string.Empty : string.Empty,
+                    AnchorText = backlinkElement.TryGetProperty("anchor_text", out var at) ? at.GetString() ?? string.Empty : string.Empty,
+                    SourceDomainRating = backlinkElement.TryGetProperty("source_domain_rating", out var sdr) ? sdr.GetInt32() : 0,
+                    LinkType = backlinkElement.TryGetProperty("link_type", out var lt) ? lt.GetString() ?? string.Empty : string.Empty,
+                    FirstSeen = backlinkElement.TryGetProperty("first_seen", out var fs) ? DateTime.TryParse(fs.GetString(), out var fsDate) ? fsDate : DateTime.MinValue : DateTime.MinValue,
+                    LastSeen = backlinkElement.TryGetProperty("last_seen", out var ls) ? DateTime.TryParse(ls.GetString(), out var lsDate) ? lsDate : DateTime.MinValue : DateTime.MinValue,
+                    IsActive = backlinkElement.TryGetProperty("is_active", out var ia) ? ia.GetBoolean() : false
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static AnchorTextData MapAnchorTextData(string jsonContent, string domain)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new AnchorTextData
+        {
+            Domain = domain
+        };
+
+        if (root.TryGetProperty("anchor_texts", out var anchorsArray) && anchorsArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var anchorElement in anchorsArray.EnumerateArray())
+            {
+                data.AnchorTexts.Add(new AnchorTextEntry
+                {
+                    AnchorText = anchorElement.TryGetProperty("anchor_text", out var at) ? at.GetString() ?? string.Empty : string.Empty,
+                    BacklinksCount = anchorElement.TryGetProperty("backlinks_count", out var bc) ? bc.GetInt32() : 0,
+                    Percentage = anchorElement.TryGetProperty("percentage", out var p) ? p.GetDouble() : 0,
+                    ReferringDomains = anchorElement.TryGetProperty("referring_domains", out var rd) ? rd.GetInt32() : 0
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static CompetitorsOverviewData MapCompetitorsOverviewData(string jsonContent, string domain)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new CompetitorsOverviewData
+        {
+            Domain = domain
+        };
+
+        if (root.TryGetProperty("competitors", out var competitorsArray) && competitorsArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var competitorElement in competitorsArray.EnumerateArray())
+            {
+                data.TopCompetitors.Add(new TopCompetitor
+                {
+                    Domain = competitorElement.TryGetProperty("domain", out var d) ? d.GetString() ?? string.Empty : string.Empty,
+                    CompetitionLevel = competitorElement.TryGetProperty("competition_level", out var cl) ? cl.GetDouble() : 0,
+                    CommonKeywords = competitorElement.TryGetProperty("common_keywords", out var ck) ? ck.GetInt32() : 0,
+                    OrganicTraffic = competitorElement.TryGetProperty("organic_traffic", out var ot) ? ot.GetInt32() : 0,
+                    OrganicKeywords = competitorElement.TryGetProperty("organic_keywords", out var ok) ? ok.GetInt32() : 0,
+                    DomainRating = competitorElement.TryGetProperty("domain_rating", out var dr) ? dr.GetInt32() : 0
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static SharedKeywordsData MapSharedKeywordsData(string jsonContent, string domain, string competitorDomain)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new SharedKeywordsData
+        {
+            Domain = domain,
+            CompetitorDomain = competitorDomain
+        };
+
+        if (root.TryGetProperty("shared_keywords", out var keywordsArray) && keywordsArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var keywordElement in keywordsArray.EnumerateArray())
+            {
+                data.SharedKeywords.Add(new SharedKeyword
+                {
+                    Keyword = keywordElement.TryGetProperty("keyword", out var k) ? k.GetString() ?? string.Empty : string.Empty,
+                    YourPosition = keywordElement.TryGetProperty("your_position", out var yp) ? yp.GetInt32() : 0,
+                    CompetitorPosition = keywordElement.TryGetProperty("competitor_position", out var cp) ? cp.GetInt32() : 0,
+                    SearchVolume = keywordElement.TryGetProperty("search_volume", out var sv) ? sv.GetInt32() : 0,
+                    Difficulty = keywordElement.TryGetProperty("difficulty", out var d) ? d.GetInt32() : 0,
+                    CostPerClick = keywordElement.TryGetProperty("cost_per_click", out var cpc) ? cpc.GetDecimal() : 0
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static KeywordGapData MapKeywordGapData(string jsonContent, string domain, string competitorDomain)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new KeywordGapData
+        {
+            Domain = domain,
+            CompetitorDomain = competitorDomain
+        };
+
+        if (root.TryGetProperty("gap_keywords", out var gapArray) && gapArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var keywordElement in gapArray.EnumerateArray())
+            {
+                data.GapKeywords.Add(new GapKeyword
+                {
+                    Keyword = keywordElement.TryGetProperty("keyword", out var k) ? k.GetString() ?? string.Empty : string.Empty,
+                    YourPosition = keywordElement.TryGetProperty("your_position", out var yp) ? yp.GetInt32() : 0,
+                    CompetitorPosition = keywordElement.TryGetProperty("competitor_position", out var cp) ? cp.GetInt32() : 0,
+                    SearchVolume = keywordElement.TryGetProperty("search_volume", out var sv) ? sv.GetInt32() : 0,
+                    Difficulty = keywordElement.TryGetProperty("difficulty", out var d) ? d.GetInt32() : 0,
+                    TrafficOpportunity = keywordElement.TryGetProperty("traffic_opportunity", out var to) ? to.GetInt32() : 0
+                });
+            }
+        }
+
+        if (root.TryGetProperty("advantage_keywords", out var advantageArray) && advantageArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var keywordElement in advantageArray.EnumerateArray())
+            {
+                data.AdvantageKeywords.Add(new GapKeyword
+                {
+                    Keyword = keywordElement.TryGetProperty("keyword", out var k) ? k.GetString() ?? string.Empty : string.Empty,
+                    YourPosition = keywordElement.TryGetProperty("your_position", out var yp) ? yp.GetInt32() : 0,
+                    CompetitorPosition = keywordElement.TryGetProperty("competitor_position", out var cp) ? cp.GetInt32() : 0,
+                    SearchVolume = keywordElement.TryGetProperty("search_volume", out var sv) ? sv.GetInt32() : 0,
+                    Difficulty = keywordElement.TryGetProperty("difficulty", out var d) ? d.GetInt32() : 0,
+                    TrafficOpportunity = keywordElement.TryGetProperty("traffic_opportunity", out var to) ? to.GetInt32() : 0
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static SerpResultsData MapSerpResultsData(string jsonContent, string keyword, string searchEngine, string location, string device)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var data = new SerpResultsData
+        {
+            Keyword = keyword,
+            SearchEngine = searchEngine,
+            Location = location,
+            Device = device
+        };
+
+        if (root.TryGetProperty("results", out var resultsArray) && resultsArray.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var resultElement in resultsArray.EnumerateArray())
+            {
+                data.Results.Add(new SerpResult
+                {
+                    Position = resultElement.TryGetProperty("position", out var p) ? p.GetInt32() : 0,
+                    Title = resultElement.TryGetProperty("title", out var t) ? t.GetString() ?? string.Empty : string.Empty,
+                    Url = resultElement.TryGetProperty("url", out var u) ? u.GetString() ?? string.Empty : string.Empty,
+                    Domain = resultElement.TryGetProperty("domain", out var d) ? d.GetString() ?? string.Empty : string.Empty,
+                    Description = resultElement.TryGetProperty("description", out var desc) ? desc.GetString() ?? string.Empty : string.Empty,
+                    Type = resultElement.TryGetProperty("type", out var type) ? type.GetString() ?? string.Empty : string.Empty
+                });
+            }
+        }
+
+        return data;
     }
 
     #endregion
