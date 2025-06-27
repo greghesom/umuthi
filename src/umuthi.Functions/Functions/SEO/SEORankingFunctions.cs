@@ -539,4 +539,1029 @@ public class SEORankingFunctions
             return new StatusCodeResult(500);
         }
     }
+
+    #region SE Ranking Data API Functions
+
+    /// <summary>
+    /// Get domain overview data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain parameter</param>
+    /// <returns>Domain overview data</returns>
+    [Function("GetSEODomainOverview")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEODomainOverview([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Domain Overview request received");
+
+        try
+        {
+            // Extract and validate domain parameter
+            var domain = req.Query["domain"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            // Get domain overview data
+            var domainOverviewData = await _seoRankingService.GetDomainOverviewAsync(domain, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(domainOverviewData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEODomainOverview",
+                OperationTypes.SEODomainOverview,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(domainOverviewData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO domain overview data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEODomainOverview",
+                OperationTypes.SEODomainOverview,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get domain keyword positions data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain, searchEngine, and location parameters</param>
+    /// <returns>Domain positions data</returns>
+    [Function("GetSEODomainPositions")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEODomainPositions([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Domain Positions request received");
+
+        try
+        {
+            // Extract and validate parameters
+            var domain = req.Query["domain"].FirstOrDefault();
+            var searchEngine = req.Query["searchEngine"].FirstOrDefault() ?? "google";
+            var location = req.Query["location"].FirstOrDefault() ?? "US";
+
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            // Get domain positions data
+            var domainPositionsData = await _seoRankingService.GetDomainPositionsAsync(domain, searchEngine, location, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length + searchEngine.Length + location.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(domainPositionsData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain+searchEngine+location");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEODomainPositions",
+                OperationTypes.SEODomainPositions,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(domainPositionsData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO domain positions data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEODomainPositions",
+                OperationTypes.SEODomainPositions,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get domain competitors data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain parameter</param>
+    /// <returns>Domain competitors data</returns>
+    [Function("GetSEODomainCompetitors")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEODomainCompetitors([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Domain Competitors request received");
+
+        try
+        {
+            // Extract and validate domain parameter
+            var domain = req.Query["domain"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            // Get domain competitors data
+            var domainCompetitorsData = await _seoRankingService.GetDomainCompetitorsAsync(domain, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(domainCompetitorsData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEODomainCompetitors",
+                OperationTypes.SEODomainCompetitors,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(domainCompetitorsData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO domain competitors data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEODomainCompetitors",
+                OperationTypes.SEODomainCompetitors,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get keywords overview data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing projectId parameter</param>
+    /// <returns>Keywords overview data</returns>
+    [Function("GetSEOKeywordsOverview")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOKeywordsOverview([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Keywords Overview request received");
+
+        try
+        {
+            // Extract and validate projectId parameter
+            var projectId = req.Query["projectId"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(projectId))
+            {
+                return new BadRequestObjectResult(new { error = "ProjectId parameter is required" });
+            }
+
+            // Get keywords overview data
+            var keywordsOverviewData = await _seoRankingService.GetKeywordsOverviewAsync(projectId, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = projectId.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(keywordsOverviewData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("projectId");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOKeywordsOverview",
+                OperationTypes.SEOKeywordsOverview,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(keywordsOverviewData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO keywords overview data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOKeywordsOverview",
+                OperationTypes.SEOKeywordsOverview,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get keyword positions tracking data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing projectId, searchEngine, location, and device parameters</param>
+    /// <returns>Keyword positions data</returns>
+    [Function("GetSEOKeywordPositions")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOKeywordPositions([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Keyword Positions request received");
+
+        try
+        {
+            // Extract and validate parameters
+            var projectId = req.Query["projectId"].FirstOrDefault();
+            var searchEngine = req.Query["searchEngine"].FirstOrDefault() ?? "google";
+            var location = req.Query["location"].FirstOrDefault() ?? "US";
+            var device = req.Query["device"].FirstOrDefault() ?? "desktop";
+
+            if (string.IsNullOrWhiteSpace(projectId))
+            {
+                return new BadRequestObjectResult(new { error = "ProjectId parameter is required" });
+            }
+
+            // Get keyword positions data
+            var keywordPositionsData = await _seoRankingService.GetKeywordPositionsAsync(projectId, searchEngine, location, device, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = projectId.Length + searchEngine.Length + location.Length + device.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(keywordPositionsData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("projectId+searchEngine+location+device");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOKeywordPositions",
+                OperationTypes.SEOKeywordsPositions,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(keywordPositionsData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO keyword positions data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOKeywordPositions",
+                OperationTypes.SEOKeywordsPositions,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get SERP features data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing keyword, searchEngine, and location parameters</param>
+    /// <returns>SERP features data</returns>
+    [Function("GetSEOSerpFeatures")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOSerpFeatures([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO SERP Features request received");
+
+        try
+        {
+            // Extract and validate parameters
+            var keyword = req.Query["keyword"].FirstOrDefault();
+            var searchEngine = req.Query["searchEngine"].FirstOrDefault() ?? "google";
+            var location = req.Query["location"].FirstOrDefault() ?? "US";
+
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return new BadRequestObjectResult(new { error = "Keyword parameter is required" });
+            }
+
+            // Get SERP features data
+            var serpFeaturesData = await _seoRankingService.GetSerpFeaturesAsync(keyword, searchEngine, location, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = keyword.Length + searchEngine.Length + location.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(serpFeaturesData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("keyword+searchEngine+location");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOSerpFeatures",
+                OperationTypes.SEOSerpFeatures,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(serpFeaturesData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO SERP features data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOSerpFeatures",
+                OperationTypes.SEOSerpFeatures,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get search volume data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing keywords and location parameters</param>
+    /// <returns>Search volume data</returns>
+    [Function("GetSEOSearchVolume")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOSearchVolume([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Search Volume request received");
+
+        try
+        {
+            // Extract and validate parameters
+            var keywordsParam = req.Query["keywords"].FirstOrDefault();
+            var location = req.Query["location"].FirstOrDefault() ?? "US";
+
+            if (string.IsNullOrWhiteSpace(keywordsParam))
+            {
+                return new BadRequestObjectResult(new { error = "Keywords parameter is required" });
+            }
+
+            // Parse keywords (comma-separated)
+            var keywords = keywordsParam.Split(',').Select(k => k.Trim()).Where(k => !string.IsNullOrEmpty(k)).ToList();
+            
+            if (keywords.Count == 0)
+            {
+                return new BadRequestObjectResult(new { error = "At least one keyword is required" });
+            }
+
+            // Get search volume data
+            var searchVolumeData = await _seoRankingService.GetSearchVolumeAsync(keywords, location, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = keywordsParam.Length + location.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(searchVolumeData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("keywords+location");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOSearchVolume",
+                OperationTypes.SEOSearchVolume,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(searchVolumeData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO search volume data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOSearchVolume",
+                OperationTypes.SEOSearchVolume,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get backlinks overview data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain parameter</param>
+    /// <returns>Backlinks overview data</returns>
+    [Function("GetSEOBacklinksOverview")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOBacklinksOverview([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Backlinks Overview request received");
+
+        try
+        {
+            // Extract and validate domain parameter
+            var domain = req.Query["domain"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            // Get backlinks overview data
+            var backlinksOverviewData = await _seoRankingService.GetBacklinksOverviewAsync(domain, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(backlinksOverviewData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOBacklinksOverview",
+                OperationTypes.SEOBacklinksOverview,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(backlinksOverviewData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO backlinks overview data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOBacklinksOverview",
+                OperationTypes.SEOBacklinksOverview,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get detailed backlinks data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain and optional limit parameters</param>
+    /// <returns>Detailed backlinks data</returns>
+    [Function("GetSEOBacklinksDetailed")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOBacklinksDetailed([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Backlinks Detailed request received");
+
+        try
+        {
+            // Extract and validate parameters
+            var domain = req.Query["domain"].FirstOrDefault();
+            var limitParam = req.Query["limit"].FirstOrDefault();
+            var limit = int.TryParse(limitParam, out var parsedLimit) ? parsedLimit : 100;
+
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            // Get detailed backlinks data
+            var backlinksDetailedData = await _seoRankingService.GetBacklinksDetailedAsync(domain, limit, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length + (limitParam?.Length ?? 0);
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(backlinksDetailedData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain+limit");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOBacklinksDetailed",
+                OperationTypes.SEOBacklinksDetailed,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(backlinksDetailedData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO detailed backlinks data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOBacklinksDetailed",
+                OperationTypes.SEOBacklinksDetailed,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get anchor text analysis data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain parameter</param>
+    /// <returns>Anchor text analysis data</returns>
+    [Function("GetSEOAnchorText")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOAnchorText([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Anchor Text request received");
+
+        try
+        {
+            // Extract and validate domain parameter
+            var domain = req.Query["domain"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            // Get anchor text data
+            var anchorTextData = await _seoRankingService.GetAnchorTextAsync(domain, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(anchorTextData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOAnchorText",
+                OperationTypes.SEOAnchorText,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(anchorTextData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO anchor text data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOAnchorText",
+                OperationTypes.SEOAnchorText,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get competitors overview data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain parameter</param>
+    /// <returns>Competitors overview data</returns>
+    [Function("GetSEOCompetitorsOverview")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOCompetitorsOverview([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Competitors Overview request received");
+
+        try
+        {
+            // Extract and validate domain parameter
+            var domain = req.Query["domain"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            // Get competitors overview data
+            var competitorsOverviewData = await _seoRankingService.GetCompetitorsOverviewAsync(domain, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(competitorsOverviewData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOCompetitorsOverview",
+                OperationTypes.SEOCompetitorsOverview,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(competitorsOverviewData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO competitors overview data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOCompetitorsOverview",
+                OperationTypes.SEOCompetitorsOverview,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get shared keywords analysis data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain and competitorDomain parameters</param>
+    /// <returns>Shared keywords data</returns>
+    [Function("GetSEOSharedKeywords")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOSharedKeywords([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Shared Keywords request received");
+
+        try
+        {
+            // Extract and validate parameters
+            var domain = req.Query["domain"].FirstOrDefault();
+            var competitorDomain = req.Query["competitorDomain"].FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            if (string.IsNullOrWhiteSpace(competitorDomain))
+            {
+                return new BadRequestObjectResult(new { error = "CompetitorDomain parameter is required" });
+            }
+
+            // Get shared keywords data
+            var sharedKeywordsData = await _seoRankingService.GetSharedKeywordsAsync(domain, competitorDomain, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length + competitorDomain.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(sharedKeywordsData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain+competitorDomain");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOSharedKeywords",
+                OperationTypes.SEOSharedKeywords,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(sharedKeywordsData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO shared keywords data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOSharedKeywords",
+                OperationTypes.SEOSharedKeywords,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get keyword gap analysis data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing domain and competitorDomain parameters</param>
+    /// <returns>Keyword gap analysis data</returns>
+    [Function("GetSEOKeywordGap")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOKeywordGap([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO Keyword Gap request received");
+
+        try
+        {
+            // Extract and validate parameters
+            var domain = req.Query["domain"].FirstOrDefault();
+            var competitorDomain = req.Query["competitorDomain"].FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return new BadRequestObjectResult(new { error = "Domain parameter is required" });
+            }
+
+            if (string.IsNullOrWhiteSpace(competitorDomain))
+            {
+                return new BadRequestObjectResult(new { error = "CompetitorDomain parameter is required" });
+            }
+
+            // Get keyword gap data
+            var keywordGapData = await _seoRankingService.GetKeywordGapAsync(domain, competitorDomain, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = domain.Length + competitorDomain.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(keywordGapData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain+competitorDomain");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOKeywordGap",
+                OperationTypes.SEOKeywordGap,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(keywordGapData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO keyword gap data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOKeywordGap",
+                OperationTypes.SEOKeywordGap,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    /// <summary>
+    /// Get SERP results data from SE Ranking Data API
+    /// </summary>
+    /// <param name="req">HTTP request containing keyword, searchEngine, location, and device parameters</param>
+    /// <returns>SERP results data</returns>
+    [Function("GetSEOSerpResults")]
+    [ApiKeyAuthentication]
+    public async Task<IActionResult> GetSEOSerpResults([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    {
+        var startTime = DateTime.UtcNow;
+        _logger.LogInformation("SEO SERP Results request received");
+
+        try
+        {
+            // Extract and validate parameters
+            var keyword = req.Query["keyword"].FirstOrDefault();
+            var searchEngine = req.Query["searchEngine"].FirstOrDefault() ?? "google";
+            var location = req.Query["location"].FirstOrDefault() ?? "US";
+            var device = req.Query["device"].FirstOrDefault() ?? "desktop";
+
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return new BadRequestObjectResult(new { error = "Keyword parameter is required" });
+            }
+
+            // Get SERP results data
+            var serpResultsData = await _seoRankingService.GetSerpResultsAsync(keyword, searchEngine, location, device, _logger);
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            // Calculate sizes for billing
+            var inputSize = keyword.Length + searchEngine.Length + location.Length + device.Length;
+            var outputSize = System.Text.Json.JsonSerializer.Serialize(serpResultsData).Length;
+
+            // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("keyword+searchEngine+location+device");
+            metadata.SetOutputFormat("json");
+
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOSerpResults",
+                OperationTypes.SEOSerpResults,
+                inputSize,
+                outputSize,
+                (long)duration,
+                200,
+                true,
+                null,
+                metadata);
+
+            return new OkObjectResult(serpResultsData);
+        }
+        catch (Exception ex)
+        {
+            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            _logger.LogError(ex, "Error occurred while getting SEO SERP results data");
+
+            // Track failed API call
+            await _usageTrackingService.TrackUsageAsync(
+                req,
+                "GetSEOSerpResults",
+                OperationTypes.SEOSerpResults,
+                0,
+                0,
+                (long)duration,
+                500,
+                false,
+                ex.Message);
+
+            return new StatusCodeResult(500);
+        }
+    }
+
+    #endregion
 }
