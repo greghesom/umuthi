@@ -1,0 +1,4 @@
+{
+    "url": "/GetSEOCompetitorsOverview?domain={{parameters.domain}}",
+    "method": "GET"
+}

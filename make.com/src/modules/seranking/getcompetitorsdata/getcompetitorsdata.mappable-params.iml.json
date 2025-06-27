@@ -1,0 +1,9 @@
+[
+    {
+        "name": "domain",
+        "type": "text",
+        "label": "Domain",
+        "required": true,
+        "help": "The domain to analyze competitors for (e.g., example.com)"
+    }
+]
