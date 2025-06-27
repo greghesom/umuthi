@@ -36,8 +36,8 @@
                 }
             },
             "generatereport": {
-                "label": "generatereport",
-                "description": "generatereport",
+                "label": "Generate RootScan Report",
+                "description": "Generate a comprehensive SEO report from RootScan analysis results",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",
@@ -52,8 +52,8 @@
                 }
             },
             "getcompetitiveintelligence": {
-                "label": "getcompetitiveintelligence",
-                "description": "getcompetitiveintelligence",
+                "label": "Get Competitive Intelligence",
+                "description": "Analyze competitors and market positioning using RootScan intelligence",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",
@@ -68,8 +68,8 @@
                 }
             },
             "getcompetitorsdata": {
-                "label": "getcompetitorsdata",
-                "description": "getcompetitorsdata",
+                "label": "Get SE Ranking Competitors Data",
+                "description": "Retrieve competitor analysis and domain comparison data from SE Ranking",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",
@@ -84,8 +84,8 @@
                 }
             },
             "getdomaindata": {
-                "label": "getdomaindata",
-                "description": "getdomaindata",
+                "label": "Get SE Ranking Domain Data",
+                "description": "Retrieve comprehensive domain overview and SEO metrics from SE Ranking",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",
@@ -100,8 +100,8 @@
                 }
             },
             "getkeywordintelligence": {
-                "label": "getkeywordintelligence",
-                "description": "getkeywordintelligence",
+                "label": "Get Keyword Intelligence",
+                "description": "Perform keyword research and analysis using RootScan intelligence",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",
@@ -116,8 +116,8 @@
                 }
             },
             "getkeywordsdata": {
-                "label": "getkeywordsdata",
-                "description": "getkeywordsdata",
+                "label": "Get SE Ranking Keywords Data",
+                "description": "Retrieve keyword rankings, positions, and performance data from SE Ranking",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",
@@ -132,8 +132,8 @@
                 }
             },
             "getmarketintelligence": {
-                "label": "getmarketintelligence",
-                "description": "getmarketintelligence",
+                "label": "Get Market Intelligence",
+                "description": "Analyze market trends and opportunities using RootScan intelligence",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",
@@ -148,8 +148,8 @@
                 }
             },
             "gettechnicalaudit": {
-                "label": "gettechnicalaudit",
-                "description": "gettechnicalaudit",
+                "label": "Get Technical Audit",
+                "description": "Perform technical SEO audit and website analysis using RootScan",
                 "moduleType": "action",
                 "actionCrud": "create",
                 "connection": "connection1",

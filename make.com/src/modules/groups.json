@@ -1,16 +1,21 @@
 [
 	{
-		"label": "Other",
+		"label": "RootScan Analysis",
 		"modules": [
 			"createproject",
-			"generatereport",
-			"getcompetitiveintelligence",
-			"getcompetitorsdata",
-			"getdomaindata",
 			"getkeywordintelligence",
-			"getkeywordsdata",
+			"getcompetitiveintelligence",
 			"getmarketintelligence",
-			"gettechnicalaudit"
+			"gettechnicalaudit",
+			"generatereport"
+		]
+	},
+	{
+		"label": "SE Ranking Data",
+		"modules": [
+			"getdomaindata",
+			"getkeywordsdata",
+			"getcompetitorsdata"
 		]
 	}
 ]
