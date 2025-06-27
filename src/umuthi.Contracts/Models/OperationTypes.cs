@@ -46,4 +46,9 @@ public static class OperationTypes
     /// SEO comprehensive report operations (long-running)
     /// </summary>
     public const string SEOComprehensiveReport = "SEOComprehensiveReport";
+    
+    /// <summary>
+    /// Project initialization operations
+    /// </summary>
+    public const string ProjectInit = "PROJECT_INIT";
 }

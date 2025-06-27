@@ -183,3 +183,36 @@ public class FilloutSubmissionConfiguration : IEntityTypeConfiguration<FilloutSu
         builder.HasIndex(s => s.CreatedAt);
     }
 }
+
+public class ProjectInitializationConfiguration : IEntityTypeConfiguration<ProjectInitialization>
+{
+    public void Configure(EntityTypeBuilder<ProjectInitialization> builder)
+    {
+        builder.HasKey(p => p.Id);
+        
+        builder.Property(p => p.CorrelationId)
+            .IsRequired();
+            
+        builder.Property(p => p.GoogleSheetRowId)
+            .IsRequired()
+            .HasMaxLength(100);
+            
+        builder.Property(p => p.FilloutData)
+            .IsRequired()
+            .HasColumnType("nvarchar(max)");
+            
+        builder.Property(p => p.MakeCustomerId)
+            .IsRequired()
+            .HasMaxLength(100);
+        
+        // Indexes for performance and constraints
+        builder.HasIndex(p => p.CorrelationId)
+            .IsUnique(); // Ensure correlation ID uniqueness
+            
+        builder.HasIndex(p => p.GoogleSheetRowId)
+            .IsUnique(); // Ensure Google Sheet row ID uniqueness
+            
+        builder.HasIndex(p => p.MakeCustomerId);
+        builder.HasIndex(p => p.CreatedAt);
+    }
+}

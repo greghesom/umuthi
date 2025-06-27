@@ -1,0 +1,10 @@
+{
+    "reportUrl": {
+        "type": "url",
+        "label": "Report URL"
+    },
+    "presentationUrl": {
+        "type": "url",
+        "label": "Presentation URL"
+    }
+}

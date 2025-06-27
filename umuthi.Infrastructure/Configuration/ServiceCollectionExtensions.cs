@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWorkflowRepository, WorkflowRepository>();
         services.AddScoped<IWorkflowExecutionRepository, WorkflowExecutionRepository>();
         services.AddScoped<IFilloutSubmissionRepository, FilloutSubmissionRepository>();
+        services.AddScoped<IProjectInitRepository, ProjectInitRepository>();
 
         // Register application services
         services.AddScoped<IWorkflowService, WorkflowService>();

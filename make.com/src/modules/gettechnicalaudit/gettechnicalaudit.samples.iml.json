@@ -1,0 +1,8 @@
+{
+    "healthScore": 75,
+    "topIssues": [
+        "Missing H1 tags on several pages.",
+        "Slow page load speed on mobile devices."
+    ],
+    "auditReportUrl": "https://storage.com/technical-audit-report.pdf"
+}
