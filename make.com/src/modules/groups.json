@@ -1,8 +1,8 @@
 [
-	{
-		"label": "Other",
-		"modules": [
-			"createproject"
-		]
-	}
+    {
+        "label": "Other",
+        "modules": [
+            "createproject"
+        ]
+    }
 ]

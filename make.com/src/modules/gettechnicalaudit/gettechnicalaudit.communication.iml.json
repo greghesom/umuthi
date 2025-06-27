@@ -1,0 +1,7 @@
+{
+    "url": "/rootscan/technical-audit?correlationId={{parameters.correlationId}}",
+    "method": "POST",
+    "body": {
+        "rootScanRequest": "{{parameters.rootScanRequest}}"
+    }
+}

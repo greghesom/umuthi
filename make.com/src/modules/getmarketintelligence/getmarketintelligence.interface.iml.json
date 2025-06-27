@@ -1,0 +1,14 @@
+{
+    "industryTrendsSummary": {
+        "type": "text",
+        "label": "Industry Trends Summary"
+    },
+    "strategicOpportunities": {
+        "type": "array",
+        "label": "Strategic Opportunities"
+    },
+    "contentOpportunities": {
+        "type": "array",
+        "label": "Content Opportunities"
+    }
+}

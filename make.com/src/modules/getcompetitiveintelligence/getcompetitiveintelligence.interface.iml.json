@@ -1,0 +1,44 @@
+{
+    "competitors": {
+        "type": "array",
+        "label": "Competitors",
+        "spec": [
+            {
+                "name": "domain",
+                "type": "text",
+                "label": "Domain"
+            },
+            {
+                "name": "domainTrust",
+                "type": "number",
+                "label": "Domain Trust"
+            },
+            {
+                "name": "organicTraffic",
+                "type": "number",
+                "label": "Organic Traffic"
+            },
+            {
+                "name": "screenshotUrl",
+                "type": "url",
+                "label": "Screenshot URL"
+            }
+        ]
+    },
+    "shareOfVoice": {
+        "type": "object",
+        "label": "Share of Voice",
+        "spec": [
+            {
+                "name": "bubbleChartUrl",
+                "type": "url",
+                "label": "Bubble Chart URL"
+            },
+            {
+                "name": "analysis",
+                "type": "text",
+                "label": "Analysis"
+            }
+        ]
+    }
+}
