@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -15,6 +14,9 @@ using umuthi.Functions.Middleware;
 
 namespace umuthi.Functions.Functions.RootScan;
 
+/// <summary>
+/// Azure Function for report generation
+/// </summary>
 public class ReportGenerationFunction
 {
     private readonly ILogger<ReportGenerationFunction> _logger;
@@ -31,13 +33,14 @@ public class ReportGenerationFunction
         _reportGenerationService = reportGenerationService;
     }
 
-    [Function("GenerateReport")]
+    [Function("GenerateRootScanReport")]
     [ApiKeyAuthentication]
-    public async Task<IActionResult> GenerateReport([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "rootscan/generate-report")] HttpRequest req)
+    public async Task<IActionResult> GenerateRootScanReport(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "rootscan/generate-report")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         var requestSize = req.ContentLength ?? 0;
-        string correlationId = req.Query["correlationId"];
+        string correlationId = req.Query["correlationId"].ToString();
 
         try
         {
@@ -51,7 +54,12 @@ public class ReportGenerationFunction
                 return new BadRequestObjectResult(new { error = "Invalid request body" });
             }
 
-            var result = await _reportGenerationService.GenerateReportAsync(request.RootScanRequest, request.KeywordResearchResult, request.CompetitiveAnalysisResult, request.MarketInsightResult, request.TechnicalAuditResult);
+            var result = await _reportGenerationService.GenerateReportAsync(
+                request.RootScanRequest,
+                request.KeywordResearchResult,
+                request.CompetitiveAnalysisResult,
+                request.MarketInsightResult,
+                request.TechnicalAuditResult);
 
             await TrackUsageAsync(req, startTime, 200, true, null, requestSize, correlationId);
 
@@ -59,7 +67,7 @@ public class ReportGenerationFunction
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in GenerateReport with CorrelationId: {CorrelationId}", correlationId);
+            _logger.LogError(ex, "Error in GenerateRootScanReport with CorrelationId: {CorrelationId}", correlationId);
             await TrackUsageAsync(req, startTime, 500, false, ex.Message, requestSize, correlationId);
             return new StatusCodeResult(500);
         }
@@ -69,9 +77,15 @@ public class ReportGenerationFunction
     {
         var duration = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
         
+        var metadata = new UsageMetadata();
+        if (!string.IsNullOrEmpty(correlationId))
+        {
+            metadata.Add("CorrelationId", correlationId);
+        }
+        
         await _usageTrackingService.TrackUsageAsync(
             req,
-            "GenerateReport",
+            "GenerateRootScanReport",
             "RootScan",
             requestSize,
             0,
@@ -79,16 +93,16 @@ public class ReportGenerationFunction
             statusCode,
             success,
             errorMessage,
-            new UsageMetadata { { "CorrelationId", correlationId } }
+            metadata
         );
     }
 }
 
 public class ReportGenerationRequest
 {
-    public RootScanRequest RootScanRequest { get; set; }
-    public KeywordResearchResult KeywordResearchResult { get; set; }
-    public CompetitiveAnalysisResult CompetitiveAnalysisResult { get; set; }
-    public MarketInsightResult MarketInsightResult { get; set; }
-    public TechnicalAuditResult TechnicalAuditResult { get; set; }
+    public RootScanRequest RootScanRequest { get; set; } = null!;
+    public KeywordResearchResult KeywordResearchResult { get; set; } = null!;
+    public CompetitiveAnalysisResult CompetitiveAnalysisResult { get; set; } = null!;
+    public MarketInsightResult MarketInsightResult { get; set; } = null!;
+    public TechnicalAuditResult TechnicalAuditResult { get; set; } = null!;
 }

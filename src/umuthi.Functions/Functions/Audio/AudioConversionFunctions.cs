@@ -32,7 +32,9 @@ public class AudioConversionFunctions
         _logger = logger;
         _audioConversionService = audioConversionService;
         _usageTrackingService = usageTrackingService;
-    }    [Function("ConvertWavToMp3")]
+    }
+
+    [Function("ConvertWavToMp3")]
     [ApiKeyAuthentication]
     public async Task<IActionResult> ConvertWavToMp3([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
@@ -77,7 +79,14 @@ public class AudioConversionFunctions
             var result = await _audioConversionService.ConvertWavToMp3Async(uploadedFile, _logger);
             outputFileSize = result.Data.Length;
 
-            _logger.LogInformation($"Conversion completed. Output file: {result.FileName}, Size: {result.Data.Length} bytes");            // Track usage for billing
+            _logger.LogInformation($"Conversion completed. Output file: {result.FileName}, Size: {result.Data.Length} bytes");
+
+            // Track usage for billing
+            var metadata = new UsageMetadata();
+            metadata.SetOriginalFileName(uploadedFile.FileName);
+            metadata.SetInputFormat(".wav");
+            metadata.SetOutputFormat(".mp3");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "ConvertWavToMp3",
@@ -88,12 +97,7 @@ public class AudioConversionFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata 
-                { 
-                    OriginalFileName = uploadedFile.FileName,
-                    InputFormat = ".wav",
-                    OutputFormat = ".mp3"
-                }
+                metadata
             );
 
             return new FileContentResult(result.Data, "audio/mpeg")
@@ -106,6 +110,15 @@ public class AudioConversionFunctions
             _logger.LogError(ex, "Error occurred during WAV to MP3 conversion");
             
             // Track failed usage
+            var metadata = new UsageMetadata();
+            var fileName = req.Form.Files.FirstOrDefault()?.FileName;
+            if (fileName != null)
+            {
+                metadata.SetOriginalFileName(fileName);
+            }
+            metadata.SetInputFormat(".wav");
+            metadata.SetOutputFormat(".mp3");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "ConvertWavToMp3",
@@ -116,17 +129,14 @@ public class AudioConversionFunctions
                 500,
                 false,
                 ex.Message,
-                new UsageMetadata 
-                { 
-                    OriginalFileName = req.Form.Files.FirstOrDefault()?.FileName,
-                    InputFormat = ".wav",
-                    OutputFormat = ".mp3"
-                }
+                metadata
             );
             
             return new StatusCodeResult(500);
         }
-    }    [Function("ConvertMpegToMp3")]
+    }
+
+    [Function("ConvertMpegToMp3")]
     [ApiKeyAuthentication]
     public async Task<IActionResult> ConvertMpegToMp3([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
@@ -177,6 +187,11 @@ public class AudioConversionFunctions
             _logger.LogInformation($"Conversion completed. Output file: {result.FileName}, Size: {result.Data.Length} bytes");
 
             // Track usage for billing
+            var metadata = new UsageMetadata();
+            metadata.SetOriginalFileName(uploadedFile.FileName);
+            metadata.SetInputFormat(fileExtension);
+            metadata.SetOutputFormat(".mp3");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "ConvertMpegToMp3",
@@ -187,12 +202,7 @@ public class AudioConversionFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata 
-                { 
-                    OriginalFileName = uploadedFile.FileName,
-                    InputFormat = fileExtension,
-                    OutputFormat = ".mp3"
-                }
+                metadata
             );
 
             return new FileContentResult(result.Data, "audio/mpeg")
@@ -205,6 +215,19 @@ public class AudioConversionFunctions
             _logger.LogError(ex, "Error occurred during MPEG to MP3 conversion");
             
             // Track failed usage
+            var metadata = new UsageMetadata();
+            var file = req.Form.Files.FirstOrDefault();
+            if (file != null)
+            {
+                metadata.SetOriginalFileName(file.FileName);
+                var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!string.IsNullOrEmpty(ext))
+                {
+                    metadata.SetInputFormat(ext);
+                }
+            }
+            metadata.SetOutputFormat(".mp3");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "ConvertMpegToMp3",
@@ -215,13 +238,7 @@ public class AudioConversionFunctions
                 500,
                 false,
                 ex.Message,
-                new UsageMetadata 
-                { 
-                    OriginalFileName = req.Form.Files.FirstOrDefault()?.FileName,
-                    InputFormat = req.Form.Files.FirstOrDefault() != null ? 
-                        Path.GetExtension(req.Form.Files.FirstOrDefault()!.FileName).ToLowerInvariant() : null,
-                    OutputFormat = ".mp3"
-                }
+                metadata
             );
             
             return new StatusCodeResult(500);

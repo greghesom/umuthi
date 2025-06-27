@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using umuthi.Contracts.Interfaces;
+using umuthi.Contracts.Interfaces.Services;
 using umuthi.Core.Services;
+using umuthi.Core.Services.RootScan;
 using umuthi.Infrastructure.Configuration;
 
 namespace umuthi.Functions.Extensions;
@@ -67,7 +69,8 @@ public static class ServiceCollectionExtensions
             .AddSEOServices()
             .AddUsageTrackingServices()
             .AddFilloutServices()
-            .AddProjectServices();
+            .AddProjectServices()
+            .AddRootScanServices();
     }
     
     /// <summary>
@@ -92,6 +95,20 @@ public static class ServiceCollectionExtensions
     {
         // Register project services
         services.AddScoped<IProjectInitService, ProjectInitService>();
+        
+        return services;
+    }
+    
+    /// <summary>
+    /// Add RootScan services to the DI container
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddRootScanServices(this IServiceCollection services)
+    {
+        // Register RootScan services
+        services.AddScoped<ICompetitiveIntelligenceEngine, CompetitiveIntelligenceEngine>();
+        services.AddScoped<ITechnicalAuditEngine, TechnicalAuditEngine>();
         
         return services;
     }

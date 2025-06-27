@@ -79,6 +79,9 @@ public class UsageAnalyticsFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "GetBillingSummary",
@@ -89,10 +92,7 @@ public class UsageAnalyticsFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown"
-                });
+                metadata);
 
             return new OkObjectResult(billingSummary);
         }
@@ -165,6 +165,9 @@ public class UsageAnalyticsFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "GetUsageAnalytics",
@@ -175,10 +178,7 @@ public class UsageAnalyticsFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown"
-                });
+                metadata);
 
             return new OkObjectResult(analytics);
         }
@@ -265,6 +265,9 @@ public class UsageAnalyticsFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "GetUsageRecords",
@@ -275,10 +278,7 @@ public class UsageAnalyticsFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown"
-                });
+                metadata);
 
             return new OkObjectResult(new
             {

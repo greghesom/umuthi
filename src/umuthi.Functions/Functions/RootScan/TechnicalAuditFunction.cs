@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -15,6 +14,9 @@ using umuthi.Functions.Middleware;
 
 namespace umuthi.Functions.Functions.RootScan;
 
+/// <summary>
+/// Azure Function for technical audit
+/// </summary>
 public class TechnicalAuditFunction
 {
     private readonly ILogger<TechnicalAuditFunction> _logger;
@@ -37,7 +39,7 @@ public class TechnicalAuditFunction
     {
         var startTime = DateTime.UtcNow;
         var requestSize = req.ContentLength ?? 0;
-        string correlationId = req.Query["correlationId"];
+        string correlationId = req.Query["correlationId"].ToString();
 
         try
         {
@@ -69,6 +71,12 @@ public class TechnicalAuditFunction
     {
         var duration = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
         
+        var metadata = new UsageMetadata();
+        if (!string.IsNullOrEmpty(correlationId))
+        {
+            metadata.Add("CorrelationId", correlationId);
+        }
+        
         await _usageTrackingService.TrackUsageAsync(
             req,
             "GetTechnicalAudit",
@@ -79,12 +87,12 @@ public class TechnicalAuditFunction
             statusCode,
             success,
             errorMessage,
-            new UsageMetadata { { "CorrelationId", correlationId } }
+            metadata
         );
     }
 }
 
 public class TechnicalAuditRequest
 {
-    public RootScanRequest RootScanRequest { get; set; }
+    public RootScanRequest RootScanRequest { get; set; } = null!;
 }

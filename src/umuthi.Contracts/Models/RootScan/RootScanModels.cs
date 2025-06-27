@@ -16,6 +16,12 @@ public class ClientInfo
     public string Email { get; set; }
 }
 
+public class CompetitiveIntelligenceRequest
+{
+    public RootScanRequest RootScanRequest { get; set; }
+    public KeywordResearchResult KeywordResearchResult { get; set; }
+}
+
 public class KeywordResearchResult
 {
     public string Status { get; set; }

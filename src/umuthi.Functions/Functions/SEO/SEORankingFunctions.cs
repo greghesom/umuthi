@@ -70,6 +70,11 @@ public class SEORankingFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("domain");
+            metadata.SetOutputFormat("json");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "GetSEOAuditReport",
@@ -80,12 +85,7 @@ public class SEORankingFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown",
-                    InputFormat = "domain",
-                    OutputFormat = "json"
-                });
+                metadata);
 
             return new OkObjectResult(auditReport);
         }
@@ -150,6 +150,11 @@ public class SEORankingFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("projectId");
+            metadata.SetOutputFormat("json");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "GetSEOKeywordsData",
@@ -160,12 +165,7 @@ public class SEORankingFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown",
-                    InputFormat = "projectId",
-                    OutputFormat = "json"
-                });
+                metadata);
 
             return new OkObjectResult(keywordsData);
         }
@@ -237,6 +237,11 @@ public class SEORankingFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("projectId+competitorDomain");
+            metadata.SetOutputFormat("json");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "GetSEOCompetitorAnalysis",
@@ -247,12 +252,7 @@ public class SEORankingFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown",
-                    InputFormat = "projectId+competitorDomain",
-                    OutputFormat = "json"
-                });
+                metadata);
 
             return new OkObjectResult(competitorData);
         }
@@ -340,6 +340,11 @@ public class SEORankingFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("json");
+            metadata.SetOutputFormat("json");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "RequestSEOComprehensiveReport",
@@ -350,12 +355,7 @@ public class SEORankingFunctions
                 202, // Accepted for async processing
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown",
-                    InputFormat = "json",
-                    OutputFormat = "json"
-                });
+                metadata);
 
             return new AcceptedResult("", requestStatus);
         }
@@ -420,6 +420,11 @@ public class SEORankingFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("trackingId");
+            metadata.SetOutputFormat("json");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "GetSEOReportStatus",
@@ -430,12 +435,7 @@ public class SEORankingFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown",
-                    InputFormat = "trackingId",
-                    OutputFormat = "json"
-                });
+                metadata);
 
             return new OkObjectResult(reportStatus);
         }
@@ -500,6 +500,11 @@ public class SEORankingFunctions
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             // Track this API call
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("trackingId");
+            metadata.SetOutputFormat("json");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "GetSEOComprehensiveReport",
@@ -510,12 +515,7 @@ public class SEORankingFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown",
-                    InputFormat = "trackingId",
-                    OutputFormat = "json"
-                });
+                metadata);
 
             return new OkObjectResult(comprehensiveReport);
         }

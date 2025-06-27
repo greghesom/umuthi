@@ -32,9 +32,12 @@ public class SpeechTranscriptionFunctions
         _logger = logger;
         _speechTranscriptionService = speechTranscriptionService;
         _usageTrackingService = usageTrackingService;
-    }    [Function("ConvertAudioToTranscript")]
+    }
+
+    [Function("ConvertAudioToTranscript")]
     [ApiKeyAuthentication]
-    public async Task<IActionResult> ConvertAudioToTranscript([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+    public async Task<IActionResult> ConvertAudioToTranscript(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         long totalInputSize = 0;
@@ -123,6 +126,11 @@ public class SpeechTranscriptionFunctions
             totalOutputSize = System.Text.Encoding.UTF8.GetByteCount(responseContent);
 
             // Track usage for billing
+            var metadata = new UsageMetadata();
+            metadata.SetLanguage(language);
+            metadata.SetIncludeTimestamps(includeTimestamps);
+            metadata.SetOriginalFileName(string.Join("; ", validFiles.Select(f => f.FileName)));
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "ConvertAudioToTranscript",
@@ -133,12 +141,7 @@ public class SpeechTranscriptionFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata 
-                { 
-                    Language = language,
-                    IncludeTimestamps = includeTimestamps,
-                    OriginalFileName = string.Join("; ", validFiles.Select(f => f.FileName))
-                }
+                metadata
             );
 
             return response;
@@ -148,6 +151,20 @@ public class SpeechTranscriptionFunctions
             _logger.LogError(ex, "Error occurred during audio to transcript conversion");
             
             // Track failed usage
+            var metadata = new UsageMetadata();
+            var queryLanguage = req.Query["language"].ToString();
+            if (!string.IsNullOrEmpty(queryLanguage))
+            {
+                metadata.SetLanguage(queryLanguage);
+            }
+            var hasTimestamps = req.Query.ContainsKey("timestamps") && req.Query["timestamps"].ToString().ToLower() == "true";
+            metadata.SetIncludeTimestamps(hasTimestamps);
+            
+            if (req.Form.Files.Count > 0)
+            {
+                metadata.SetOriginalFileName(string.Join("; ", req.Form.Files.Select(f => f.FileName)));
+            }
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "ConvertAudioToTranscript",
@@ -158,12 +175,7 @@ public class SpeechTranscriptionFunctions
                 500,
                 false,
                 ex.Message,
-                new UsageMetadata 
-                { 
-                    Language = req.Query["language"].ToString(),
-                    IncludeTimestamps = req.Query.ContainsKey("timestamps") && req.Query["timestamps"].ToString().ToLower() == "true",
-                    OriginalFileName = req.Form.Files.Count > 0 ? string.Join("; ", req.Form.Files.Select(f => f.FileName)) : null
-                }
+                metadata
             );
             
             return new StatusCodeResult(500);
@@ -172,7 +184,8 @@ public class SpeechTranscriptionFunctions
 
     [Function("FastTranscribeAudio")]
     [ApiKeyAuthentication]
-    public async Task<IActionResult> FastTranscribeAudio([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+    public async Task<IActionResult> FastTranscribeAudio(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         long totalInputSize = 0;
@@ -235,6 +248,11 @@ public class SpeechTranscriptionFunctions
             totalOutputSize = Encoding.UTF8.GetByteCount(responseContent);
 
             // Track usage for billing
+            var metadata = new UsageMetadata();
+            metadata.SetLanguage(language);
+            metadata.SetIncludeTimestamps(true); // Fast Transcription always includes timestamps
+            metadata.SetOriginalFileName(audioFile.FileName);
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "FastTranscribeAudio",
@@ -245,12 +263,7 @@ public class SpeechTranscriptionFunctions
                 200,
                 true,
                 null,
-                new UsageMetadata 
-                { 
-                    Language = language,
-                    IncludeTimestamps = true, // Fast Transcription always includes timestamps
-                    OriginalFileName = audioFile.FileName
-                }
+                metadata
             );
 
             return new OkObjectResult(transcript);
@@ -260,6 +273,19 @@ public class SpeechTranscriptionFunctions
             _logger.LogError(ex, "Error occurred during fast audio transcription");
             
             // Track failed usage
+            var metadata = new UsageMetadata();
+            var queryLanguage = req.Query["language"].ToString();
+            if (!string.IsNullOrEmpty(queryLanguage))
+            {
+                metadata.SetLanguage(queryLanguage);
+            }
+            metadata.SetIncludeTimestamps(true);
+            
+            if (req.Form.Files.Count > 0)
+            {
+                metadata.SetOriginalFileName(req.Form.Files[0].FileName);
+            }
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "FastTranscribeAudio",
@@ -270,12 +296,7 @@ public class SpeechTranscriptionFunctions
                 500,
                 false,
                 ex.Message,
-                new UsageMetadata 
-                { 
-                    Language = req.Query["language"].ToString(),
-                    IncludeTimestamps = true,
-                    OriginalFileName = req.Form.Files.Count > 0 ? req.Form.Files[0].FileName : null
-                }
+                metadata
             );
             
             return new StatusCodeResult(500);

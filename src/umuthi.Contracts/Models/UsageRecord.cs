@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace umuthi.Contracts.Models;
 
@@ -104,45 +105,81 @@ public class UsageRecord
 /// <summary>
 /// Additional metadata for usage tracking
 /// </summary>
-public class UsageMetadata
+public class UsageMetadata : Dictionary<string, string>
 {
     /// <summary>
-    /// Original filename of uploaded file
+    /// Default constructor
     /// </summary>
-    public string? OriginalFileName { get; set; }
+    public UsageMetadata() { }
 
     /// <summary>
-    /// File format/extension of input file
+    /// Constructor with initial properties
     /// </summary>
-    public string? InputFormat { get; set; }
+    public UsageMetadata(Dictionary<string, string> properties) : base(properties) { }
 
     /// <summary>
-    /// File format/extension of output file
+    /// Get original filename if it exists in metadata
     /// </summary>
-    public string? OutputFormat { get; set; }
+    public string? OriginalFileName => 
+        TryGetValue("OriginalFileName", out var value) ? value : null;
 
     /// <summary>
-    /// Language code for speech transcription (e.g., "en-US")
+    /// Get input format if it exists in metadata
     /// </summary>
-    public string? Language { get; set; }
+    public string? InputFormat => 
+        TryGetValue("InputFormat", out var value) ? value : null;
 
     /// <summary>
-    /// Whether timestamps were included in transcription
+    /// Get output format if it exists in metadata
     /// </summary>
-    public bool? IncludeTimestamps { get; set; }
+    public string? OutputFormat => 
+        TryGetValue("OutputFormat", out var value) ? value : null;
 
     /// <summary>
-    /// Audio duration in seconds (for audio files)
+    /// Get language if it exists in metadata
     /// </summary>
-    public double? AudioDurationSeconds { get; set; }
+    public string? Language => 
+        TryGetValue("Language", out var value) ? value : null;
 
     /// <summary>
-    /// Quality/bitrate settings used for conversion
+    /// Get processing region if it exists in metadata
     /// </summary>
-    public string? QualitySettings { get; set; }
+    public string? ProcessingRegion => 
+        TryGetValue("ProcessingRegion", out var value) ? value : null;
 
     /// <summary>
-    /// Region where the operation was processed
+    /// Set original filename
     /// </summary>
-    public string? ProcessingRegion { get; set; }
+    public void SetOriginalFileName(string value) => this["OriginalFileName"] = value;
+
+    /// <summary>
+    /// Set input format
+    /// </summary>
+    public void SetInputFormat(string value) => this["InputFormat"] = value;
+
+    /// <summary>
+    /// Set output format
+    /// </summary>
+    public void SetOutputFormat(string value) => this["OutputFormat"] = value;
+
+    /// <summary>
+    /// Set language
+    /// </summary>
+    public void SetLanguage(string value) => this["Language"] = value;
+
+    /// <summary>
+    /// Set processing region
+    /// </summary>
+    public void SetProcessingRegion(string value) => this["ProcessingRegion"] = value;
+    
+    /// <summary>
+    /// Get include timestamps flag if it exists in metadata
+    /// </summary>
+    public bool? IncludeTimestamps => 
+        TryGetValue("IncludeTimestamps", out var value) && bool.TryParse(value, out var result) ? result : null;
+    
+    /// <summary>
+    /// Set include timestamps flag
+    /// </summary>
+    public void SetIncludeTimestamps(bool value) => this["IncludeTimestamps"] = value.ToString();
 }

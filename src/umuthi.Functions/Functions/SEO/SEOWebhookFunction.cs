@@ -109,6 +109,11 @@ public class SEOWebhookFunction
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
             
             // Track webhook processing
+            var metadata = new UsageMetadata();
+            metadata.SetProcessingRegion(Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown");
+            metadata.SetInputFormat("json");
+            metadata.SetOutputFormat("webhook_response");
+
             await _usageTrackingService.TrackUsageAsync(
                 req,
                 "SEOReportWebhook",
@@ -119,12 +124,7 @@ public class SEOWebhookFunction
                 200,
                 true,
                 null,
-                new UsageMetadata
-                {
-                    ProcessingRegion = Environment.GetEnvironmentVariable("WEBSITE_RESOURCE_GROUP") ?? "unknown",
-                    InputFormat = "json",
-                    OutputFormat = "webhook_response"
-                });
+                metadata);
 
             _logger.LogInformation("SEO webhook processed successfully in {Duration}ms - correlation {CorrelationId}",
                 duration, correlationId);

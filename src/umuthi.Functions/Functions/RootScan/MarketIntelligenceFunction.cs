@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -15,6 +14,9 @@ using umuthi.Functions.Middleware;
 
 namespace umuthi.Functions.Functions.RootScan;
 
+/// <summary>
+/// Azure Function for market intelligence
+/// </summary>
 public class MarketIntelligenceFunction
 {
     private readonly ILogger<MarketIntelligenceFunction> _logger;
@@ -37,7 +39,7 @@ public class MarketIntelligenceFunction
     {
         var startTime = DateTime.UtcNow;
         var requestSize = req.ContentLength ?? 0;
-        string correlationId = req.Query["correlationId"];
+        string correlationId = req.Query["correlationId"].ToString();
 
         try
         {
@@ -69,6 +71,12 @@ public class MarketIntelligenceFunction
     {
         var duration = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
         
+        var metadata = new UsageMetadata();
+        if (!string.IsNullOrEmpty(correlationId))
+        {
+            metadata.Add("CorrelationId", correlationId);
+        }
+        
         await _usageTrackingService.TrackUsageAsync(
             req,
             "GetMarketIntelligence",
@@ -79,13 +87,13 @@ public class MarketIntelligenceFunction
             statusCode,
             success,
             errorMessage,
-            new UsageMetadata { { "CorrelationId", correlationId } }
+            metadata
         );
     }
 }
 
 public class MarketIntelligenceRequest
 {
-    public RootScanRequest RootScanRequest { get; set; }
-    public CompetitiveAnalysisResult CompetitiveAnalysisResult { get; set; }
+    public RootScanRequest RootScanRequest { get; set; } = null!;
+    public CompetitiveAnalysisResult CompetitiveAnalysisResult { get; set; } = null!;
 }
