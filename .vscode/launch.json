@@ -1,0 +1,53 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch AppHost",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/umuthi.AppHost/bin/Debug/net8.0/umuthi.AppHost.dll",
+            "cwd": "${workspaceFolder}/umuthi.AppHost",
+            "args": [],
+            "env": {},
+            "stopAtEntry": false,
+            "launchBrowser": {
+                "enabled": true,
+                "args": "https://localhost:17216",
+                "windows": {
+                    "command": "cmd.exe",
+                    "args": "/C start https://localhost:17216"
+                },
+                "osx": {
+                    "command": "open",
+                    "args": "https://localhost:17216"
+                },
+                "linux": {
+                    "command": "xdg-open",
+                    "args": "https://localhost:17216"
+                }
+            }
+        },
+        {
+            "name": "Start Azurite",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/.bin/azurite",
+            "args": ["--silent", "--location", "${workspaceFolder}/.azurite"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to .NET Functions",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureFunctions.pickProcess}"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "AppHost + Azurite",
+            "configurations": ["Start Azurite", "Launch AppHost"]
+        }
+    ]
+}
