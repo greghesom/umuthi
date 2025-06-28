@@ -1,7 +1,0 @@
-{
-    "url": "/rootscan/keyword-intelligence?correlationId={{parameters.correlationId}}",
-    "method": "POST",
-    "body": {
-        "rootScanRequest": "{{parameters.rootScanRequest}}"
-    }
-}

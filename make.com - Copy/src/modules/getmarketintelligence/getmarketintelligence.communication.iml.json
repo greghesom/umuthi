@@ -1,8 +1,0 @@
-{
-    "url": "/rootscan/market-intelligence?correlationId={{parameters.correlationId}}",
-    "method": "POST",
-    "body": {
-        "rootScanRequest": "{{parameters.rootScanRequest}}",
-        "competitiveAnalysisResult": "{{parameters.competitiveAnalysisResult}}"
-    }
-}

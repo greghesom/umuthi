@@ -1,9 +1,0 @@
-[
-    {
-        "name": "domain",
-        "type": "text",
-        "label": "Domain",
-        "required": true,
-        "help": "The domain to analyze (e.g., example.com)"
-    }
-]

@@ -1,9 +1,0 @@
-[
-    {
-        "name": "apiKey",
-        "type": "password",
-        "label": "API Key",
-        "required": true,
-        "editable": true
-    }
-]

@@ -1,4 +1,0 @@
-{
-    "url": "/GetSEOKeywordsOverview?projectId={{parameters.projectId}}",
-    "method": "GET"
-}

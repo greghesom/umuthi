@@ -1,8 +1,0 @@
-{
-    "url": "/rootscan/competitive-intelligence?correlationId={{parameters.correlationId}}",
-    "method": "POST",
-    "body": {
-        "rootScanRequest": "{{parameters.rootScanRequest}}",
-        "keywordResearchResult": "{{parameters.keywordResearchResult}}"
-    }
-}

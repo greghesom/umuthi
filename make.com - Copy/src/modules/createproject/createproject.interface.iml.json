@@ -1,8 +1,0 @@
-// Defines JSON object with "id" parameter as expected API response body.
-[
-    {
-        "name": "correlationId",
-        "type": "text",
-        "label": "Correlation ID"
-    }
-]
