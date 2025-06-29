@@ -226,12 +226,30 @@ Required for Azure Functions:
 - **NEW:** `SEORanking:ApiKey` - SE Ranking API key for SEO data
 - **NEW:** `SEORanking:BaseUrl` - SE Ranking API base URL (optional, defaults to https://api.seranking.com/)
 
+## 🚀 Deployment
+
+### Production Deployment
+The Azure Functions app includes automated deployment via GitHub Actions:
+
+- **Automatic Deployment**: Deploys on push to `main` branch
+- **Health Check Verification**: Ensures successful deployment
+- **Azure OIDC Authentication**: Secure deployment without stored credentials
+- **Rollback Support**: Easy rollback through Azure deployment slots
+
+See [README-deployment.md](README-deployment.md) for detailed deployment instructions and [docs/deployment.md](docs/deployment.md) for comprehensive deployment documentation.
+
+### Required GitHub Secrets
+Configure these secrets in your repository:
+- `AZURE_CLIENT_ID` - Azure service principal client ID
+- `AZURE_TENANT_ID` - Azure tenant ID  
+- `AZURE_SUBSCRIPTION_ID` - Azure subscription ID
+
 ## 📊 Monitoring & Logging
 
 The application includes comprehensive logging and monitoring:
 - **Serilog**: Structured logging with file and console output
 - **Application Insights**: Azure monitoring integration
-- **Health Checks**: Built-in health monitoring
+- **Health Checks**: Built-in health monitoring (`/api/HealthCheck`)
 - **Performance Tracking**: Request/response time monitoring
 
 ## 🤝 Contributing
