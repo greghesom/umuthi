@@ -1,0 +1,89 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy dotnet core app to Azure Function App - umuthi
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/umuthi.Functions' # path to the Function App project
+  DOTNET_VERSION: '8.0.x' # set this to the dotnet version to use
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v4
+
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: 'Resolve Project Dependencies Using Dotnet'
+        shell: pwsh
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet build --configuration Release --output ./output
+          popd
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: 'umuthi'
+          slot-name: 'Production'
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+
+      - name: 'Wait for deployment to stabilize'
+        shell: pwsh
+        run: |
+          Write-Host "Waiting 30 seconds for deployment to stabilize..."
+          Start-Sleep -Seconds 30
+
+      - name: 'Verify deployment health'
+        shell: pwsh
+        run: |
+          $maxAttempts = 5
+          $attempt = 1
+          $healthCheckUrl = "https://umuthi.azurewebsites.net/api/HealthCheck"
+          
+          do {
+            try {
+              Write-Host "Health check attempt $attempt of $maxAttempts..."
+              $response = Invoke-RestMethod -Uri $healthCheckUrl -Method Get -TimeoutSec 30
+              Write-Host "Health check successful: $($response.status)"
+              if ($response.status -eq "healthy") {
+                Write-Host "Deployment verification successful!"
+                exit 0
+              }
+            }
+            catch {
+              Write-Host "Health check failed: $($_.Exception.Message)"
+            }
+            
+            if ($attempt -lt $maxAttempts) {
+              Write-Host "Waiting 10 seconds before retry..."
+              Start-Sleep -Seconds 10
+            }
+            $attempt++
+          } while ($attempt -le $maxAttempts)
+          
+          Write-Host "Health check failed after $maxAttempts attempts"
+          exit 1
