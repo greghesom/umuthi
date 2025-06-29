@@ -35,12 +35,12 @@ public class SEORankingService : ISEORankingService
         _memoryCache = memoryCache;
         _configuration = configuration;
         _seRankingApiKey = configuration["SEORanking:ApiKey"] ?? throw new InvalidOperationException("SE Ranking API key not configured");
-        _seRankingBaseUrl = configuration["SEORanking:BaseUrl"] ?? "https://api.seranking.com/";
-        
+        _seRankingBaseUrl = configuration["SEORanking:BaseUrl"] ?? "https://api4.seranking.com/";
+
         // Data API configuration (use regular API as fallback)
         _seRankingDataApiKey = configuration["SEORanking:DataApiKey"] ?? _seRankingApiKey;
-        _seRankingDataApiUrl = configuration["SEORanking:DataApiUrl"] ?? "https://api4.seranking.com/";
-        
+        _seRankingDataApiUrl = configuration["SEORanking:DataApiUrl"] ?? "https://api.seranking.com/";
+
         _pendingReports = new Dictionary<string, SEOReportRequestStatus>();
 
         // Configure HTTP client
@@ -55,7 +55,7 @@ public class SEORankingService : ISEORankingService
     public async Task<SEOAuditReport> GetAuditReportAsync(string domain, ILogger logger)
     {
         var cacheKey = $"seo_audit_{domain}";
-        
+
         // Check cache first (5 second response requirement)
         if (_memoryCache.TryGetValue(cacheKey, out SEOAuditReport? cachedReport))
         {
@@ -110,7 +110,7 @@ public class SEORankingService : ISEORankingService
     public async Task<SEOKeywordsData> GetKeywordsDataAsync(string projectId, ILogger logger)
     {
         var cacheKey = $"seo_keywords_{projectId}";
-        
+
         // Check cache first
         if (_memoryCache.TryGetValue(cacheKey, out SEOKeywordsData? cachedData))
         {
@@ -163,7 +163,7 @@ public class SEORankingService : ISEORankingService
     public async Task<SEOCompetitorData> GetCompetitorAnalysisAsync(string projectId, string competitorDomain, ILogger logger)
     {
         var cacheKey = $"seo_competitor_{projectId}_{competitorDomain}";
-        
+
         // Check cache first
         if (_memoryCache.TryGetValue(cacheKey, out SEOCompetitorData? cachedData))
         {
@@ -341,7 +341,7 @@ public class SEORankingService : ISEORankingService
     public async Task<DomainOverviewData> GetDomainOverviewAsync(string domain, ILogger logger)
     {
         var cacheKey = $"seo_domain_overview_{domain}";
-        
+
         // Check cache first - 6 hours for domain data
         if (_memoryCache.TryGetValue(cacheKey, out DomainOverviewData? cachedData))
         {
@@ -390,7 +390,7 @@ public class SEORankingService : ISEORankingService
     public async Task<DomainPositionsData> GetDomainPositionsAsync(string domain, string searchEngine, string location, ILogger logger)
     {
         var cacheKey = $"seo_domain_positions_{domain}_{searchEngine}_{location}";
-        
+
         // Check cache first - 6 hours for domain data
         if (_memoryCache.TryGetValue(cacheKey, out DomainPositionsData? cachedData))
         {
@@ -440,7 +440,7 @@ public class SEORankingService : ISEORankingService
     public async Task<DomainCompetitorsData> GetDomainCompetitorsAsync(string domain, ILogger logger)
     {
         var cacheKey = $"seo_domain_competitors_{domain}";
-        
+
         // Check cache first - 6 hours for domain data
         if (_memoryCache.TryGetValue(cacheKey, out DomainCompetitorsData? cachedData))
         {
@@ -489,7 +489,7 @@ public class SEORankingService : ISEORankingService
     public async Task<KeywordsOverviewData> GetKeywordsOverviewAsync(string projectId, ILogger logger)
     {
         var cacheKey = $"seo_keywords_overview_{projectId}";
-        
+
         // Check cache first - 2 hours for keywords data
         if (_memoryCache.TryGetValue(cacheKey, out KeywordsOverviewData? cachedData))
         {
@@ -538,7 +538,7 @@ public class SEORankingService : ISEORankingService
     public async Task<KeywordPositionsData> GetKeywordPositionsAsync(string projectId, string searchEngine, string location, string device, ILogger logger)
     {
         var cacheKey = $"seo_keyword_positions_{projectId}_{searchEngine}_{location}_{device}";
-        
+
         // Check cache first - 2 hours for keywords data
         if (_memoryCache.TryGetValue(cacheKey, out KeywordPositionsData? cachedData))
         {
@@ -588,7 +588,7 @@ public class SEORankingService : ISEORankingService
     public async Task<SerpFeaturesData> GetSerpFeaturesAsync(string keyword, string searchEngine, string location, ILogger logger)
     {
         var cacheKey = $"seo_serp_features_{keyword}_{searchEngine}_{location}";
-        
+
         // Check cache first - 1 hour for SERP data
         if (_memoryCache.TryGetValue(cacheKey, out SerpFeaturesData? cachedData))
         {
@@ -639,7 +639,7 @@ public class SEORankingService : ISEORankingService
     {
         var keywordsList = string.Join(",", keywords);
         var cacheKey = $"seo_search_volume_{keywordsList.GetHashCode()}_{location}";
-        
+
         // Check cache first - 2 hours for keywords data
         if (_memoryCache.TryGetValue(cacheKey, out KeywordsOverviewData? cachedData))
         {
@@ -689,7 +689,7 @@ public class SEORankingService : ISEORankingService
     public async Task<BacklinksOverviewData> GetBacklinksOverviewAsync(string domain, ILogger logger)
     {
         var cacheKey = $"seo_backlinks_overview_{domain}";
-        
+
         // Check cache first - 12 hours for backlinks data
         if (_memoryCache.TryGetValue(cacheKey, out BacklinksOverviewData? cachedData))
         {
@@ -738,7 +738,7 @@ public class SEORankingService : ISEORankingService
     public async Task<BacklinksDetailedData> GetBacklinksDetailedAsync(string domain, int limit, ILogger logger)
     {
         var cacheKey = $"seo_backlinks_detailed_{domain}_{limit}";
-        
+
         // Check cache first - 12 hours for backlinks data
         if (_memoryCache.TryGetValue(cacheKey, out BacklinksDetailedData? cachedData))
         {
@@ -788,7 +788,7 @@ public class SEORankingService : ISEORankingService
     public async Task<AnchorTextData> GetAnchorTextAsync(string domain, ILogger logger)
     {
         var cacheKey = $"seo_anchor_text_{domain}";
-        
+
         // Check cache first - 12 hours for backlinks data
         if (_memoryCache.TryGetValue(cacheKey, out AnchorTextData? cachedData))
         {
@@ -837,7 +837,7 @@ public class SEORankingService : ISEORankingService
     public async Task<CompetitorsOverviewData> GetCompetitorsOverviewAsync(string domain, ILogger logger)
     {
         var cacheKey = $"seo_competitors_overview_{domain}";
-        
+
         // Check cache first - 6 hours for domain data
         if (_memoryCache.TryGetValue(cacheKey, out CompetitorsOverviewData? cachedData))
         {
@@ -886,7 +886,7 @@ public class SEORankingService : ISEORankingService
     public async Task<SharedKeywordsData> GetSharedKeywordsAsync(string domain, string competitorDomain, ILogger logger)
     {
         var cacheKey = $"seo_shared_keywords_{domain}_{competitorDomain}";
-        
+
         // Check cache first - 6 hours for domain data
         if (_memoryCache.TryGetValue(cacheKey, out SharedKeywordsData? cachedData))
         {
@@ -936,7 +936,7 @@ public class SEORankingService : ISEORankingService
     public async Task<KeywordGapData> GetKeywordGapAsync(string domain, string competitorDomain, ILogger logger)
     {
         var cacheKey = $"seo_keyword_gap_{domain}_{competitorDomain}";
-        
+
         // Check cache first - 6 hours for domain data
         if (_memoryCache.TryGetValue(cacheKey, out KeywordGapData? cachedData))
         {
@@ -986,7 +986,7 @@ public class SEORankingService : ISEORankingService
     public async Task<SerpResultsData> GetSerpResultsAsync(string keyword, string searchEngine, string location, string device, ILogger logger)
     {
         var cacheKey = $"seo_serp_results_{keyword}_{searchEngine}_{location}_{device}";
-        
+
         // Check cache first - 1 hour for SERP data
         if (_memoryCache.TryGetValue(cacheKey, out SerpResultsData? cachedData))
         {
