@@ -34,6 +34,134 @@
                     "samples": "modules/createproject/createproject.samples.iml.json",
                     "scope": "modules/createproject/createproject.scope.iml.json"
                 }
+            },
+            "generatereport": {
+                "label": "Generate RootScan Report",
+                "description": "Generate a comprehensive SEO report from RootScan analysis results",
+                "moduleType": "action",
+                "actionCrud": "create",
+                "connection": "connection1",
+                "altConnection": null,
+                "codeFiles": {
+                    "communication": "modules/generatereport/generatereport.communication.iml.json",
+                    "staticParams": "modules/generatereport/generatereport.static-params.iml.json",
+                    "mappableParams": "modules/generatereport/generatereport.mappable-params.iml.json",
+                    "interface": "modules/generatereport/generatereport.interface.iml.json",
+                    "samples": "modules/generatereport/generatereport.samples.iml.json",
+                    "scope": "modules/generatereport/generatereport.scope.iml.json"
+                }
+            },
+            "getcompetitiveintelligence": {
+                "label": "Get Competitive Intelligence",
+                "description": "Analyze competitors and market positioning using RootScan intelligence",
+                "moduleType": "action",
+                "actionCrud": "create",
+                "connection": "connection1",
+                "altConnection": null,
+                "codeFiles": {
+                    "communication": "modules/getcompetitiveintelligence/getcompetitiveintelligence.communication.iml.json",
+                    "staticParams": "modules/getcompetitiveintelligence/getcompetitiveintelligence.static-params.iml.json",
+                    "mappableParams": "modules/getcompetitiveintelligence/getcompetitiveintelligence.mappable-params.iml.json",
+                    "interface": "modules/getcompetitiveintelligence/getcompetitiveintelligence.interface.iml.json",
+                    "samples": "modules/getcompetitiveintelligence/getcompetitiveintelligence.samples.iml.json",
+                    "scope": "modules/getcompetitiveintelligence/getcompetitiveintelligence.scope.iml.json"
+                }
+            },
+            "getcompetitorsdata": {
+                "label": "Get SE Ranking Competitors Data",
+                "description": "Retrieve competitor analysis and domain comparison data from SE Ranking",
+                "moduleType": "action",
+                "actionCrud": "create",
+                "connection": "connection1",
+                "altConnection": null,
+                "codeFiles": {
+                    "communication": "modules/getcompetitorsdata/getcompetitorsdata.communication.iml.json",
+                    "staticParams": "modules/getcompetitorsdata/getcompetitorsdata.static-params.iml.json",
+                    "mappableParams": "modules/getcompetitorsdata/getcompetitorsdata.mappable-params.iml.json",
+                    "interface": "modules/getcompetitorsdata/getcompetitorsdata.interface.iml.json",
+                    "samples": "modules/getcompetitorsdata/getcompetitorsdata.samples.iml.json",
+                    "scope": "modules/getcompetitorsdata/getcompetitorsdata.scope.iml.json"
+                }
+            },
+            "getdomaindata": {
+                "label": "Get SE Ranking Domain Data",
+                "description": "Retrieve comprehensive domain overview and SEO metrics from SE Ranking",
+                "moduleType": "action",
+                "actionCrud": "create",
+                "connection": "connection1",
+                "altConnection": null,
+                "codeFiles": {
+                    "communication": "modules/getdomaindata/getdomaindata.communication.iml.json",
+                    "staticParams": "modules/getdomaindata/getdomaindata.static-params.iml.json",
+                    "mappableParams": "modules/getdomaindata/getdomaindata.mappable-params.iml.json",
+                    "interface": "modules/getdomaindata/getdomaindata.interface.iml.json",
+                    "samples": "modules/getdomaindata/getdomaindata.samples.iml.json",
+                    "scope": "modules/getdomaindata/getdomaindata.scope.iml.json"
+                }
+            },
+            "getkeywordintelligence": {
+                "label": "Get Keyword Intelligence",
+                "description": "Perform keyword research and analysis using RootScan intelligence",
+                "moduleType": "action",
+                "actionCrud": "create",
+                "connection": "connection1",
+                "altConnection": null,
+                "codeFiles": {
+                    "communication": "modules/getkeywordintelligence/getkeywordintelligence.communication.iml.json",
+                    "staticParams": "modules/getkeywordintelligence/getkeywordintelligence.static-params.iml.json",
+                    "mappableParams": "modules/getkeywordintelligence/getkeywordintelligence.mappable-params.iml.json",
+                    "interface": "modules/getkeywordintelligence/getkeywordintelligence.interface.iml.json",
+                    "samples": "modules/getkeywordintelligence/getkeywordintelligence.samples.iml.json",
+                    "scope": "modules/getkeywordintelligence/getkeywordintelligence.scope.iml.json"
+                }
+            },
+            "getkeywordsdata": {
+                "label": "Get SE Ranking Keywords Data",
+                "description": "Retrieve keyword rankings, positions, and performance data from SE Ranking",
+                "moduleType": "action",
+                "actionCrud": "create",
+                "connection": "connection1",
+                "altConnection": null,
+                "codeFiles": {
+                    "communication": "modules/getkeywordsdata/getkeywordsdata.communication.iml.json",
+                    "staticParams": "modules/getkeywordsdata/getkeywordsdata.static-params.iml.json",
+                    "mappableParams": "modules/getkeywordsdata/getkeywordsdata.mappable-params.iml.json",
+                    "interface": "modules/getkeywordsdata/getkeywordsdata.interface.iml.json",
+                    "samples": "modules/getkeywordsdata/getkeywordsdata.samples.iml.json",
+                    "scope": "modules/getkeywordsdata/getkeywordsdata.scope.iml.json"
+                }
+            },
+            "getmarketintelligence": {
+                "label": "Get Market Intelligence",
+                "description": "Analyze market trends and opportunities using RootScan intelligence",
+                "moduleType": "action",
+                "actionCrud": "create",
+                "connection": "connection1",
+                "altConnection": null,
+                "codeFiles": {
+                    "communication": "modules/getmarketintelligence/getmarketintelligence.communication.iml.json",
+                    "staticParams": "modules/getmarketintelligence/getmarketintelligence.static-params.iml.json",
+                    "mappableParams": "modules/getmarketintelligence/getmarketintelligence.mappable-params.iml.json",
+                    "interface": "modules/getmarketintelligence/getmarketintelligence.interface.iml.json",
+                    "samples": "modules/getmarketintelligence/getmarketintelligence.samples.iml.json",
+                    "scope": "modules/getmarketintelligence/getmarketintelligence.scope.iml.json"
+                }
+            },
+            "gettechnicalaudit": {
+                "label": "Get Technical Audit",
+                "description": "Perform technical SEO audit and website analysis using RootScan",
+                "moduleType": "action",
+                "actionCrud": "create",
+                "connection": "connection1",
+                "altConnection": null,
+                "codeFiles": {
+                    "communication": "modules/gettechnicalaudit/gettechnicalaudit.communication.iml.json",
+                    "staticParams": "modules/gettechnicalaudit/gettechnicalaudit.static-params.iml.json",
+                    "mappableParams": "modules/gettechnicalaudit/gettechnicalaudit.mappable-params.iml.json",
+                    "interface": "modules/gettechnicalaudit/gettechnicalaudit.interface.iml.json",
+                    "samples": "modules/gettechnicalaudit/gettechnicalaudit.samples.iml.json",
+                    "scope": "modules/gettechnicalaudit/gettechnicalaudit.scope.iml.json"
+                }
             }
         },
         "function": {},
@@ -42,7 +170,7 @@
     },
     "origins": [
         {
-            "label": "Make.com Production",
+            "label": "Origin",
             "baseUrl": "https://eu2.make.com/api",
             "appId": "umuthi-api-egw5bu",
             "appVersion": 1,
@@ -57,13 +185,45 @@
                     {
                         "local": "createproject",
                         "remote": "createproject"
+                    },
+                    {
+                        "local": "generatereport",
+                        "remote": "generatereport"
+                    },
+                    {
+                        "local": "getcompetitiveintelligence",
+                        "remote": "getcompetitiveintelligence"
+                    },
+                    {
+                        "local": "getcompetitorsdata",
+                        "remote": "getcompetitorsdata"
+                    },
+                    {
+                        "local": "getdomaindata",
+                        "remote": "getdomaindata"
+                    },
+                    {
+                        "local": "getkeywordintelligence",
+                        "remote": "getkeywordintelligence"
+                    },
+                    {
+                        "local": "getkeywordsdata",
+                        "remote": "getkeywordsdata"
+                    },
+                    {
+                        "local": "getmarketintelligence",
+                        "remote": "getmarketintelligence"
+                    },
+                    {
+                        "local": "gettechnicalaudit",
+                        "remote": "gettechnicalaudit"
                     }
                 ],
                 "function": [],
                 "rpc": [],
                 "webhook": []
             },
-            "apikeyFile": "../.secrets/apikey"
+            "apikeyFile": "../../.secrets/apikey4"
         }
     ]
 }

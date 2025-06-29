@@ -2,7 +2,7 @@
 [
     {
         "name": "correlationId",
-        "type": "string",
+        "type": "text",
         "label": "Correlation ID"
     }
 ]

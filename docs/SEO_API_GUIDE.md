@@ -27,6 +27,14 @@ You must configure your SE Ranking API credentials in the Azure Function App set
 ```
 SEORanking:ApiKey=your-seranking-api-key
 SEORanking:BaseUrl=https://api.seranking.com/
+
+# Optional: SE Ranking Data API configuration (uses regular API as fallback)
+SEORanking:DataApiKey=your-seranking-data-api-key
+SEORanking:DataApiUrl=https://api4.seranking.com/
+
+# Optional: Sandbox configuration for testing
+SEORanking:SandboxApiKey=your-sandbox-api-key
+SEORanking:SandboxApiUrl=https://sandbox-api4.seranking.com/
 ```
 
 ## Quick Start
@@ -237,14 +245,215 @@ When your report is ready, we'll send a POST request to your webhook URL:
 }
 ```
 
+## SE Ranking Data API Endpoints
+
+The following endpoints provide direct access to SE Ranking's Data API for comprehensive SEO analysis and competitor intelligence.
+
+### Get Domain Overview Data
+
+Retrieves comprehensive domain overview data including authority metrics, organic keywords, traffic estimates, and backlinks data.
+
+**Endpoint:** `GET /api/GetSEODomainOverview`
+
+**Parameters:**
+- `domain` (required): Domain to analyze (e.g., "example.com")
+
+**Response:** Domain overview data with key SEO metrics.
+
+**Example Request:**
+```
+GET /api/GetSEODomainOverview?domain=example.com
+```
+
+**Example Response:**
+```json
+{
+  "domain": "example.com",
+  "domainAuthority": 75,
+  "organicKeywords": 12500,
+  "organicTraffic": 150000,
+  "backlinksCount": 45000,
+  "referringDomains": 3200,
+  "domainRating": 72,
+  "generatedAt": "2024-01-15T10:30:00Z",
+  "cachedAt": "2024-01-15T10:30:00Z"
+}
+```
+
+### Get Domain Keyword Positions
+
+Retrieves keyword positions data for a domain across different search engines and locations.
+
+**Endpoint:** `GET /api/GetSEODomainPositions`
+
+**Parameters:**
+- `domain` (required): Domain to analyze
+- `searchEngine` (optional): Search engine (google, bing, yahoo) - defaults to "google"
+- `location` (optional): Location/country code - defaults to "US"
+
+**Response:** Domain keyword positions with detailed ranking data.
+
+**Example Request:**
+```
+GET /api/GetSEODomainPositions?domain=example.com&searchEngine=google&location=US
+```
+
+### Get Domain Competitors
+
+Discovers and analyzes top competitors for a given domain.
+
+**Endpoint:** `GET /api/GetSEODomainCompetitors`
+
+**Parameters:**
+- `domain` (required): Domain to analyze competitors for
+
+**Response:** List of discovered competitors with competition metrics.
+
+### Get Keywords Overview
+
+Retrieves comprehensive keywords overview data for a SE Ranking project.
+
+**Endpoint:** `GET /api/GetSEOKeywordsOverview`
+
+**Parameters:**
+- `projectId` (required): SE Ranking project ID
+
+**Response:** Keywords overview with performance metrics and trends.
+
+**Example Response:**
+```json
+{
+  "projectId": "project_123456",
+  "totalKeywords": 2500,
+  "improvedKeywords": 150,
+  "declinedKeywords": 75,
+  "newKeywords": 45,
+  "lostKeywords": 30,
+  "averagePosition": 15.7,
+  "visibilityScore": 85.3,
+  "generatedAt": "2024-01-15T10:30:00Z",
+  "cachedAt": "2024-01-15T10:30:00Z"
+}
+```
+
+### Get Keyword Positions Tracking
+
+Retrieves detailed keyword position tracking data with historical performance.
+
+**Endpoint:** `GET /api/GetSEOKeywordPositions`
+
+**Parameters:**
+- `projectId` (required): SE Ranking project ID
+- `searchEngine` (optional): Search engine - defaults to "google"
+- `location` (optional): Location/country code - defaults to "US"
+- `device` (optional): Device type (desktop, mobile) - defaults to "desktop"
+
+### Get SERP Features
+
+Analyzes SERP features for specific keywords including featured snippets, people also ask, etc.
+
+**Endpoint:** `GET /api/GetSEOSerpFeatures`
+
+**Parameters:**
+- `keyword` (required): Keyword to analyze
+- `searchEngine` (optional): Search engine - defaults to "google"
+- `location` (optional): Location/country code - defaults to "US"
+
+### Get Search Volume Data
+
+Retrieves search volume data for multiple keywords.
+
+**Endpoint:** `GET /api/GetSEOSearchVolume`
+
+**Parameters:**
+- `keywords` (required): Comma-separated list of keywords
+- `location` (optional): Location/country code - defaults to "US"
+
+### Get Backlinks Overview
+
+Retrieves comprehensive backlinks overview including total backlinks, referring domains, and link distribution.
+
+**Endpoint:** `GET /api/GetSEOBacklinksOverview`
+
+**Parameters:**
+- `domain` (required): Domain to analyze backlinks for
+
+### Get Detailed Backlinks
+
+Retrieves detailed backlinks data with individual link information.
+
+**Endpoint:** `GET /api/GetSEOBacklinksDetailed`
+
+**Parameters:**
+- `domain` (required): Domain to analyze
+- `limit` (optional): Maximum number of backlinks to return - defaults to 100
+
+### Get Anchor Text Analysis
+
+Analyzes anchor text distribution for domain backlinks.
+
+**Endpoint:** `GET /api/GetSEOAnchorText`
+
+**Parameters:**
+- `domain` (required): Domain to analyze
+
+### Get Competitors Overview
+
+Discovers and analyzes top competitors with comprehensive competitive intelligence.
+
+**Endpoint:** `GET /api/GetSEOCompetitorsOverview`
+
+**Parameters:**
+- `domain` (required): Domain to analyze competitors for
+
+### Get Shared Keywords
+
+Analyzes shared keywords between your domain and a specific competitor.
+
+**Endpoint:** `GET /api/GetSEOSharedKeywords`
+
+**Parameters:**
+- `domain` (required): Your domain
+- `competitorDomain` (required): Competitor domain to compare against
+
+### Get Keyword Gap Analysis
+
+Identifies keyword gaps and opportunities compared to competitors.
+
+**Endpoint:** `GET /api/GetSEOKeywordGap`
+
+**Parameters:**
+- `domain` (required): Your domain
+- `competitorDomain` (required): Competitor domain to analyze gaps against
+
+### Get SERP Results
+
+Retrieves detailed SERP results data for specific keywords.
+
+**Endpoint:** `GET /api/GetSEOSerpResults`
+
+**Parameters:**
+- `keyword` (required): Keyword to search for
+- `searchEngine` (optional): Search engine - defaults to "google"
+- `location` (optional): Location/country code - defaults to "US"
+- `device` (optional): Device type (desktop, mobile) - defaults to "desktop"
+
 ## Caching Behavior
 
-To optimize performance and reduce SE Ranking API calls:
+To optimize performance and reduce SE Ranking API calls, different endpoint categories have optimized cache durations:
 
+### Standard SEO Endpoints
 - **Audit Reports**: Cached for 1 hour
 - **Keywords Data**: Cached for 30 minutes  
 - **Competitor Analysis**: Cached for 2 hours
 - **Comprehensive Reports**: Not cached (always fresh)
+
+### SE Ranking Data API Endpoints
+- **Domain Data** (Overview, Positions, Competitors): Cached for 6 hours
+- **Keywords Data** (Overview, Positions, Search Volume): Cached for 2 hours
+- **Backlinks Data** (Overview, Detailed, Anchors): Cached for 12 hours
+- **SERP Data** (Features, Results): Cached for 1 hour
+- **Competitors Data** (Overview, Keywords, Gaps): Cached for 6 hours
 
 **Cache Headers:**
 - Cached responses include `cachedAt` timestamp
@@ -308,6 +517,60 @@ If SE Ranking API is unavailable:
 [HTTP] Request Report → [Webhook] Wait for Completion → [HTTP] Get Report → [Process] Handle Data
 ```
 
+### SE Ranking Data API Modules
+
+The new SE Ranking Data API integration provides dedicated Make.com modules for comprehensive SEO analysis:
+
+#### Domain Analysis Module
+- **Module Name**: `seranking/getdomaindata`
+- **Purpose**: Get domain overview data including authority, traffic, and backlinks
+- **Required Parameters**: `domain`
+- **Use Case**: Quick domain analysis and competitive research
+
+**Example Workflow:**
+```
+[Domain Input] → [SE Ranking Domain Data] → [Store in Airtable] → [Send Email Report]
+```
+
+#### Keywords Analysis Module
+- **Module Name**: `seranking/getkeywordsdata`
+- **Purpose**: Get keywords overview and performance metrics
+- **Required Parameters**: `projectId`
+- **Use Case**: Track keyword performance and identify trends
+
+**Example Workflow:**
+```
+[Project ID] → [SE Ranking Keywords Data] → [Filter Improved Keywords] → [Slack Notification]
+```
+
+#### Competitors Analysis Module
+- **Module Name**: `seranking/getcompetitorsdata`
+- **Purpose**: Discover and analyze top competitors
+- **Required Parameters**: `domain`
+- **Use Case**: Competitive intelligence and market analysis
+
+**Example Workflow:**
+```
+[Domain Input] → [SE Ranking Competitors] → [Iterate Competitors] → [Analyze Each Competitor]
+```
+
+#### Automated SEO Monitoring Scenarios
+
+**Daily Keyword Tracking:**
+```
+[Schedule: Daily] → [SE Ranking Keywords] → [Check Position Changes] → [Alert on Drops]
+```
+
+**Weekly Competitor Analysis:**
+```
+[Schedule: Weekly] → [SE Ranking Competitors] → [Compare Metrics] → [Generate Report]
+```
+
+**Monthly Domain Health Check:**
+```
+[Schedule: Monthly] → [SE Ranking Domain Data] → [Track Trends] → [Dashboard Update]
+```
+
 ## Billing and Usage Tracking
 
 All SEO API calls are tracked for billing purposes:
@@ -320,10 +583,28 @@ All SEO API calls are tracked for billing purposes:
 - Cache hit/miss ratios
 
 ### Operation Types
+
+#### Standard SEO Operations
 - `SEOAuditReport` - Domain audit reports
 - `SEOKeywordsData` - Keywords ranking data
 - `SEOCompetitorAnalysis` - Competitor analysis
 - `SEOComprehensiveReport` - Long-running comprehensive reports
+
+#### SE Ranking Data API Operations
+- `SEO_DOMAIN_OVERVIEW` - Domain overview data
+- `SEO_DOMAIN_POSITIONS` - Domain keyword positions
+- `SEO_DOMAIN_COMPETITORS` - Domain competitors analysis
+- `SEO_KEYWORDS_OVERVIEW` - Keywords overview data
+- `SEO_KEYWORDS_POSITIONS` - Keyword positions tracking
+- `SEO_SERP_FEATURES` - SERP features analysis
+- `SEO_SEARCH_VOLUME` - Search volume data
+- `SEO_BACKLINKS_OVERVIEW` - Backlinks overview
+- `SEO_BACKLINKS_DETAILED` - Detailed backlinks data
+- `SEO_ANCHOR_TEXT` - Anchor text analysis
+- `SEO_COMPETITORS_OVERVIEW` - Competitors overview
+- `SEO_SHARED_KEYWORDS` - Shared keywords analysis
+- `SEO_KEYWORD_GAP` - Keyword gap analysis
+- `SEO_SERP_RESULTS` - SERP results data
 
 ### Billing Summary
 

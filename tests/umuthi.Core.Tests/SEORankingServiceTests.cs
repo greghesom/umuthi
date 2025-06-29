@@ -35,7 +35,7 @@ public class SEORankingServiceTests
         var httpClient = new HttpClient();
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => 
+        Assert.Throws<InvalidOperationException>(() =>
             new SEORankingService(httpClient, _mockMemoryCache.Object, _mockConfiguration.Object));
     }
 
@@ -52,7 +52,7 @@ public class SEORankingServiceTests
 
         // Assert
         Assert.NotNull(service);
-        Assert.Equal("https://api.seranking.com/", httpClient.BaseAddress?.ToString());
+        Assert.Equal("https://api4.seranking.com/", httpClient.BaseAddress?.ToString());
     }
 
     [Fact]
@@ -61,10 +61,10 @@ public class SEORankingServiceTests
         // Arrange
         var domain = "example.com";
         var cachedReport = new SEOAuditReport { Domain = domain, OverallScore = 85 };
-        
+
         _mockConfiguration.Setup(c => c["SEORanking:ApiKey"]).Returns("test-api-key");
         _mockConfiguration.Setup(c => c["SEORanking:BaseUrl"]).Returns("https://api.seranking.com/");
-        
+
         object? cachedValue = cachedReport;
         _mockMemoryCache.Setup(c => c.TryGetValue($"seo_audit_{domain}", out cachedValue))
                        .Returns(true);

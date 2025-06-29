@@ -109,6 +109,9 @@ public static class ServiceCollectionExtensions
         // Register RootScan services
         services.AddScoped<ICompetitiveIntelligenceEngine, CompetitiveIntelligenceEngine>();
         services.AddScoped<ITechnicalAuditEngine, TechnicalAuditEngine>();
+        services.AddScoped<IKeywordIntelligenceService, KeywordIntelligenceService>();
+        services.AddScoped<IMarketIntelligenceService, MarketIntelligenceService>();
+        services.AddScoped<IReportGenerationService, ReportGenerationService>();
         
         return services;
     }

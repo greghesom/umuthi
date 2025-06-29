@@ -51,4 +51,81 @@ public static class OperationTypes
     /// Project initialization operations
     /// </summary>
     public const string ProjectInit = "PROJECT_INIT";
+    
+    /// <summary>
+    /// Keyword intelligence and research operations
+    /// </summary>
+    public const string KeywordIntelligence = "KEYWORD_INTELLIGENCE";
+    
+    // SE Ranking Data API Operation Types
+    
+    /// <summary>
+    /// SEO domain overview data operations
+    /// </summary>
+    public const string SEODomainOverview = "SEO_DOMAIN_OVERVIEW";
+    
+    /// <summary>
+    /// SEO domain positions data operations
+    /// </summary>
+    public const string SEODomainPositions = "SEO_DOMAIN_POSITIONS";
+    
+    /// <summary>
+    /// SEO domain competitors data operations
+    /// </summary>
+    public const string SEODomainCompetitors = "SEO_DOMAIN_COMPETITORS";
+    
+    /// <summary>
+    /// SEO keywords overview data operations
+    /// </summary>
+    public const string SEOKeywordsOverview = "SEO_KEYWORDS_OVERVIEW";
+    
+    /// <summary>
+    /// SEO keywords positions data operations
+    /// </summary>
+    public const string SEOKeywordsPositions = "SEO_KEYWORDS_POSITIONS";
+    
+    /// <summary>
+    /// SEO SERP features data operations
+    /// </summary>
+    public const string SEOSerpFeatures = "SEO_SERP_FEATURES";
+    
+    /// <summary>
+    /// SEO keywords search volume data operations
+    /// </summary>
+    public const string SEOSearchVolume = "SEO_SEARCH_VOLUME";
+    
+    /// <summary>
+    /// SEO backlinks overview data operations
+    /// </summary>
+    public const string SEOBacklinksOverview = "SEO_BACKLINKS_OVERVIEW";
+    
+    /// <summary>
+    /// SEO backlinks detailed data operations
+    /// </summary>
+    public const string SEOBacklinksDetailed = "SEO_BACKLINKS_DETAILED";
+    
+    /// <summary>
+    /// SEO anchor text analysis data operations
+    /// </summary>
+    public const string SEOAnchorText = "SEO_ANCHOR_TEXT";
+    
+    /// <summary>
+    /// SEO competitors overview data operations
+    /// </summary>
+    public const string SEOCompetitorsOverview = "SEO_COMPETITORS_OVERVIEW";
+    
+    /// <summary>
+    /// SEO shared keywords data operations
+    /// </summary>
+    public const string SEOSharedKeywords = "SEO_SHARED_KEYWORDS";
+    
+    /// <summary>
+    /// SEO keyword gap analysis data operations
+    /// </summary>
+    public const string SEOKeywordGap = "SEO_KEYWORD_GAP";
+    
+    /// <summary>
+    /// SEO SERP results data operations
+    /// </summary>
+    public const string SEOSerpResults = "SEO_SERP_RESULTS";
 }

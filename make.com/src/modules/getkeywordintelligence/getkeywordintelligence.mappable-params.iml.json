@@ -7,62 +7,43 @@
         "help": "The correlation ID obtained from the 'Create Project' module."
     },
     {
-        "name": "rootScanRequest",
-        "type": "object",
-        "label": "RootScan Request Data",
+        "name": "clientUrl",
+        "type": "text",
+        "label": "Client Website URL",
         "required": true,
-        "help": "The full RootScan request object from the 'Create Project' module.",
-        "spec": [
-            {
-                "name": "clientUrl",
-                "type": "text",
-                "label": "Client Website URL",
-                "required": true
-            },
-            {
-                "name": "industry",
-                "type": "text",
-                "label": "Industry",
-                "required": true
-            },
-            {
-                "name": "competitors",
-                "type": "array",
-                "label": "Competitor Domains",
-                "required": true
-            },
-            {
-                "name": "services",
-                "type": "array",
-                "label": "Client Services",
-                "required": true
-            },
-            {
-                "name": "submissionId",
-                "type": "text",
-                "label": "Fillout Submission ID",
-                "required": true
-            },
-            {
-                "name": "clientInfo",
-                "type": "object",
-                "label": "Client Information",
-                "required": true,
-                "spec": [
-                    {
-                        "name": "companyName",
-                        "type": "text",
-                        "label": "Company Name",
-                        "required": true
-                    },
-                    {
-                        "name": "email",
-                        "type": "text",
-                        "label": "Client Email",
-                        "required": true
-                    }
-                ]
-            }
-        ]
+        "help": "The website URL to analyze for keyword research."
+    },
+    {
+        "name": "industry",
+        "type": "text",
+        "label": "Industry",
+        "required": true,
+        "help": "The industry or business sector for keyword research."
+    },
+    {
+        "name": "services",
+        "type": "array",
+        "label": "Services",
+        "required": true,
+        "help": "List of services offered by the client for keyword analysis.",
+        "spec": {
+            "type": "text",
+            "name": "service",
+            "label": "Service"
+        }
+    },
+    {
+        "name": "companyName",
+        "type": "text",
+        "label": "Company Name",
+        "required": true,
+        "help": "Name of the company for personalized keyword research."
+    },
+    {
+        "name": "email",
+        "type": "text",
+        "label": "Client Email",
+        "required": true,
+        "help": "Client email address for tracking and reporting."
     }
 ]

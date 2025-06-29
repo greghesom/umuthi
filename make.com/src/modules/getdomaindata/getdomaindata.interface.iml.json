@@ -1,0 +1,47 @@
+[
+    {
+        "name": "domain",
+        "type": "text",
+        "label": "Domain"
+    },
+    {
+        "name": "domainAuthority",
+        "type": "number",
+        "label": "Domain Authority"
+    },
+    {
+        "name": "organicKeywords",
+        "type": "number",
+        "label": "Organic Keywords"
+    },
+    {
+        "name": "organicTraffic",
+        "type": "number",
+        "label": "Organic Traffic"
+    },
+    {
+        "name": "backlinksCount",
+        "type": "number",
+        "label": "Backlinks Count"
+    },
+    {
+        "name": "referringDomains",
+        "type": "number",
+        "label": "Referring Domains"
+    },
+    {
+        "name": "domainRating",
+        "type": "number",
+        "label": "Domain Rating"
+    },
+    {
+        "name": "generatedAt",
+        "type": "date",
+        "label": "Generated At"
+    },
+    {
+        "name": "cachedAt",
+        "type": "date",
+        "label": "Cached At"
+    }
+]

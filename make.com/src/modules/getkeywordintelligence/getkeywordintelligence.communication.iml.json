@@ -2,6 +2,16 @@
     "url": "/rootscan/keyword-intelligence?correlationId={{parameters.correlationId}}",
     "method": "POST",
     "body": {
-        "rootScanRequest": "{{parameters.rootScanRequest}}"
+        "rootScanRequest": {
+            "clientUrl": "{{parameters.clientUrl}}",
+            "industry": "{{parameters.industry}}",
+            "services": "{{parameters.services}}",
+            "competitors": [],
+            "submissionId": "make-module-{{parameters.correlationId}}",
+            "clientInfo": {
+                "companyName": "{{parameters.companyName}}",
+                "email": "{{parameters.email}}"
+            }
+        }
     }
 }

@@ -8,7 +8,7 @@
     },
     {
         "name": "rootScanRequest",
-        "type": "object",
+        "type": "array",
         "label": "RootScan Request Data",
         "required": true,
         "help": "The full RootScan request object from the 'Create Project' module.",
@@ -45,7 +45,7 @@
             },
             {
                 "name": "clientInfo",
-                "type": "object",
+                "type": "array",
                 "label": "Client Information",
                 "required": true,
                 "spec": [

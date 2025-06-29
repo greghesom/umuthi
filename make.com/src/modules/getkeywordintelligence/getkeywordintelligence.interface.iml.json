@@ -1,17 +1,21 @@
-{
-    "status": {
+[
+    {
+        "name": "status",
         "type": "text",
         "label": "Status"
     },
-    "summary": {
+    {
+        "name": "summary",
         "type": "text",
         "label": "Summary"
     },
-    "chartUrl": {
+    {
+        "name": "chartUrl",
         "type": "url",
         "label": "Chart URL"
     },
-    "clusters": {
+    {
+        "name": "clusters",
         "type": "array",
         "label": "Keyword Clusters",
         "spec": [
@@ -32,4 +36,4 @@
             }
         ]
     }
-}
+]

@@ -8,7 +8,7 @@
     },
     {
         "name": "rootScanRequest",
-        "type": "object",
+        "type": "any",
         "label": "RootScan Request Data",
         "required": true,
         "help": "The full RootScan request object from the 'Create Project' module.",
@@ -45,7 +45,7 @@
             },
             {
                 "name": "clientInfo",
-                "type": "object",
+                "type": "any",
                 "label": "Client Information",
                 "required": true,
                 "spec": [
@@ -67,7 +67,7 @@
     },
     {
         "name": "competitiveAnalysisResult",
-        "type": "object",
+        "type": "any",
         "label": "Competitive Analysis Result",
         "required": true,
         "help": "The result object from the 'Get Competitive Intelligence' module.",
@@ -101,7 +101,7 @@
             },
             {
                 "name": "shareOfVoice",
-                "type": "object",
+                "type": "any",
                 "label": "Share of Voice",
                 "spec": [
                     {

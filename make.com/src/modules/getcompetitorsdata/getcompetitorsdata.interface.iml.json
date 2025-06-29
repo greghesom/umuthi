@@ -1,0 +1,54 @@
+[
+    {
+        "name": "domain",
+        "type": "text",
+        "label": "Domain"
+    },
+    {
+        "name": "topCompetitors",
+        "type": "array",
+        "label": "Top Competitors",
+        "spec": [
+            {
+                "name": "domain",
+                "type": "text",
+                "label": "Competitor Domain"
+            },
+            {
+                "name": "competitionLevel",
+                "type": "number",
+                "label": "Competition Level"
+            },
+            {
+                "name": "commonKeywords",
+                "type": "number",
+                "label": "Common Keywords"
+            },
+            {
+                "name": "organicTraffic",
+                "type": "number",
+                "label": "Organic Traffic"
+            },
+            {
+                "name": "organicKeywords",
+                "type": "number",
+                "label": "Organic Keywords"
+            },
+            {
+                "name": "domainRating",
+                "type": "number",
+                "label": "Domain Rating"
+            }
+        ]
+    },
+    {
+        "name": "generatedAt",
+        "type": "date",
+        "label": "Generated At"
+    },
+    {
+        "name": "cachedAt",
+        "type": "date",
+        "label": "Cached At"
+    }
+]
