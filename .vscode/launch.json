@@ -42,6 +42,16 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}"
+        },
+        {
+            "name": "Run All Tests",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/umuthi.Tests/bin/Debug/net8.0/umuthi.Tests.dll",
+            "cwd": "${workspaceFolder}/umuthi.Tests",
+            "args": [],
+            "env": {},
+            "stopAtEntry": false
         }
     ],
     "compounds": [
