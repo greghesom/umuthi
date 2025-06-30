@@ -454,7 +454,7 @@ public class SEORankingService : ISEORankingService
         try
         {
             using var dataClient = CreateDataApiClient();
-            var response = await dataClient.GetAsync($"domain/competitors?domain={Uri.EscapeDataString(domain)}");
+            var response = await dataClient.GetAsync($"/v1/domain/competitors?domain={Uri.EscapeDataString(domain)}&type=organic&stats=1&source=us");
             response.EnsureSuccessStatusCode();
 
             var jsonContent = await response.Content.ReadAsStringAsync();

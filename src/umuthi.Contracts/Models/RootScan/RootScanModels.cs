@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace umuthi.Contracts.Models.RootScan;
 
 public class KeyworkAnalysisRequest
@@ -6,9 +9,7 @@ public class KeyworkAnalysisRequest
     public string Industry { get; set; }
     public string[] Competitors { get; set; }
     public string[] Services { get; set; }
-
 }
-
 
 public class CompetitiveIntelligenceRequest
 {
@@ -21,19 +22,19 @@ public class KeywordResearchResult
     public string Status { get; set; }
     public string Summary { get; set; }
     public string ChartUrl { get; set; }
-    public System.Collections.Generic.List<KeywordCluster> Clusters { get; set; } = new System.Collections.Generic.List<KeywordCluster>();
+    public List<KeywordCluster> Clusters { get; set; } = new List<KeywordCluster>();
 }
 
 public class KeywordCluster
 {
     public string Title { get; set; }
     public string StrategicValue { get; set; }
-    public System.Collections.Generic.List<string> Keywords { get; set; } = new System.Collections.Generic.List<string>();
+    public List<string> Keywords { get; set; } = new List<string>();
 }
 
 public class CompetitiveAnalysisResult
 {
-    public System.Collections.Generic.List<Competitor> Competitors { get; set; } = new System.Collections.Generic.List<Competitor>();
+    public List<Competitor> Competitors { get; set; } = new List<Competitor>();
     public ShareOfVoice ShareOfVoice { get; set; }
 }
 
@@ -54,14 +55,14 @@ public class ShareOfVoice
 public class MarketInsightResult
 {
     public string IndustryTrendsSummary { get; set; }
-    public System.Collections.Generic.List<string> StrategicOpportunities { get; set; }
-    public System.Collections.Generic.List<string> ContentOpportunities { get; set; }
+    public List<string> StrategicOpportunities { get; set; }
+    public List<string> ContentOpportunities { get; set; }
 }
 
 public class TechnicalAuditResult
 {
     public int HealthScore { get; set; }
-    public System.Collections.Generic.List<string> TopIssues { get; set; }
+    public List<string> TopIssues { get; set; }
     public string AuditReportUrl { get; set; }
 }
 
