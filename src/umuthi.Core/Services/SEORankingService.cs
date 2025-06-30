@@ -45,7 +45,7 @@ public class SEORankingService : ISEORankingService
 
         // Configure HTTP client
         _httpClient.BaseAddress = new Uri(_seRankingBaseUrl);
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_seRankingApiKey}");
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Token {_seRankingApiKey}");
         _httpClient.Timeout = TimeSpan.FromSeconds(30);
     }
 
@@ -1037,7 +1037,7 @@ public class SEORankingService : ISEORankingService
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(_seRankingDataApiUrl);
-        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_seRankingDataApiKey}");
+        client.DefaultRequestHeaders.Add("Authorization", $"Token {_seRankingDataApiKey}");
         client.Timeout = TimeSpan.FromSeconds(30);
         return client;
     }

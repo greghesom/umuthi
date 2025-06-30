@@ -15,9 +15,9 @@ public class TechnicalAuditEngine : ITechnicalAuditEngine
         _logger = logger;
     }
 
-    public async Task<TechnicalAuditResult> GetTechnicalAuditAsync(RootScanRequest request)
+    public async Task<TechnicalAuditResult> GetTechnicalAuditAsync(KeyworkAnalysisRequest request)
     {
-        _logger.LogInformation("Starting technical audit for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Starting technical audit for client: {ClientName}", request.ClientUrl);
 
         // This is a placeholder for the actual implementation.
         // The final implementation will involve interacting with SE Ranking or other SEO audit tools.
@@ -33,7 +33,7 @@ public class TechnicalAuditEngine : ITechnicalAuditEngine
         // For now, return a mock result.
         await Task.Delay(3000); // Simulate long-running process
 
-        _logger.LogInformation("Technical audit completed for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Technical audit completed for client: {ClientName}", request.ClientUrl);
 
         return new TechnicalAuditResult
         {

@@ -6,5 +6,5 @@ namespace umuthi.Contracts.Interfaces.Services;
 
 public interface ICompetitiveIntelligenceEngine
 {
-    Task<CompetitiveAnalysisResult> GetCompetitiveAnalysisAsync(RootScanRequest request, KeywordResearchResult keywordResearch);
+    Task<CompetitiveAnalysisResult> GetCompetitiveAnalysisAsync(KeyworkAnalysisRequest request, KeywordResearchResult keywordResearch);
 }

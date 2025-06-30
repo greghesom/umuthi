@@ -6,5 +6,5 @@ namespace umuthi.Contracts.Interfaces.Services;
 
 public interface ITechnicalAuditEngine
 {
-    Task<TechnicalAuditResult> GetTechnicalAuditAsync(RootScanRequest request);
+    Task<TechnicalAuditResult> GetTechnicalAuditAsync(KeyworkAnalysisRequest request);
 }

@@ -16,9 +16,9 @@ public class MarketIntelligenceService : IMarketIntelligenceService
         _logger = logger;
     }
 
-    public async Task<MarketInsightResult> GetMarketInsightsAsync(RootScanRequest request, CompetitiveAnalysisResult competitiveAnalysis)
+    public async Task<MarketInsightResult> GetMarketInsightsAsync(KeyworkAnalysisRequest request, CompetitiveAnalysisResult competitiveAnalysis)
     {
-        _logger.LogInformation("Starting market intelligence analysis for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Starting market intelligence analysis for client: {ClientName}", request.ClientUrl);
 
         // This is a placeholder for the actual implementation.
         // The final implementation will involve multiple steps and API calls.
@@ -38,7 +38,7 @@ public class MarketIntelligenceService : IMarketIntelligenceService
         // For now, return a mock result.
         await Task.Delay(2500); // Simulate long-running process
 
-        _logger.LogInformation("Market intelligence analysis completed for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Market intelligence analysis completed for client: {ClientName}", request.ClientUrl);
 
         return new MarketInsightResult
         {

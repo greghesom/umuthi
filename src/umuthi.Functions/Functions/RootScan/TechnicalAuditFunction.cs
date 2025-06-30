@@ -94,5 +94,5 @@ public class TechnicalAuditFunction
 
 public class TechnicalAuditRequest
 {
-    public RootScanRequest RootScanRequest { get; set; } = null!;
+    public KeyworkAnalysisRequest RootScanRequest { get; set; } = null!;
 }

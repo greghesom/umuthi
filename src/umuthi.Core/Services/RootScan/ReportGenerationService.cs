@@ -16,9 +16,9 @@ public class ReportGenerationService : IReportGenerationService
         _logger = logger;
     }
 
-    public async Task<ReportGenerationResult> GenerateReportAsync(RootScanRequest request, KeywordResearchResult keywordResearch, CompetitiveAnalysisResult competitiveAnalysis, MarketInsightResult marketInsights, TechnicalAuditResult technicalAudit)
+    public async Task<ReportGenerationResult> GenerateReportAsync(KeyworkAnalysisRequest request, KeywordResearchResult keywordResearch, CompetitiveAnalysisResult competitiveAnalysis, MarketInsightResult marketInsights, TechnicalAuditResult technicalAudit)
     {
-        _logger.LogInformation("Starting report generation for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Starting report generation for client: {ClientName}", request.ClientUrl);
 
         // This is a placeholder for the actual implementation.
         // The final implementation will involve synthesizing data and generating a Gamma presentation.
@@ -34,7 +34,7 @@ public class ReportGenerationService : IReportGenerationService
         // For now, return a mock result.
         await Task.Delay(5000); // Simulate long-running process
 
-        _logger.LogInformation("Report generation completed for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Report generation completed for client: {ClientName}", request.ClientUrl);
 
         return new ReportGenerationResult
         {

@@ -217,9 +217,9 @@ public class KeywordIntelligenceServiceIntegrationTests : IDisposable
             It.IsAny<ILogger>()), Times.Once);
     }
 
-    private RootScanRequest CreateValidRootScanRequest()
+    private KeyworkAnalysisRequest CreateValidRootScanRequest()
     {
-        return new RootScanRequest
+        return new KeyworkAnalysisRequest
         {
             ClientUrl = "https://example.com",
             Industry = "Technology",

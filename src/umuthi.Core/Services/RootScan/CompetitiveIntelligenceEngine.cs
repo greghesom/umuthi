@@ -16,9 +16,9 @@ public class CompetitiveIntelligenceEngine : ICompetitiveIntelligenceEngine
         _logger = logger;
     }
 
-    public async Task<CompetitiveAnalysisResult> GetCompetitiveAnalysisAsync(RootScanRequest request, KeywordResearchResult keywordResearch)
+    public async Task<CompetitiveAnalysisResult> GetCompetitiveAnalysisAsync(KeyworkAnalysisRequest request, KeywordResearchResult keywordResearch)
     {
-        _logger.LogInformation("Starting competitive analysis for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Starting competitive analysis for client: {ClientName}", request.ClientUrl);
 
         // This is a placeholder for the actual implementation.
         // The final implementation will involve multiple steps and API calls.
@@ -38,7 +38,7 @@ public class CompetitiveIntelligenceEngine : ICompetitiveIntelligenceEngine
         // For now, return a mock result.
         await Task.Delay(3000); // Simulate long-running process
 
-        _logger.LogInformation("Competitive analysis completed for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Competitive analysis completed for client: {ClientName}", request.ClientUrl);
 
         return new CompetitiveAnalysisResult
         {

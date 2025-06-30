@@ -46,14 +46,14 @@ public class KeywordIntelligenceFunction
             _logger.LogInformation("Keyword intelligence function triggered with CorrelationId: {CorrelationId}", correlationId);
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var request = JsonSerializer.Deserialize<KeywordIntelligenceRequest>(requestBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var request = JsonSerializer.Deserialize<KeyworkAnalysisRequest>(requestBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (request == null)
             {
                 return new BadRequestObjectResult(new { error = "Invalid request body" });
             }
 
-            var result = await _keywordIntelligenceService.GetKeywordResearchAsync(request.RootScanRequest);
+            var result = await _keywordIntelligenceService.GetKeywordResearchAsync(request);
 
             await TrackUsageAsync(req, startTime, 200, true, null, requestSize, correlationId);
 
@@ -90,9 +90,4 @@ public class KeywordIntelligenceFunction
             metadata
         );
     }
-}
-
-public class KeywordIntelligenceRequest
-{
-    public RootScanRequest RootScanRequest { get; set; } = null!;
 }

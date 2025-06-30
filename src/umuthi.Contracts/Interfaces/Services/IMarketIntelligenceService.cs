@@ -6,5 +6,5 @@ namespace umuthi.Contracts.Interfaces.Services;
 
 public interface IMarketIntelligenceService
 {
-    Task<MarketInsightResult> GetMarketInsightsAsync(RootScanRequest request, CompetitiveAnalysisResult competitiveAnalysis);
+    Task<MarketInsightResult> GetMarketInsightsAsync(KeyworkAnalysisRequest request, CompetitiveAnalysisResult competitiveAnalysis);
 }

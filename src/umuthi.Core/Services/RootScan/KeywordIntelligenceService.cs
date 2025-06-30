@@ -24,9 +24,9 @@ public class KeywordIntelligenceService : IKeywordIntelligenceService
         _seoRankingService = seoRankingService;
     }
 
-    public async Task<KeywordResearchResult> GetKeywordResearchAsync(RootScanRequest request)
+    public async Task<KeywordResearchResult> GetKeywordResearchAsync(KeyworkAnalysisRequest request)
     {
-        _logger.LogInformation("Starting keyword research for client: {ClientName}", request.ClientInfo.CompanyName);
+        _logger.LogInformation("Starting keyword research for client: {ClientName}", request.ClientUrl);
 
         try
         {
@@ -58,7 +58,7 @@ public class KeywordIntelligenceService : IKeywordIntelligenceService
             var clusters = CreateKeywordClusters(baseKeywords, searchVolumeData, request.Industry, request.Services);
             
             _logger.LogInformation("Keyword research completed for client: {ClientName}. Found {ClusterCount} clusters.", 
-                request.ClientInfo.CompanyName, clusters.Count);
+                request.ClientUrl, clusters.Count);
 
             return new KeywordResearchResult
             {
@@ -70,7 +70,7 @@ public class KeywordIntelligenceService : IKeywordIntelligenceService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during keyword research for client: {ClientName}", request.ClientInfo.CompanyName);
+            _logger.LogError(ex, "Error during keyword research for client: {ClientName}", request.ClientUrl);
             
             // Return fallback result on error
             return new KeywordResearchResult

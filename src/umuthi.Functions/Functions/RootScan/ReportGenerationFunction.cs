@@ -100,7 +100,7 @@ public class ReportGenerationFunction
 
 public class ReportGenerationRequest
 {
-    public RootScanRequest RootScanRequest { get; set; } = null!;
+    public KeyworkAnalysisRequest RootScanRequest { get; set; } = null!;
     public KeywordResearchResult KeywordResearchResult { get; set; } = null!;
     public CompetitiveAnalysisResult CompetitiveAnalysisResult { get; set; } = null!;
     public MarketInsightResult MarketInsightResult { get; set; } = null!;

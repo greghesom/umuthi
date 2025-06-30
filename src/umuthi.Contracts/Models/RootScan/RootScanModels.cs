@@ -1,24 +1,18 @@
 namespace umuthi.Contracts.Models.RootScan;
 
-public class RootScanRequest
+public class KeyworkAnalysisRequest
 {
     public string ClientUrl { get; set; }
     public string Industry { get; set; }
     public string[] Competitors { get; set; }
     public string[] Services { get; set; }
-    public string SubmissionId { get; set; }
-    public ClientInfo ClientInfo { get; set; }
+
 }
 
-public class ClientInfo
-{
-    public string CompanyName { get; set; }
-    public string Email { get; set; }
-}
 
 public class CompetitiveIntelligenceRequest
 {
-    public RootScanRequest RootScanRequest { get; set; }
+    public KeyworkAnalysisRequest KeywordResearchRequest { get; set; }
     public KeywordResearchResult KeywordResearchResult { get; set; }
 }
 

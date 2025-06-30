@@ -53,7 +53,7 @@ public class CompetitiveIntelligenceFunction
                 return new BadRequestObjectResult(new { error = "Invalid request body" });
             }
 
-            var result = await _competitiveIntelligenceEngine.GetCompetitiveAnalysisAsync(request.RootScanRequest, request.KeywordResearchResult);
+            var result = await _competitiveIntelligenceEngine.GetCompetitiveAnalysisAsync(request.KeywordResearchRequest, request.KeywordResearchResult);
 
             await TrackUsageAsync(req, startTime, 200, true, null, requestSize, correlationId);
 

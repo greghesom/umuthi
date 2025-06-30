@@ -6,5 +6,5 @@ namespace umuthi.Contracts.Interfaces.Services;
 
 public interface IKeywordIntelligenceService
 {
-    Task<KeywordResearchResult> GetKeywordResearchAsync(RootScanRequest request);
+    Task<KeywordResearchResult> GetKeywordResearchAsync(KeyworkAnalysisRequest request);
 }

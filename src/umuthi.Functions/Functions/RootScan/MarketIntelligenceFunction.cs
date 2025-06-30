@@ -94,6 +94,6 @@ public class MarketIntelligenceFunction
 
 public class MarketIntelligenceRequest
 {
-    public RootScanRequest RootScanRequest { get; set; } = null!;
+    public KeyworkAnalysisRequest RootScanRequest { get; set; } = null!;
     public CompetitiveAnalysisResult CompetitiveAnalysisResult { get; set; } = null!;
 }
