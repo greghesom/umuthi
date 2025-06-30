@@ -18,23 +18,6 @@ public class ApiInfoFunctions
         _logger = logger;
     }
 
-    [Function("GetSupportedFormats")]
-    public IActionResult GetSupportedFormats([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
-    {
-        _logger.LogInformation("API information request received.");
-
-        var response = new SupportedFormatsResponse
-        {
-            Input = new[] { "WAV", "MPEG", "MPG", "MP4", "M4A", "AAC", "MP3" },
-            Output = new[] { "MP3", "TEXT" },
-            MaxFileSize = "50MB for conversion, 100MB for transcription",
-            Functions = new[] { "/api/ConvertWavToMp3", "/api/ConvertMpegToMp3", "/api/ConvertAudioToTranscript" },
-            Version = "1.0.0",
-            Description = "Umuthi Audio Processing API - Convert audio files and transcribe speech to text with usage tracking and billing support."
-        };
-
-        return new OkObjectResult(response);
-    }
 
     [Function("HealthCheck")]
     public IActionResult HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)

@@ -70,3 +70,86 @@ public class ReportGenerationResult
     public string ReportUrl { get; set; }
     public string PresentationUrl { get; set; }
 }
+
+/// <summary>
+/// Request model for GetCompetitors function
+/// </summary>
+public class GetCompetitorsRequest
+{
+    /// <summary>
+    /// Domain name to analyze for competitors
+    /// </summary>
+    public string Domain { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Correlation ID for tracking the request
+    /// </summary>
+    public Guid CorrelationId { get; set; }
+}
+
+/// <summary>
+/// Response model for GetCompetitors function
+/// </summary>
+public class GetCompetitorsResponse
+{
+    /// <summary>
+    /// Correlation ID from the request
+    /// </summary>
+    public Guid CorrelationId { get; set; }
+
+    /// <summary>
+    /// Domain analyzed
+    /// </summary>
+    public string Domain { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Indicates if the operation was successful
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// Error message if operation failed
+    /// </summary>
+    public string? Message { get; set; }
+
+    /// <summary>
+    /// List of discovered competitors
+    /// </summary>
+    public List<CompetitorInfo> Competitors { get; set; } = new List<CompetitorInfo>();
+
+    /// <summary>
+    /// Timestamp when the analysis was performed
+    /// </summary>
+    public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Competitor information from SE Ranking API
+/// </summary>
+public class CompetitorInfo
+{
+    /// <summary>
+    /// Competitor domain
+    /// </summary>
+    public string Domain { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Number of common keywords with the analyzed domain
+    /// </summary>
+    public int CommonKeywords { get; set; }
+
+    /// <summary>
+    /// Competition level score (0-1)
+    /// </summary>
+    public double CompetitionLevel { get; set; }
+
+    /// <summary>
+    /// Estimated organic traffic
+    /// </summary>
+    public int EstimatedTraffic { get; set; }
+
+    /// <summary>
+    /// Domain authority/rating score
+    /// </summary>
+    public int DomainAuthority { get; set; }
+}
