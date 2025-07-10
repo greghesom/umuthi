@@ -128,4 +128,9 @@ public static class OperationTypes
     /// SEO SERP results data operations
     /// </summary>
     public const string SEOSerpResults = "SEO_SERP_RESULTS";
+
+    /// <summary>
+    /// Keywords research operations with comprehensive metrics
+    /// </summary>
+    public const string KeywordResearch = "KEYWORD_RESEARCH";
 }

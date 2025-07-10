@@ -13,3 +13,62 @@ Accept: application/json
 ### Get Supported Formats
 GET {{baseUrl}}/api/GetSupportedFormats
 Accept: application/json
+
+### =====================================================
+### Keywords Research API
+### =====================================================
+
+### Keyword Research - Basic Request
+POST {{baseUrl}}/api/keywords/research
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "keywords": "seo platform\nsearch engine help\nanother keyword",
+  "regionCode": "za"
+}
+
+### Keyword Research - With Filters and Sorting
+POST {{baseUrl}}/api/keywords/research
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "keywords": "digital marketing\nseo services\nppc advertising\ncontent marketing\nsocial media marketing",
+  "regionCode": "us",
+  "sortBy": "volume",
+  "sortDirection": "desc",
+  "minSearchVolume": 500,
+  "maxDifficulty": 50,
+  "includeHistoricalTrends": true
+}
+
+### Keyword Research - Single Keyword
+POST {{baseUrl}}/api/keywords/research
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "keywords": "keyword research tool",
+  "regionCode": "gb"
+}
+
+### Keyword Research - Invalid Region Code (should fail)
+POST {{baseUrl}}/api/keywords/research
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "keywords": "test keyword",
+  "regionCode": "USA"
+}
+
+### Keyword Research - Empty Keywords (should fail)
+POST {{baseUrl}}/api/keywords/research
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "keywords": "",
+  "regionCode": "us"
+}

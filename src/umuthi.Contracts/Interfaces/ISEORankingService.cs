@@ -197,6 +197,16 @@ public interface ISEORankingService
     /// <param name="logger">Logger for tracking the operation</param>
     /// <returns>SERP results data</returns>
     Task<SerpResultsData> GetSerpResultsAsync(string keyword, string searchEngine, string location, string device, ILogger logger);
+
+    /// <summary>
+    /// Get comprehensive keyword research data from SE Ranking Keywords Export API
+    /// </summary>
+    /// <param name="keywords">List of keywords to research</param>
+    /// <param name="regionCode">Region/country code (Alpha-2)</param>
+    /// <param name="includeHistoricalTrends">Include historical trends data</param>
+    /// <param name="logger">Logger for tracking the operation</param>
+    /// <returns>Comprehensive keyword research data</returns>
+    Task<KeywordResearchResponse> GetKeywordResearchAsync(List<string> keywords, string regionCode, bool includeHistoricalTrends, ILogger logger);
     
     #endregion
 }

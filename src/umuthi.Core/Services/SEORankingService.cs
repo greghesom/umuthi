@@ -1031,6 +1031,65 @@ public class SEORankingService : ISEORankingService
     }
 
     /// <summary>
+    /// Get comprehensive keyword research data from SE Ranking Keywords Export API
+    /// </summary>
+    public async Task<KeywordResearchResponse> GetKeywordResearchAsync(List<string> keywords, string regionCode, bool includeHistoricalTrends, ILogger logger)
+    {
+        var cacheKey = $"keyword_research_{string.Join("_", keywords.Take(3))}_{regionCode}_{includeHistoricalTrends}";
+
+        // Check cache first - 4 hours for keyword research data
+        if (_memoryCache.TryGetValue(cacheKey, out KeywordResearchResponse? cachedData))
+        {
+            logger.LogInformation("Returning cached keyword research data for {KeywordCount} keywords in region {RegionCode}", keywords.Count, regionCode);
+            cachedData!.CachedAt = DateTime.UtcNow;
+            return cachedData;
+        }
+
+        logger.LogInformation("Fetching fresh keyword research data for {KeywordCount} keywords in region {RegionCode}", keywords.Count, regionCode);
+
+        try
+        {
+            using var dataClient = CreateDataApiClient();
+            
+            // Use the keyword export API endpoint for comprehensive data
+            var keywordsParam = string.Join(",", keywords.Select(Uri.EscapeDataString));
+            var url = $"keywords/export?keywords={keywordsParam}&location={Uri.EscapeDataString(regionCode)}&metrics=volume,difficulty,cpc,competition&format=json";
+            
+            if (includeHistoricalTrends)
+            {
+                url += "&include_trends=true&trend_period=12"; // Last 12 months
+            }
+
+            var response = await dataClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var data = MapKeywordResearchData(jsonContent, keywords, regionCode, includeHistoricalTrends);
+
+            // Cache for 4 hours
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(4),
+                Priority = CacheItemPriority.High
+            };
+            _memoryCache.Set(cacheKey, data, cacheOptions);
+
+            logger.LogInformation("Successfully fetched and cached keyword research data for {KeywordCount} keywords", keywords.Count);
+            return data;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch keyword research data for region {RegionCode}", regionCode);
+            throw new InvalidOperationException($"Failed to fetch keyword research data: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout while fetching keyword research data for region {RegionCode}", regionCode);
+            throw new InvalidOperationException("Timeout while fetching keyword research data", ex);
+        }
+    }
+
+    /// <summary>
     /// Create HTTP client configured for SE Ranking Data API
     /// </summary>
     private HttpClient CreateDataApiClient()
@@ -1569,6 +1628,131 @@ public class SEORankingService : ISEORankingService
         }
 
         return data;
+    }
+
+    private static KeywordResearchResponse MapKeywordResearchData(string jsonContent, List<string> keywords, string regionCode, bool includeHistoricalTrends)
+    {
+        using var doc = JsonDocument.Parse(jsonContent);
+        var root = doc.RootElement;
+
+        var response = new KeywordResearchResponse
+        {
+            RegionCode = regionCode,
+            TotalKeywords = keywords.Count,
+            ProcessedKeywords = 0
+        };
+
+        if (root.TryGetProperty("keywords", out var keywordsArray) && keywordsArray.ValueKind == JsonValueKind.Array)
+        {
+            var keywordDataList = new List<KeywordResearchData>();
+
+            foreach (var keywordElement in keywordsArray.EnumerateArray())
+            {
+                var keywordData = new KeywordResearchData
+                {
+                    Keyword = keywordElement.TryGetProperty("keyword", out var k) ? k.GetString() ?? string.Empty : string.Empty,
+                    SearchVolume = keywordElement.TryGetProperty("search_volume", out var sv) ? sv.GetInt32() : 0,
+                    Difficulty = keywordElement.TryGetProperty("difficulty", out var d) ? d.GetInt32() : 0,
+                    Competition = keywordElement.TryGetProperty("competition", out var c) ? c.GetString() ?? "medium" : "medium",
+                    CostPerClick = keywordElement.TryGetProperty("cpc", out var cpc) ? cpc.GetDecimal() : 0,
+                    EstimatedClicks = keywordElement.TryGetProperty("estimated_clicks", out var ec) ? ec.GetInt32() : 0,
+                    ResultsCount = keywordElement.TryGetProperty("results_count", out var rc) ? rc.GetInt32() : 0
+                };
+
+                // Parse SERP features
+                if (keywordElement.TryGetProperty("serp_features", out var serpFeatures) && serpFeatures.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var feature in serpFeatures.EnumerateArray())
+                    {
+                        if (feature.ValueKind == JsonValueKind.String)
+                        {
+                            keywordData.SerpFeatures.Add(feature.GetString() ?? string.Empty);
+                        }
+                    }
+                }
+
+                // Parse related keywords
+                if (keywordElement.TryGetProperty("related_keywords", out var relatedKeywords) && relatedKeywords.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var related in relatedKeywords.EnumerateArray())
+                    {
+                        if (related.ValueKind == JsonValueKind.String)
+                        {
+                            keywordData.RelatedKeywords.Add(related.GetString() ?? string.Empty);
+                        }
+                    }
+                }
+
+                // Parse long-tail variations
+                if (keywordElement.TryGetProperty("long_tail", out var longTail) && longTail.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var variation in longTail.EnumerateArray())
+                    {
+                        if (variation.ValueKind == JsonValueKind.String)
+                        {
+                            keywordData.LongTailVariations.Add(variation.GetString() ?? string.Empty);
+                        }
+                    }
+                }
+
+                // Parse historical trends if requested
+                if (includeHistoricalTrends && keywordElement.TryGetProperty("trends", out var trends) && trends.ValueKind == JsonValueKind.Array)
+                {
+                    keywordData.HistoricalTrends = new List<KeywordTrendData>();
+                    foreach (var trendElement in trends.EnumerateArray())
+                    {
+                        var trendData = new KeywordTrendData
+                        {
+                            Date = trendElement.TryGetProperty("date", out var date) ? date.GetDateTime() : DateTime.UtcNow,
+                            SearchVolume = trendElement.TryGetProperty("search_volume", out var tsv) ? tsv.GetInt32() : 0,
+                            Difficulty = trendElement.TryGetProperty("difficulty", out var td) ? td.GetInt32() : 0,
+                            CostPerClick = trendElement.TryGetProperty("cpc", out var tcpc) ? tcpc.GetDecimal() : 0
+                        };
+                        keywordData.HistoricalTrends.Add(trendData);
+                    }
+                }
+
+                keywordDataList.Add(keywordData);
+                response.ProcessedKeywords++;
+            }
+
+            response.Keywords = keywordDataList;
+
+            // Calculate summary statistics
+            if (keywordDataList.Count > 0)
+            {
+                response.Summary = new KeywordResearchSummary
+                {
+                    AverageSearchVolume = keywordDataList.Average(k => k.SearchVolume),
+                    AverageDifficulty = keywordDataList.Average(k => k.Difficulty),
+                    AverageCostPerClick = keywordDataList.Average(k => k.CostPerClick),
+                    TotalTrafficPotential = keywordDataList.Sum(k => k.EstimatedClicks),
+                    LowCompetitionPercentage = keywordDataList.Count(k => k.Competition.ToLower() == "low") * 100.0 / keywordDataList.Count,
+                    HighVolumeKeywordsCount = keywordDataList.Count(k => k.SearchVolume > 1000),
+                    TopOpportunityKeywords = keywordDataList
+                        .Where(k => k.SearchVolume > 100 && k.Difficulty < 50)
+                        .OrderByDescending(k => k.SearchVolume)
+                        .Take(5)
+                        .Select(k => k.Keyword)
+                        .ToList()
+                };
+            }
+        }
+        else
+        {
+            // Fallback: create basic data for keywords that weren't found in API response
+            response.Keywords = keywords.Select(keyword => new KeywordResearchData 
+            { 
+                Keyword = keyword,
+                SearchVolume = 0,
+                Difficulty = 50,
+                Competition = "unknown",
+                CostPerClick = 0
+            }).ToList();
+            response.ProcessedKeywords = keywords.Count;
+        }
+
+        return response;
     }
 
     #endregion

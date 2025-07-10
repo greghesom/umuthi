@@ -1421,4 +1421,216 @@ public class SerpResult
     public string Type { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Request model for keyword research API
+/// </summary>
+public class KeywordResearchRequest
+{
+    /// <summary>
+    /// Keywords to research, each keyword on a new line
+    /// </summary>
+    [Required]
+    public string Keywords { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Region code (Alpha-2 country code, e.g., "US", "ZA", "GB")
+    /// </summary>
+    [Required]
+    public string RegionCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional sorting criteria (volume, difficulty, cpc, competition)
+    /// </summary>
+    public string? SortBy { get; set; }
+
+    /// <summary>
+    /// Sort direction (asc, desc)
+    /// </summary>
+    public string? SortDirection { get; set; } = "desc";
+
+    /// <summary>
+    /// Optional minimum search volume filter
+    /// </summary>
+    public int? MinSearchVolume { get; set; }
+
+    /// <summary>
+    /// Optional maximum difficulty filter (0-100)
+    /// </summary>
+    public int? MaxDifficulty { get; set; }
+
+    /// <summary>
+    /// Include historical trends data
+    /// </summary>
+    public bool IncludeHistoricalTrends { get; set; } = false;
+}
+
+/// <summary>
+/// Response model for keyword research API
+/// </summary>
+public class KeywordResearchResponse
+{
+    /// <summary>
+    /// Region code used for the research
+    /// </summary>
+    public string RegionCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Total number of keywords analyzed
+    /// </summary>
+    public int TotalKeywords { get; set; }
+
+    /// <summary>
+    /// Number of keywords processed successfully
+    /// </summary>
+    public int ProcessedKeywords { get; set; }
+
+    /// <summary>
+    /// Detailed keyword research data
+    /// </summary>
+    public List<KeywordResearchData> Keywords { get; set; } = new List<KeywordResearchData>();
+
+    /// <summary>
+    /// When this research was generated
+    /// </summary>
+    public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Cache timestamp for billing tracking
+    /// </summary>
+    public DateTime? CachedAt { get; set; }
+
+    /// <summary>
+    /// Summary statistics
+    /// </summary>
+    public KeywordResearchSummary Summary { get; set; } = new KeywordResearchSummary();
+}
+
+/// <summary>
+/// Individual keyword research data with comprehensive metrics
+/// </summary>
+public class KeywordResearchData
+{
+    /// <summary>
+    /// Keyword phrase
+    /// </summary>
+    public string Keyword { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Monthly search volume
+    /// </summary>
+    public int SearchVolume { get; set; }
+
+    /// <summary>
+    /// Keyword difficulty score (0-100)
+    /// </summary>
+    public int Difficulty { get; set; }
+
+    /// <summary>
+    /// Competition level (low, medium, high)
+    /// </summary>
+    public string Competition { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Cost per click in USD
+    /// </summary>
+    public decimal CostPerClick { get; set; }
+
+    /// <summary>
+    /// Estimated monthly clicks for top position
+    /// </summary>
+    public int EstimatedClicks { get; set; }
+
+    /// <summary>
+    /// Top-level domain results count
+    /// </summary>
+    public int ResultsCount { get; set; }
+
+    /// <summary>
+    /// SERP features present for this keyword
+    /// </summary>
+    public List<string> SerpFeatures { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Historical trends data (if requested)
+    /// </summary>
+    public List<KeywordTrendData>? HistoricalTrends { get; set; }
+
+    /// <summary>
+    /// Related keywords suggestions
+    /// </summary>
+    public List<string> RelatedKeywords { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Long-tail variations
+    /// </summary>
+    public List<string> LongTailVariations { get; set; } = new List<string>();
+}
+
+/// <summary>
+/// Historical trend data point for a keyword
+/// </summary>
+public class KeywordTrendData
+{
+    /// <summary>
+    /// Date for this data point
+    /// </summary>
+    public DateTime Date { get; set; }
+
+    /// <summary>
+    /// Search volume for this date
+    /// </summary>
+    public int SearchVolume { get; set; }
+
+    /// <summary>
+    /// Difficulty score for this date
+    /// </summary>
+    public int Difficulty { get; set; }
+
+    /// <summary>
+    /// CPC for this date
+    /// </summary>
+    public decimal CostPerClick { get; set; }
+}
+
+/// <summary>
+/// Summary statistics for keyword research response
+/// </summary>
+public class KeywordResearchSummary
+{
+    /// <summary>
+    /// Average search volume across all keywords
+    /// </summary>
+    public double AverageSearchVolume { get; set; }
+
+    /// <summary>
+    /// Average difficulty across all keywords
+    /// </summary>
+    public double AverageDifficulty { get; set; }
+
+    /// <summary>
+    /// Average cost per click across all keywords
+    /// </summary>
+    public decimal AverageCostPerClick { get; set; }
+
+    /// <summary>
+    /// Total estimated monthly traffic potential
+    /// </summary>
+    public int TotalTrafficPotential { get; set; }
+
+    /// <summary>
+    /// Keywords with low competition (percentage)
+    /// </summary>
+    public double LowCompetitionPercentage { get; set; }
+
+    /// <summary>
+    /// Keywords with high search volume (>1000) count
+    /// </summary>
+    public int HighVolumeKeywordsCount { get; set; }
+
+    /// <summary>
+    /// Top keywords by opportunity score
+    /// </summary>
+    public List<string> TopOpportunityKeywords { get; set; } = new List<string>();
+}
+
 #endregion

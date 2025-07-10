@@ -57,6 +57,17 @@ curl -X GET "https://your-function-app.azurewebsites.net/api/GetSEOCompetitorAna
   -H "x-api-key: umuthi-dev-api-key"
 ```
 
+### 4. Keywords Research
+```bash
+curl -X POST "https://your-function-app.azurewebsites.net/api/keywords/research" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: umuthi-dev-api-key" \
+  -d '{
+    "keywords": "seo platform\nsearch engine help\nanother keyword",
+    "regionCode": "za"
+  }'
+```
+
 ## Endpoints
 
 ### Get SEO Audit Report
@@ -172,6 +183,98 @@ Retrieves competitor analysis data comparing your project with a competitor doma
   "cachedAt": "2023-12-01T10:00:00Z"
 }
 ```
+
+### Keywords Research
+
+Get comprehensive keyword research data with metrics including search volume, CPC, competition, difficulty, and historical trends.
+
+**Endpoint:** `POST /api/keywords/research`
+
+**Request Body:**
+```json
+{
+  "keywords": "seo platform\nsearch engine help\nanother keyword",
+  "regionCode": "za",
+  "sortBy": "volume",
+  "sortDirection": "desc",
+  "minSearchVolume": 500,
+  "maxDifficulty": 50,
+  "includeHistoricalTrends": true
+}
+```
+
+**Parameters:**
+- `keywords` (required): Keywords to research, each on a new line
+- `regionCode` (required): Alpha-2 country code (e.g., "US", "ZA", "GB")
+- `sortBy` (optional): Sort field - "volume", "difficulty", "cpc", "competition", "keyword"
+- `sortDirection` (optional): "asc" or "desc" (default: "desc")
+- `minSearchVolume` (optional): Minimum search volume filter
+- `maxDifficulty` (optional): Maximum difficulty filter (0-100)
+- `includeHistoricalTrends` (optional): Include 12-month historical data (default: false)
+
+**Limits:**
+- Maximum 100 keywords per request
+- Region code must be valid Alpha-2 format
+- Difficulty must be between 0-100
+- Search volume must be positive
+
+**Response:**
+```json
+{
+  "regionCode": "za",
+  "totalKeywords": 3,
+  "processedKeywords": 3,
+  "keywords": [
+    {
+      "keyword": "seo platform",
+      "searchVolume": 1200,
+      "difficulty": 45,
+      "competition": "medium",
+      "costPerClick": 2.50,
+      "estimatedClicks": 120,
+      "resultsCount": 45000000,
+      "serpFeatures": ["featured_snippet", "people_also_ask"],
+      "relatedKeywords": ["seo tool", "seo software"],
+      "longTailVariations": ["best seo platform", "seo platform comparison"],
+      "historicalTrends": [
+        {
+          "date": "2023-11-01T00:00:00Z",
+          "searchVolume": 1100,
+          "difficulty": 43,
+          "costPerClick": 2.30
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "averageSearchVolume": 833.33,
+    "averageDifficulty": 33.33,
+    "averageCostPerClick": 1.83,
+    "totalTrafficPotential": 1250,
+    "lowCompetitionPercentage": 66.67,
+    "highVolumeKeywordsCount": 2,
+    "topOpportunityKeywords": ["search engine help", "another keyword"]
+  },
+  "generatedAt": "2023-12-01T10:00:00Z",
+  "cachedAt": "2023-12-01T10:00:00Z"
+}
+```
+
+**Example Request (curl):**
+```bash
+curl -X POST "https://your-function-app.azurewebsites.net/api/keywords/research" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: umuthi-dev-api-key" \
+  -d '{
+    "keywords": "seo platform\nsearch engine help\nanother keyword",
+    "regionCode": "za",
+    "sortBy": "volume",
+    "sortDirection": "desc",
+    "includeHistoricalTrends": true
+  }'
+```
+
+**Caching:** 4 hours (cached data is marked with `cachedAt` timestamp)
 
 ## Long-Running Reports
 
@@ -589,6 +692,7 @@ All SEO API calls are tracked for billing purposes:
 - `SEOKeywordsData` - Keywords ranking data
 - `SEOCompetitorAnalysis` - Competitor analysis
 - `SEOComprehensiveReport` - Long-running comprehensive reports
+- `KeywordResearch` - Keywords research with comprehensive metrics
 
 #### SE Ranking Data API Operations
 - `SEO_DOMAIN_OVERVIEW` - Domain overview data
