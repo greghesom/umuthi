@@ -1049,12 +1049,12 @@ public class SEORankingService : ISEORankingService
 
         try
         {
-            using var dataClient = CreateDataApiClient();
-            
+            using var dataClient = CreateProjectApiClient();
+
             // Use the keyword export API endpoint for comprehensive data
             var keywordsParam = string.Join(",", keywords.Select(Uri.EscapeDataString));
             var url = $"keywords/export?keywords={keywordsParam}&location={Uri.EscapeDataString(regionCode)}&metrics=volume,difficulty,cpc,competition&format=json";
-            
+
             if (includeHistoricalTrends)
             {
                 url += "&include_trends=true&trend_period=12"; // Last 12 months
@@ -1089,6 +1089,15 @@ public class SEORankingService : ISEORankingService
         }
     }
 
+
+    private HttpClient CreateProjectApiClient()
+    {
+        var client = new HttpClient();
+        client.BaseAddress = new Uri(_seRankingBaseUrl);
+        client.DefaultRequestHeaders.Add("Authorization", $"Token {_seRankingApiKey}");
+        client.Timeout = TimeSpan.FromSeconds(30);
+        return client;
+    }
     /// <summary>
     /// Create HTTP client configured for SE Ranking Data API
     /// </summary>
@@ -1741,8 +1750,8 @@ public class SEORankingService : ISEORankingService
         else
         {
             // Fallback: create basic data for keywords that weren't found in API response
-            response.Keywords = keywords.Select(keyword => new KeywordResearchData 
-            { 
+            response.Keywords = keywords.Select(keyword => new KeywordResearchData
+            {
                 Keyword = keyword,
                 SearchVolume = 0,
                 Difficulty = 50,
