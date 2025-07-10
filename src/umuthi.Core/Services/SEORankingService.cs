@@ -1675,7 +1675,7 @@ public class SEORankingService : ISEORankingService
             foreach (var keywordElement in root.EnumerateArray())
             {
                 // Skip entries where no data was found
-                if (keywordElement.TryGetProperty("is_data_found", out var isDataFound) && 
+                if (keywordElement.TryGetProperty("is_data_found", out var isDataFound) &&
                     isDataFound.ValueKind == JsonValueKind.False)
                 {
                     continue;
@@ -1693,11 +1693,11 @@ public class SEORankingService : ISEORankingService
                 };
 
                 // Parse historical trends if available and requested
-                if (includeHistoricalTrends && keywordElement.TryGetProperty("history_trend", out var historyTrend) && 
+                if (includeHistoricalTrends && keywordElement.TryGetProperty("history_trend", out var historyTrend) &&
                     historyTrend.ValueKind == JsonValueKind.Object)
                 {
                     keywordData.HistoricalTrends = new List<KeywordTrendData>();
-                    
+
                     foreach (var trendProperty in historyTrend.EnumerateObject())
                     {
                         if (DateTime.TryParse(trendProperty.Name, out var trendDate))
