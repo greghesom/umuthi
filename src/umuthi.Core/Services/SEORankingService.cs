@@ -1052,7 +1052,7 @@ public class SEORankingService : ISEORankingService
             using var dataClient = CreateProjectApiClient();
 
             // Use the keyword export API endpoint for comprehensive data
-            var url = $"keywords/export?source={Uri.EscapeDataString(regionCode)}";
+            var url = $"research/{Uri.EscapeDataString(regionCode)}/analyze-keywords/";
 
             // Create form data
             var formData = new MultipartFormDataContent();
