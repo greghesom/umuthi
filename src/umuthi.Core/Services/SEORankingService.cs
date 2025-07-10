@@ -1035,7 +1035,8 @@ public class SEORankingService : ISEORankingService
     /// </summary>
     public async Task<KeywordResearchResponse> GetKeywordResearchAsync(List<string> keywords, string regionCode, bool includeHistoricalTrends, ILogger logger)
     {
-        var cacheKey = $"keyword_research_{string.Join("_", keywords.Take(3))}_{regionCode}_{includeHistoricalTrends}";
+        var keywordsHash = string.Join(",", keywords.OrderBy(k => k)).GetHashCode();
+        var cacheKey = $"keyword_research_{keywordsHash}_{regionCode}_{includeHistoricalTrends}";
 
         // Check cache first - 4 hours for keyword research data
         if (_memoryCache.TryGetValue(cacheKey, out KeywordResearchResponse? cachedData))
@@ -1725,37 +1726,23 @@ public class SEORankingService : ISEORankingService
         response.Keywords = keywordDataList;
 
         // Calculate summary statistics
-        if (keywordDataList.Count > 0)
+
+        response.Summary = new KeywordResearchSummary
         {
-            response.Summary = new KeywordResearchSummary
-            {
-                AverageSearchVolume = keywordDataList.Average(k => k.SearchVolume),
-                AverageDifficulty = keywordDataList.Average(k => k.Difficulty),
-                AverageCostPerClick = keywordDataList.Average(k => k.CostPerClick),
-                TotalTrafficPotential = keywordDataList.Sum(k => k.EstimatedClicks),
-                LowCompetitionPercentage = keywordDataList.Count(k => k.Competition.ToLower() == "low") * 100.0 / keywordDataList.Count,
-                HighVolumeKeywordsCount = keywordDataList.Count(k => k.SearchVolume > 1000),
-                TopOpportunityKeywords = keywordDataList
-                    .Where(k => k.SearchVolume > 100 && k.Difficulty < 50)
-                    .OrderByDescending(k => k.SearchVolume)
-                    .Take(5)
-                    .Select(k => k.Keyword)
-                    .ToList()
-            };
-        }
-        else
-        {
-            // Fallback: create basic data for keywords that weren't found in API response
-            response.Keywords = keywords.Select(keyword => new KeywordResearchData
-            {
-                Keyword = keyword,
-                SearchVolume = 0,
-                Difficulty = 50,
-                Competition = "unknown",
-                CostPerClick = 0
-            }).ToList();
-            response.ProcessedKeywords = keywords.Count;
-        }
+            AverageSearchVolume = keywordDataList.Average(k => k.SearchVolume),
+            AverageDifficulty = keywordDataList.Average(k => k.Difficulty),
+            AverageCostPerClick = keywordDataList.Average(k => k.CostPerClick),
+            TotalTrafficPotential = keywordDataList.Sum(k => k.EstimatedClicks),
+            LowCompetitionPercentage = keywordDataList.Count(k => k.Competition.ToLower() == "low") * 100.0 / keywordDataList.Count,
+            HighVolumeKeywordsCount = keywordDataList.Count(k => k.SearchVolume > 1000),
+            TopOpportunityKeywords = keywordDataList
+                .Where(k => k.SearchVolume > 100 && k.Difficulty < 50)
+                .OrderByDescending(k => k.SearchVolume)
+                .Take(5)
+                .Select(k => k.Keyword)
+                .ToList()
+        };
+
 
         return response;
     }
