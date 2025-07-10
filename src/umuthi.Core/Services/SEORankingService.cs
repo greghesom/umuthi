@@ -1052,15 +1052,31 @@ public class SEORankingService : ISEORankingService
             using var dataClient = CreateProjectApiClient();
 
             // Use the keyword export API endpoint for comprehensive data
-            var keywordsParam = string.Join(",", keywords.Select(Uri.EscapeDataString));
-            var url = $"keywords/export?keywords={keywordsParam}&location={Uri.EscapeDataString(regionCode)}&metrics=volume,difficulty,cpc,competition&format=json";
+            var url = $"keywords/export?source={Uri.EscapeDataString(regionCode)}";
 
-            if (includeHistoricalTrends)
+            // Create form data
+            var formData = new MultipartFormDataContent();
+
+            // Add keywords as individual form fields
+            foreach (var keyword in keywords)
             {
-                url += "&include_trends=true&trend_period=12"; // Last 12 months
+                formData.Add(new StringContent(keyword), "keywords[]");
             }
 
-            var response = await dataClient.GetAsync(url);
+            // Add columns to retrieve
+            var columns = new List<string> { "keyword", "volume", "cpc", "competition", "difficulty" };
+            if (includeHistoricalTrends)
+            {
+                columns.Add("history_trend");
+            }
+
+            formData.Add(new StringContent(string.Join(",", columns)), "cols");
+
+            // Add sorting options
+            formData.Add(new StringContent("volume"), "sort");
+            formData.Add(new StringContent("desc"), "sort_order");
+
+            var response = await dataClient.PostAsync(url, formData);
             response.EnsureSuccessStatusCode();
 
             var jsonContent = await response.Content.ReadAsStringAsync();
