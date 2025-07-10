@@ -1667,101 +1667,81 @@ public class SEORankingService : ISEORankingService
             ProcessedKeywords = 0
         };
 
-        if (root.TryGetProperty("keywords", out var keywordsArray) && keywordsArray.ValueKind == JsonValueKind.Array)
-        {
-            var keywordDataList = new List<KeywordResearchData>();
+        var keywordDataList = new List<KeywordResearchData>();
 
-            foreach (var keywordElement in keywordsArray.EnumerateArray())
+        // The API response is a direct array of keyword objects
+        if (root.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var keywordElement in root.EnumerateArray())
             {
+                // Skip entries where no data was found
+                if (keywordElement.TryGetProperty("is_data_found", out var isDataFound) && 
+                    isDataFound.ValueKind == JsonValueKind.False)
+                {
+                    continue;
+                }
+
                 var keywordData = new KeywordResearchData
                 {
                     Keyword = keywordElement.TryGetProperty("keyword", out var k) ? k.GetString() ?? string.Empty : string.Empty,
-                    SearchVolume = keywordElement.TryGetProperty("search_volume", out var sv) ? sv.GetInt32() : 0,
-                    Difficulty = keywordElement.TryGetProperty("difficulty", out var d) ? d.GetInt32() : 0,
-                    Competition = keywordElement.TryGetProperty("competition", out var c) ? c.GetString() ?? "medium" : "medium",
+                    SearchVolume = keywordElement.TryGetProperty("volume", out var vol) ? vol.GetInt32() : 0,
+                    Difficulty = keywordElement.TryGetProperty("difficulty", out var diff) ? diff.GetInt32() : 0,
+                    Competition = keywordElement.TryGetProperty("competition", out var comp) ? MapCompetitionLevel(comp.GetDouble()) : "medium",
                     CostPerClick = keywordElement.TryGetProperty("cpc", out var cpc) ? cpc.GetDecimal() : 0,
-                    EstimatedClicks = keywordElement.TryGetProperty("estimated_clicks", out var ec) ? ec.GetInt32() : 0,
-                    ResultsCount = keywordElement.TryGetProperty("results_count", out var rc) ? rc.GetInt32() : 0
+                    EstimatedClicks = CalculateEstimatedClicks(keywordElement.TryGetProperty("volume", out var sv) ? sv.GetInt32() : 0),
+                    ResultsCount = 0 // Not provided in this API response
                 };
 
-                // Parse SERP features
-                if (keywordElement.TryGetProperty("serp_features", out var serpFeatures) && serpFeatures.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var feature in serpFeatures.EnumerateArray())
-                    {
-                        if (feature.ValueKind == JsonValueKind.String)
-                        {
-                            keywordData.SerpFeatures.Add(feature.GetString() ?? string.Empty);
-                        }
-                    }
-                }
-
-                // Parse related keywords
-                if (keywordElement.TryGetProperty("related_keywords", out var relatedKeywords) && relatedKeywords.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var related in relatedKeywords.EnumerateArray())
-                    {
-                        if (related.ValueKind == JsonValueKind.String)
-                        {
-                            keywordData.RelatedKeywords.Add(related.GetString() ?? string.Empty);
-                        }
-                    }
-                }
-
-                // Parse long-tail variations
-                if (keywordElement.TryGetProperty("long_tail", out var longTail) && longTail.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var variation in longTail.EnumerateArray())
-                    {
-                        if (variation.ValueKind == JsonValueKind.String)
-                        {
-                            keywordData.LongTailVariations.Add(variation.GetString() ?? string.Empty);
-                        }
-                    }
-                }
-
-                // Parse historical trends if requested
-                if (includeHistoricalTrends && keywordElement.TryGetProperty("trends", out var trends) && trends.ValueKind == JsonValueKind.Array)
+                // Parse historical trends if available and requested
+                if (includeHistoricalTrends && keywordElement.TryGetProperty("history_trend", out var historyTrend) && 
+                    historyTrend.ValueKind == JsonValueKind.Object)
                 {
                     keywordData.HistoricalTrends = new List<KeywordTrendData>();
-                    foreach (var trendElement in trends.EnumerateArray())
+                    
+                    foreach (var trendProperty in historyTrend.EnumerateObject())
                     {
-                        var trendData = new KeywordTrendData
+                        if (DateTime.TryParse(trendProperty.Name, out var trendDate))
                         {
-                            Date = trendElement.TryGetProperty("date", out var date) ? date.GetDateTime() : DateTime.UtcNow,
-                            SearchVolume = trendElement.TryGetProperty("search_volume", out var tsv) ? tsv.GetInt32() : 0,
-                            Difficulty = trendElement.TryGetProperty("difficulty", out var td) ? td.GetInt32() : 0,
-                            CostPerClick = trendElement.TryGetProperty("cpc", out var tcpc) ? tcpc.GetDecimal() : 0
-                        };
-                        keywordData.HistoricalTrends.Add(trendData);
+                            var trendData = new KeywordTrendData
+                            {
+                                Date = trendDate,
+                                SearchVolume = trendProperty.Value.GetInt32(),
+                                Difficulty = keywordData.Difficulty, // Use current difficulty as trend data doesn't include it
+                                CostPerClick = keywordData.CostPerClick // Use current CPC as trend data doesn't include it
+                            };
+                            keywordData.HistoricalTrends.Add(trendData);
+                        }
                     }
+
+                    // Sort trends by date
+                    keywordData.HistoricalTrends = keywordData.HistoricalTrends.OrderBy(t => t.Date).ToList();
                 }
 
                 keywordDataList.Add(keywordData);
                 response.ProcessedKeywords++;
             }
+        }
 
-            response.Keywords = keywordDataList;
+        response.Keywords = keywordDataList;
 
-            // Calculate summary statistics
-            if (keywordDataList.Count > 0)
+        // Calculate summary statistics
+        if (keywordDataList.Count > 0)
+        {
+            response.Summary = new KeywordResearchSummary
             {
-                response.Summary = new KeywordResearchSummary
-                {
-                    AverageSearchVolume = keywordDataList.Average(k => k.SearchVolume),
-                    AverageDifficulty = keywordDataList.Average(k => k.Difficulty),
-                    AverageCostPerClick = keywordDataList.Average(k => k.CostPerClick),
-                    TotalTrafficPotential = keywordDataList.Sum(k => k.EstimatedClicks),
-                    LowCompetitionPercentage = keywordDataList.Count(k => k.Competition.ToLower() == "low") * 100.0 / keywordDataList.Count,
-                    HighVolumeKeywordsCount = keywordDataList.Count(k => k.SearchVolume > 1000),
-                    TopOpportunityKeywords = keywordDataList
-                        .Where(k => k.SearchVolume > 100 && k.Difficulty < 50)
-                        .OrderByDescending(k => k.SearchVolume)
-                        .Take(5)
-                        .Select(k => k.Keyword)
-                        .ToList()
-                };
-            }
+                AverageSearchVolume = keywordDataList.Average(k => k.SearchVolume),
+                AverageDifficulty = keywordDataList.Average(k => k.Difficulty),
+                AverageCostPerClick = keywordDataList.Average(k => k.CostPerClick),
+                TotalTrafficPotential = keywordDataList.Sum(k => k.EstimatedClicks),
+                LowCompetitionPercentage = keywordDataList.Count(k => k.Competition.ToLower() == "low") * 100.0 / keywordDataList.Count,
+                HighVolumeKeywordsCount = keywordDataList.Count(k => k.SearchVolume > 1000),
+                TopOpportunityKeywords = keywordDataList
+                    .Where(k => k.SearchVolume > 100 && k.Difficulty < 50)
+                    .OrderByDescending(k => k.SearchVolume)
+                    .Take(5)
+                    .Select(k => k.Keyword)
+                    .ToList()
+            };
         }
         else
         {
@@ -1778,6 +1758,29 @@ public class SEORankingService : ISEORankingService
         }
 
         return response;
+    }
+
+    /// <summary>
+    /// Map numeric competition value to text description
+    /// </summary>
+    private static string MapCompetitionLevel(double competitionValue)
+    {
+        return competitionValue switch
+        {
+            <= 0.33 => "low",
+            <= 0.66 => "medium",
+            _ => "high"
+        };
+    }
+
+    /// <summary>
+    /// Estimate monthly clicks based on search volume (rough approximation)
+    /// </summary>
+    private static int CalculateEstimatedClicks(int searchVolume)
+    {
+        // Rough estimate: assume 30-35% CTR for position 1, declining for lower positions
+        // This is a simplified calculation for demonstration
+        return (int)(searchVolume * 0.32); // Assuming top position
     }
 
     #endregion
