@@ -70,7 +70,8 @@ public static class ServiceCollectionExtensions
             .AddUsageTrackingServices()
             .AddFilloutServices()
             .AddProjectServices()
-            .AddRootScanServices();
+            .AddRootScanServices()
+            .AddFileConversionServices();
     }
     
     /// <summary>
@@ -112,6 +113,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IKeywordIntelligenceService, KeywordIntelligenceService>();
         services.AddScoped<IMarketIntelligenceService, MarketIntelligenceService>();
         services.AddScoped<IReportGenerationService, ReportGenerationService>();
+        
+        return services;
+    }
+    
+    /// <summary>
+    /// Add file conversion services to the DI container
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The service collection for chaining</returns>
+    public static IServiceCollection AddFileConversionServices(this IServiceCollection services)
+    {
+        // Register file conversion service
+        services.AddScoped<IFileConversionService, FileConversionService>();
         
         return services;
     }

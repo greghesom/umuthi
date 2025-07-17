@@ -133,4 +133,9 @@ public static class OperationTypes
     /// Keywords research operations with comprehensive metrics
     /// </summary>
     public const string KeywordResearch = "KEYWORD_RESEARCH";
+
+    /// <summary>
+    /// File conversion to text operations
+    /// </summary>
+    public const string FileConversionToText = "FileConversionToText";
 }
