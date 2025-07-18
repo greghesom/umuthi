@@ -1,0 +1,367 @@
+MAKE.COM MODULE STRUCTURE AND INTERFACE
+=====================================
+File Text Extraction Azure Function Integration
+
+This document outlines the complete Make.com module structure and interface
+for integrating the File Text Extraction Azure Function (/api/fileconvert/text)
+with Make.com automation platform.
+
+=====================================
+MODULE OVERVIEW
+=====================================
+
+Module Name: convertfilestotext
+Description: Convert multiple files (PDF, Word, Excel, PowerPoint, Text) to formatted text
+API Endpoint: POST /api/fileconvert/text
+Authentication: API Key required
+Max Files: 10 files per request
+Max File Size: 50MB per file
+
+Supported File Types:
+- PDF Documents (.pdf)
+- Microsoft Word (.docx, .doc)
+- Microsoft Excel (.xlsx, .xls)
+- Microsoft PowerPoint (.pptx, .ppt)
+- Text Files (.txt, .rtf)
+
+=====================================
+MAKE.COM MODULE FILE STRUCTURE
+=====================================
+
+Module Directory: /make.com/src/modules/convertfilestotext/
+
+Required Files:
+1. convertfilestotext.interface.iml.json       - Output data structure
+2. convertfilestotext.communication.iml.json   - API communication settings
+3. convertfilestotext.mappable-params.iml.json - Input parameters
+4. convertfilestotext.static-params.iml.json   - Static configuration
+5. convertfilestotext.samples.iml.json         - Sample data
+6. convertfilestotext.scope.iml.json           - Module scope/permissions
+
+=====================================
+FILE CONTENTS
+=====================================
+
+--- convertfilestotext.interface.iml.json ---
+[
+    {
+        "name": "formattedText",
+        "type": "text",
+        "label": "Formatted Text Content"
+    },
+    {
+        "name": "processedFileCount",
+        "type": "number",
+        "label": "Processed File Count"
+    },
+    {
+        "name": "totalFileCount",
+        "type": "number",
+        "label": "Total File Count"
+    },
+    {
+        "name": "processingErrors",
+        "type": "array",
+        "label": "Processing Errors",
+        "spec": {
+            "type": "text"
+        }
+    },
+    {
+        "name": "totalCharacterCount",
+        "type": "number",
+        "label": "Total Character Count"
+    },
+    {
+        "name": "processingDurationMs",
+        "type": "number",
+        "label": "Processing Duration (ms)"
+    }
+]
+
+--- convertfilestotext.communication.iml.json ---
+{
+    "url": "/fileconvert/text",
+    "method": "POST",
+    "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": "{{connection.apiKey}}"
+    },
+    "body": {
+        "files": "{{parameters.files}}"
+    }
+}
+
+--- convertfilestotext.mappable-params.iml.json ---
+[
+    {
+        "name": "files",
+        "type": "array",
+        "label": "Files to Convert",
+        "required": true,
+        "help": "Array of files to extract text from (max 10 files, 50MB each)",
+        "spec": {
+            "type": "collection",
+            "spec": [
+                {
+                    "name": "fileName",
+                    "type": "text",
+                    "label": "File Name",
+                    "required": true,
+                    "help": "Name of the file including extension"
+                },
+                {
+                    "name": "mimeType",
+                    "type": "select",
+                    "label": "File Type",
+                    "required": true,
+                    "help": "MIME type of the file",
+                    "options": [
+                        {
+                            "label": "PDF Document",
+                            "value": "application/pdf"
+                        },
+                        {
+                            "label": "Word Document (DOCX)",
+                            "value": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        },
+                        {
+                            "label": "Word Document (DOC)",
+                            "value": "application/msword"
+                        },
+                        {
+                            "label": "Excel Spreadsheet (XLSX)",
+                            "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        },
+                        {
+                            "label": "Excel Spreadsheet (XLS)",
+                            "value": "application/vnd.ms-excel"
+                        },
+                        {
+                            "label": "PowerPoint Presentation (PPTX)",
+                            "value": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                        },
+                        {
+                            "label": "PowerPoint Presentation (PPT)",
+                            "value": "application/vnd.ms-powerpoint"
+                        },
+                        {
+                            "label": "Plain Text",
+                            "value": "text/plain"
+                        },
+                        {
+                            "label": "Rich Text Format",
+                            "value": "application/rtf"
+                        }
+                    ]
+                },
+                {
+                    "name": "binaryData",
+                    "type": "text",
+                    "label": "File Content (Base64)",
+                    "required": true,
+                    "help": "Base64 encoded file content"
+                }
+            ]
+        }
+    }
+]
+
+--- convertfilestotext.static-params.iml.json ---
+[]
+
+--- convertfilestotext.samples.iml.json ---
+[
+    {
+        "formattedText": "FILE CONVERSION RESULTS\n=================================================================================\nProcessed 2 of 2 files\nGenerated on: 2025-01-17 14:30:45 UTC\n=================================================================================\n\nFILE 1: sample-document.pdf\nType: PDF Document\nStatus: ✓ SUCCESS\nContent Length: 1,234 characters\n--------------------------------------------------------------------------------\n\nThis is the extracted text content from the PDF document...\n\n=================================================================================\n\nFILE 2: sample-spreadsheet.xlsx\nType: Excel Spreadsheet\nStatus: ✓ SUCCESS\nContent Length: 567 characters\n--------------------------------------------------------------------------------\n\n=== WORKSHEET: Sheet1 ===\nColumn A, Column B, Column C\nData 1, Data 2, Data 3\n\n=================================================================================",
+        "processedFileCount": 2,
+        "totalFileCount": 2,
+        "processingErrors": [],
+        "totalCharacterCount": 1801,
+        "processingDurationMs": 1250
+    }
+]
+
+--- convertfilestotext.scope.iml.json ---
+{
+    "read": true,
+    "write": false
+}
+
+=====================================
+USAGE EXAMPLES
+=====================================
+
+Example 1: Single PDF File Conversion
+-------------------------------------
+Input:
+{
+    "files": [
+        {
+            "fileName": "report.pdf",
+            "mimeType": "application/pdf",
+            "binaryData": "JVBERi0xLjQKJcOkw7zDosOgCjIgMCBvYmoK..."
+        }
+    ]
+}
+
+Output:
+{
+    "formattedText": "FILE CONVERSION RESULTS\n=================================================================================\nProcessed 1 of 1 files\nGenerated on: 2025-01-17 14:30:45 UTC\n=================================================================================\n\nFILE 1: report.pdf\nType: PDF Document\nStatus: ✓ SUCCESS\nContent Length: 2,156 characters\n--------------------------------------------------------------------------------\n\n[Extracted PDF content here...]\n\n=================================================================================",
+    "processedFileCount": 1,
+    "totalFileCount": 1,
+    "processingErrors": [],
+    "totalCharacterCount": 2156,
+    "processingDurationMs": 850
+}
+
+Example 2: Multiple File Types
+------------------------------
+Input:
+{
+    "files": [
+        {
+            "fileName": "document.docx",
+            "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "binaryData": "UEsDBBQABgAIAAAAIQDd..."
+        },
+        {
+            "fileName": "data.xlsx",
+            "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "binaryData": "UEsDBBQABgAIAAAAIQBi..."
+        }
+    ]
+}
+
+Output:
+{
+    "formattedText": "FILE CONVERSION RESULTS\n=================================================================================\nProcessed 2 of 2 files\nGenerated on: 2025-01-17 14:30:45 UTC\n=================================================================================\n\nFILE 1: document.docx\nType: Word Document\nStatus: ✓ SUCCESS\nContent Length: 1,456 characters\n--------------------------------------------------------------------------------\n\n[Extracted Word document content...]\n\n=================================================================================\n\nFILE 2: data.xlsx\nType: Excel Spreadsheet\nStatus: ✓ SUCCESS\nContent Length: 789 characters\n--------------------------------------------------------------------------------\n\n=== WORKSHEET: Sheet1 ===\n[Extracted Excel content...]\n\n=================================================================================",
+    "processedFileCount": 2,
+    "totalFileCount": 2,
+    "processingErrors": [],
+    "totalCharacterCount": 2245,
+    "processingDurationMs": 1150
+}
+
+=====================================
+ERROR HANDLING
+=====================================
+
+Common Error Responses:
+1. Invalid API Key (401 Unauthorized)
+2. Request Validation Errors (400 Bad Request)
+3. File Size Limit Exceeded (400 Bad Request)
+4. Unsupported File Type (400 Bad Request)
+5. Invalid Base64 Format (400 Bad Request)
+6. Too Many Files (400 Bad Request)
+7. Server Error (500 Internal Server Error)
+
+Error Response Example:
+{
+    "error": "File 1: File size exceeds 50MB limit"
+}
+
+Partial Success Example (some files fail):
+{
+    "formattedText": "FILE CONVERSION RESULTS\n=================================================================================\nProcessed 1 of 2 files\nGenerated on: 2025-01-17 14:30:45 UTC\n=================================================================================\n\nFILE 1: valid-document.pdf\nType: PDF Document\nStatus: ✓ SUCCESS\nContent Length: 1,234 characters\n--------------------------------------------------------------------------------\n\n[Extracted content...]\n\n=================================================================================\n\nFILE 2: corrupted-file.pdf\nType: PDF Document\nStatus: ✗ FAILED\nError: Unable to process PDF file - file may be corrupted\n\n=================================================================================",
+    "processedFileCount": 1,
+    "totalFileCount": 2,
+    "processingErrors": ["File 2 (corrupted-file.pdf): Unable to process PDF file - file may be corrupted"],
+    "totalCharacterCount": 1234,
+    "processingDurationMs": 950
+}
+
+=====================================
+MAKE.COM INTEGRATION NOTES
+=====================================
+
+1. Authentication Setup:
+   - Connection type: API Key
+   - Header name: X-API-Key
+   - Key parameter: apiKey
+
+2. File Input Handling:
+   - Files can be mapped from previous modules
+   - Binary data must be base64 encoded
+   - MIME type detection can be automated based on file extension
+
+3. Output Processing:
+   - formattedText contains the complete formatted output
+   - Individual statistics are available as separate fields
+   - Processing errors array contains detailed error messages
+
+4. Rate Limiting:
+   - API supports up to 10 files per request
+   - Each file limited to 50MB
+   - Processing time varies based on file size and complexity
+
+5. Use Cases:
+   - Document processing workflows
+   - Content extraction pipelines
+   - Text analysis automation
+   - Document conversion services
+
+=====================================
+IMPLEMENTATION CHECKLIST
+=====================================
+
+□ Create module directory: /make.com/src/modules/convertfilestotext/
+□ Add convertfilestotext.interface.iml.json
+□ Add convertfilestotext.communication.iml.json
+□ Add convertfilestotext.mappable-params.iml.json
+□ Add convertfilestotext.static-params.iml.json
+□ Add convertfilestotext.samples.iml.json
+□ Add convertfilestotext.scope.iml.json
+□ Update groups.json to include new module
+□ Test module with Make.com platform
+□ Validate API key authentication
+□ Test file upload and conversion
+□ Verify output formatting
+□ Document module in Make.com marketplace
+
+=====================================
+API ENDPOINT DETAILS
+=====================================
+
+Full URL: https://your-azure-function-app.azurewebsites.net/api/fileconvert/text
+Method: POST
+Authentication: API Key (X-API-Key header)
+Content-Type: application/json
+
+Request Body Schema:
+{
+    "type": "object",
+    "properties": {
+        "files": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+                "type": "object",
+                "required": ["fileName", "mimeType", "binaryData"],
+                "properties": {
+                    "fileName": {"type": "string"},
+                    "mimeType": {"type": "string", "enum": ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint", "text/plain", "application/rtf"]},
+                    "binaryData": {"type": "string", "format": "base64"}
+                }
+            }
+        }
+    },
+    "required": ["files"]
+}
+
+Response Schema:
+{
+    "type": "object",
+    "properties": {
+        "formattedText": {"type": "string"},
+        "processedFileCount": {"type": "integer"},
+        "totalFileCount": {"type": "integer"},
+        "processingErrors": {"type": "array", "items": {"type": "string"}},
+        "totalCharacterCount": {"type": "integer"},
+        "processingDurationMs": {"type": "integer"}
+    }
+}
+
+=====================================
+END OF DOCUMENT
+=====================================
