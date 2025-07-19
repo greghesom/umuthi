@@ -182,4 +182,19 @@ public class UsageMetadata : Dictionary<string, string>
     /// Set include timestamps flag
     /// </summary>
     public void SetIncludeTimestamps(bool value) => this["IncludeTimestamps"] = value.ToString();
+
+    /// <summary>
+    /// Set file processing details for bulk operations
+    /// </summary>
+    /// <param name="totalFiles">Total number of files</param>
+    /// <param name="processedFiles">Number of successfully processed files</param>
+    /// <param name="totalChars">Total characters extracted</param>
+    /// <param name="processingTimeMs">Processing time in milliseconds</param>
+    public void SetFileProcessingDetails(int totalFiles, int processedFiles, long totalChars, long processingTimeMs)
+    {
+        this["TotalFiles"] = totalFiles.ToString();
+        this["ProcessedFiles"] = processedFiles.ToString();
+        this["TotalCharacters"] = totalChars.ToString();
+        this["ProcessingTimeMs"] = processingTimeMs.ToString();
+    }
 }
