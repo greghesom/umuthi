@@ -7,7 +7,9 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using umuthi.Contracts.Interfaces;
 using umuthi.Contracts.Models;
 using umuthi.Functions.Middleware;
@@ -70,10 +72,10 @@ public class KeywordResearchFunction
 
             inputSize = requestBody.Length;
 
-            KeywordResearchRequest? request;
+            KeywordResearchRequestWithCountryCode? request;
             try
             {
-                request = JsonSerializer.Deserialize<KeywordResearchRequest>(requestBody, new JsonSerializerOptions
+                request = JsonSerializer.Deserialize<KeywordResearchRequestWithCountryCode>(requestBody, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
@@ -99,8 +101,11 @@ public class KeywordResearchFunction
                 });
             }
 
+            // Clean HTML tags from keywords before processing
+            var cleanedKeywords = CleanHtmlTags(request.Keywords);
+
             // Parse keywords from multi-line string
-            var keywords = request.Keywords
+            var keywords = cleanedKeywords
                 .Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(k => k.Trim())
                 .Where(k => !string.IsNullOrEmpty(k))
@@ -111,13 +116,13 @@ public class KeywordResearchFunction
                 return new BadRequestObjectResult(new { error = "At least one keyword is required." });
             }
 
-            if (keywords.Count > 100) // Limit for performance and billing
-            {
-                return new BadRequestObjectResult(new { error = "Maximum 100 keywords allowed per request." });
-            }
+            // Note: Removed the 100 keyword limit as per issue requirements
+
+            // Get the effective region code (supports both regionCode and countrycode)
+            var effectiveRegionCode = request.GetEffectiveRegionCode();
 
             // Validate region code (Alpha-2 format)
-            if (!IsValidAlpha2CountryCode(request.RegionCode))
+            if (!IsValidAlpha2CountryCode(effectiveRegionCode))
             {
                 return new BadRequestObjectResult(new { error = "Invalid region code. Must be a valid Alpha-2 country code (e.g., US, ZA, GB)." });
             }
@@ -125,7 +130,7 @@ public class KeywordResearchFunction
             // Get keyword research data
             var keywordResearch = await _seoRankingService.GetKeywordResearchAsync(
                 keywords, 
-                request.RegionCode, 
+                effectiveRegionCode, 
                 request.IncludeHistoricalTrends, 
                 _logger);
 
@@ -202,7 +207,7 @@ public class KeywordResearchFunction
     /// <summary>
     /// Validate the keyword research request
     /// </summary>
-    private static string[] ValidateRequest(KeywordResearchRequest request)
+    private static string[] ValidateRequest(KeywordResearchRequestWithCountryCode request)
     {
         var errors = new List<string>();
 
@@ -211,9 +216,10 @@ public class KeywordResearchFunction
             errors.Add("Keywords field is required.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.RegionCode))
+        var effectiveRegionCode = request.GetEffectiveRegionCode();
+        if (string.IsNullOrWhiteSpace(effectiveRegionCode))
         {
-            errors.Add("RegionCode field is required.");
+            errors.Add("RegionCode or CountryCode field is required.");
         }
 
         if (request.MinSearchVolume.HasValue && request.MinSearchVolume.Value < 0)
@@ -287,5 +293,58 @@ public class KeywordResearchFunction
 
         // Basic validation - all letters and uppercase
         return countryCode.All(char.IsLetter);
+    }
+
+    /// <summary>
+    /// Clean HTML tags and decode HTML entities from text
+    /// </summary>
+    private static string CleanHtmlTags(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return string.Empty;
+        }
+
+        // Replace <br> tags with newlines to preserve line breaks
+        var cleanText = Regex.Replace(input, @"<br\s*/?>\s*", "\n", RegexOptions.IgnoreCase);
+        
+        // Replace </p> tags with double newlines to separate paragraphs
+        cleanText = Regex.Replace(cleanText, @"</p>\s*", "\n\n", RegexOptions.IgnoreCase);
+
+        // Remove all other HTML tags
+        var htmlTagRegex = new Regex("<[^>]*>", RegexOptions.IgnoreCase);
+        cleanText = htmlTagRegex.Replace(cleanText, " ");
+
+        // Decode HTML entities
+        cleanText = HttpUtility.HtmlDecode(cleanText);
+
+        // Clean up extra whitespace but preserve line breaks
+        cleanText = Regex.Replace(cleanText, @"[ \t]+", " "); // Replace multiple spaces/tabs with single space
+        cleanText = Regex.Replace(cleanText, @"[ \t]*\n[ \t]*", "\n"); // Clean up whitespace around newlines
+        cleanText = Regex.Replace(cleanText, @"\n\n+", "\n"); // Replace multiple newlines with single newline
+        cleanText = cleanText.Trim();
+
+        return cleanText;
+    }
+}
+
+/// <summary>
+/// Extended keyword research request that supports both regionCode and countrycode parameters
+/// </summary>
+public class KeywordResearchRequestWithCountryCode : KeywordResearchRequest
+{
+    /// <summary>
+    /// Alternative field name for region code (countrycode)
+    /// </summary>
+    public string? CountryCode { get; set; }
+
+    /// <summary>
+    /// Gets the effective region code from either RegionCode or CountryCode
+    /// </summary>
+    public string GetEffectiveRegionCode()
+    {
+        return !string.IsNullOrEmpty(RegionCode) ? RegionCode :
+               !string.IsNullOrEmpty(CountryCode) ? CountryCode.ToUpperInvariant() :
+               string.Empty;
     }
 }

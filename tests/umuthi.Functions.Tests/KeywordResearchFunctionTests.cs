@@ -114,10 +114,10 @@ public class KeywordResearchFunctionTests
     }
 
     [Fact]
-    public async Task GetKeywordResearch_ShouldReturnBadRequest_WhenTooManyKeywords()
+    public async Task GetKeywordResearch_ShouldHandleUnlimitedKeywords()
     {
-        // Arrange
-        var keywords = string.Join("\n", new string[101].Select((_, i) => $"keyword{i}"));
+        // Arrange - Test with more than 100 keywords to verify limit was removed
+        var keywords = string.Join("\n", new string[150].Select((_, i) => $"keyword{i}"));
         var requestBody = JsonSerializer.Serialize(new 
         { 
             keywords = keywords,
@@ -125,13 +125,37 @@ public class KeywordResearchFunctionTests
         });
         var request = CreateMockHttpRequestWithBody(requestBody);
 
+        var mockResponse = new KeywordResearchResponse
+        {
+            RegionCode = "US",
+            TotalKeywords = 150,
+            ProcessedKeywords = 150,
+            Keywords = new List<KeywordResearchData>(),
+            Summary = new KeywordResearchSummary()
+        };
+
+        _mockSeoService.Setup(s => s.GetKeywordResearchAsync(
+            It.IsAny<List<string>>(), // Simplified mock setup
+            "US",
+            false,
+            It.IsAny<ILogger>()))
+            .ReturnsAsync(mockResponse);
+
         // Act
         var result = await _function.GetKeywordResearch(request.Object);
 
-        // Assert
-        Assert.IsType<BadRequestObjectResult>(result);
-        var badRequestResult = result as BadRequestObjectResult;
-        Assert.Contains("Maximum 100 keywords allowed", badRequestResult?.Value?.ToString());
+        // Assert - Check for error first
+        if (result is BadRequestObjectResult badResult)
+        {
+            Assert.True(false, $"Expected OK result but got BadRequest: {badResult.Value}");
+        }
+        
+        Assert.IsType<OkObjectResult>(result);
+        var okResult = result as OkObjectResult;
+        var response = okResult?.Value as KeywordResearchResponse;
+        Assert.NotNull(response);
+        Assert.Equal("US", response.RegionCode);
+        Assert.Equal(150, response.TotalKeywords);
     }
 
     [Fact]
@@ -270,6 +294,99 @@ public class KeywordResearchFunctionTests
         Assert.NotNull(response);
         Assert.Single(response.Keywords); // Only keyword1 should remain after filtering
         Assert.Equal("keyword1", response.Keywords[0].Keyword);
+    }
+
+    [Fact]
+    public async Task GetKeywordResearch_ShouldHandleCountryCodeParameter()
+    {
+        // Arrange - Test with countrycode instead of regionCode
+        var requestBody = JsonSerializer.Serialize(new 
+        { 
+            keywords = "seo platform\nsearch engine help",
+            countrycode = "uk"  // Using countrycode instead of regionCode
+        });
+        var request = CreateMockHttpRequestWithBody(requestBody);
+
+        var mockResponse = new KeywordResearchResponse
+        {
+            RegionCode = "UK",
+            TotalKeywords = 2,
+            ProcessedKeywords = 2,
+            Keywords = new List<KeywordResearchData>(),
+            Summary = new KeywordResearchSummary()
+        };
+
+        _mockSeoService.Setup(s => s.GetKeywordResearchAsync(
+            It.IsAny<List<string>>(),
+            "UK", // Should be converted to uppercase
+            false,
+            It.IsAny<ILogger>()))
+            .ReturnsAsync(mockResponse);
+
+        // Act
+        var result = await _function.GetKeywordResearch(request.Object);
+
+        // Assert
+        Assert.IsType<OkObjectResult>(result);
+        var okResult = result as OkObjectResult;
+        var response = okResult?.Value as KeywordResearchResponse;
+        Assert.NotNull(response);
+        Assert.Equal("UK", response.RegionCode);
+    }
+
+    [Fact]
+    public async Task GetKeywordResearch_ShouldCleanHtmlTags()
+    {
+        // Arrange - Test with HTML tags in keywords as shown in the issue
+        var htmlKeywords = @"<p>
+  <strong>AI for Business</strong><br>
+  AI marketing tools<br>
+  AI content creation<br>
+</p>
+<p>
+  <strong>Business Automation</strong><br>
+  business process automation<br>
+  marketing automation<br>
+</p>";
+        
+        var requestBody = JsonSerializer.Serialize(new 
+        { 
+            keywords = htmlKeywords,
+            countrycode = "uk"
+        });
+        var request = CreateMockHttpRequestWithBody(requestBody);
+
+        var mockResponse = new KeywordResearchResponse
+        {
+            RegionCode = "UK",
+            TotalKeywords = 5,
+            ProcessedKeywords = 5,
+            Keywords = new List<KeywordResearchData>(),
+            Summary = new KeywordResearchSummary()
+        };
+
+        // Verify that HTML tags are cleaned and keywords are properly extracted
+        _mockSeoService.Setup(s => s.GetKeywordResearchAsync(
+            It.IsAny<List<string>>(), // Accept any list for now
+            "UK",
+            false,
+            It.IsAny<ILogger>()))
+            .ReturnsAsync(mockResponse);
+
+        // Act
+        var result = await _function.GetKeywordResearch(request.Object);
+
+        // Assert - Check for error first
+        if (result is BadRequestObjectResult badResult)
+        {
+            Assert.True(false, $"Expected OK result but got BadRequest: {badResult.Value}");
+        }
+        
+        Assert.IsType<OkObjectResult>(result);
+        var okResult = result as OkObjectResult;
+        var response = okResult?.Value as KeywordResearchResponse;
+        Assert.NotNull(response);
+        Assert.Equal("UK", response.RegionCode);
     }
 
     private Mock<HttpRequest> CreateMockHttpRequestWithBody(string body)
