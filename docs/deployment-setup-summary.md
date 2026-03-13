@@ -3,6 +3,7 @@
 ## ✅ Completed Tasks
 
 ### 1. GitHub Actions Workflow
+
 - **File**: `.github/workflows/azure-functions-deploy.yml`
 - **Features**:
   - Automated deployment on push to `main` branch
@@ -13,9 +14,10 @@
   - Proper error handling and retry logic
 
 ### 2. Documentation
+
 - **`docs/deployment.md`**: Complete deployment guide including:
   - Azure resource setup
-  - Service principal configuration  
+  - Service principal configuration
   - GitHub secrets setup
   - Troubleshooting guide
 
@@ -23,32 +25,37 @@
 - **`README.md`**: Updated with deployment section
 
 ### 3. Containerization
+
 - **`Dockerfile`**: Ready for Docker deployment (optional)
 - Uses official Azure Functions .NET 8.0 base image
 
 ### 4. Health Monitoring
-- Existing health check endpoint (`/api/HealthCheck`) 
+
+- Existing health check endpoint (`/api/HealthCheck`)
 - Deployment verification includes health check validation
 - Monitoring through Application Insights
 
 ## 🔧 Setup Requirements
 
 ### Azure Resources Needed
+
 1. **Azure Function App** named "umuthi"
 2. **Azure SQL Database** for production data
 3. **Application Insights** for monitoring
 4. **Service Principal** with contributor access
 
 ### GitHub Repository Secrets
+
 Configure these in GitHub repository settings:
 
-| Secret Name | Value |
-|-------------|-------|
-| `AZURE_CLIENT_ID` | Service principal application ID |
-| `AZURE_TENANT_ID` | Azure AD tenant ID |
-| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID |
+| Secret Name             | Value                            |
+| ----------------------- | -------------------------------- |
+| `AZURE_CLIENT_ID`       | Service principal application ID |
+| `AZURE_TENANT_ID`       | Azure AD tenant ID               |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID            |
 
 ### Service Principal Setup Commands
+
 ```bash
 # Create service principal
 az ad sp create-for-rbac --name "umuthi-github-actions" \
@@ -59,7 +66,7 @@ az ad sp create-for-rbac --name "umuthi-github-actions" \
 # Configure federated credentials for GitHub
 az ad app federated-credential create --id {app-id} --parameters '{
   "name": "umuthi-github-actions",
-  "issuer": "https://token.actions.githubusercontent.com",  
+  "issuer": "https://token.actions.githubusercontent.com",
   "subject": "repo:greghesom/umuthi:ref:refs/heads/main",
   "audiences": ["api://AzureADTokenExchange"]
 }'
@@ -76,7 +83,7 @@ az ad app federated-credential create --id {app-id} --parameters '{
 ## 🔍 Verification Steps
 
 1. **GitHub Actions**: Check workflow run status
-2. **Health Check**: `GET https://umuthi.azurewebsites.net/api/HealthCheck`
+2. **Health Check**: `GET umuthi-function-app-api-fzfccqgsg9dhc6cf.eastus-01.azurewebsites.net/api/HealthCheck`
 3. **Application Insights**: Monitor logs and performance
 4. **Function Endpoints**: Test API functionality
 
@@ -91,6 +98,7 @@ az ad app federated-credential create --id {app-id} --parameters '{
 ## 🔄 Rollback Procedure
 
 If deployment issues occur:
+
 1. **Azure Portal**: Navigate to Function App → Deployment Center
 2. **Previous Version**: Select working deployment from history
 3. **Redeploy**: Click "Redeploy" to rollback
@@ -106,6 +114,7 @@ If deployment issues occur:
 ## 📞 Support
 
 For deployment issues:
+
 1. Check GitHub Actions workflow logs
 2. Review Application Insights logs
 3. Verify Azure resource configuration
