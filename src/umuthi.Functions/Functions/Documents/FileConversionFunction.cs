@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using umuthi.Contracts.Interfaces;
 using umuthi.Contracts.Models;
-using umuthi.Functions.Middleware;
 
 namespace umuthi.Functions.Functions.Documents;
 
@@ -34,9 +33,8 @@ public class FileConversionFunction
     /// <param name="req">HTTP request containing file data array</param>
     /// <returns>Formatted text response with clear file boundaries and titles</returns>
     [Function("ConvertFilesToText")]
-    [ApiKeyAuthentication]
     public async Task<IActionResult> ConvertFilesToText(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "fileconvert/text")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "fileconvert/text")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         long inputSize = 0;
@@ -44,13 +42,6 @@ public class FileConversionFunction
 
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                await TrackUsageAsync(req, startTime, 401, false, "Invalid API key", inputSize, outputSize);
-                return new UnauthorizedResult();
-            }
-
             _logger.LogInformation("File conversion to text function triggered.");
 
             // Read and parse request body

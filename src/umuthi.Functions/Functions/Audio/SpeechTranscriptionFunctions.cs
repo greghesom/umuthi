@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using umuthi.Contracts.Interfaces;
-using umuthi.Functions.Middleware;
 using umuthi.Contracts.Models;
 
 namespace umuthi.Functions.Functions.Audio;
@@ -35,9 +34,8 @@ public class SpeechTranscriptionFunctions
     }
 
     [Function("ConvertAudioToTranscript")]
-    [ApiKeyAuthentication]
     public async Task<IActionResult> ConvertAudioToTranscript(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         long totalInputSize = 0;
@@ -45,12 +43,6 @@ public class SpeechTranscriptionFunctions
         
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                return new UnauthorizedResult();
-            }
-            
             _logger.LogInformation("Audio to Transcript conversion function triggered.");
 
             // Check if files were uploaded
@@ -183,9 +175,8 @@ public class SpeechTranscriptionFunctions
     }
 
     [Function("FastTranscribeAudio")]
-    [ApiKeyAuthentication]
     public async Task<IActionResult> FastTranscribeAudio(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         long totalInputSize = 0;
@@ -193,12 +184,6 @@ public class SpeechTranscriptionFunctions
         
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                return new UnauthorizedResult();
-            }
-            
             _logger.LogInformation("Fast Audio Transcription function triggered.");
 
             // Check if a file was uploaded

@@ -6,7 +6,6 @@ using System;
 using System.Threading.Tasks;
 using umuthi.Contracts.Interfaces;
 using umuthi.Contracts.Models;
-using umuthi.Functions.Middleware;
 using System.Globalization;
 
 namespace umuthi.Functions.Functions.Analytics;
@@ -28,18 +27,11 @@ public class UsageAnalyticsFunctions
     }
 
     [Function("GetBillingSummary")]
-    [ApiKeyAuthentication]
-    public async Task<IActionResult> GetBillingSummary([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    public async Task<IActionResult> GetBillingSummary([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                return new UnauthorizedResult();
-            }
-
             _logger.LogInformation("Billing summary function triggered.");
 
             // Extract query parameters
@@ -118,18 +110,11 @@ public class UsageAnalyticsFunctions
     }
 
     [Function("GetUsageAnalytics")]
-    [ApiKeyAuthentication]
-    public async Task<IActionResult> GetUsageAnalytics([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    public async Task<IActionResult> GetUsageAnalytics([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                return new UnauthorizedResult();
-            }
-
             _logger.LogInformation("Usage analytics function triggered.");
 
             // Extract query parameters
@@ -204,18 +189,11 @@ public class UsageAnalyticsFunctions
     }
 
     [Function("GetUsageRecords")]
-    [ApiKeyAuthentication]
-    public async Task<IActionResult> GetUsageRecords([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    public async Task<IActionResult> GetUsageRecords([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                return new UnauthorizedResult();
-            }
-
             _logger.LogInformation("Usage records function triggered.");
 
             // Extract query parameters

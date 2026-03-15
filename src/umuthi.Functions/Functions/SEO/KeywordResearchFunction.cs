@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using System.Web;
 using umuthi.Contracts.Interfaces;
 using umuthi.Contracts.Models;
-using umuthi.Functions.Middleware;
 
 namespace umuthi.Functions.Functions.SEO;
 
@@ -41,8 +40,7 @@ public class KeywordResearchFunction
     /// <param name="req">HTTP request containing keyword research parameters</param>
     /// <returns>Comprehensive keyword research data with metrics</returns>
     [Function("KeywordResearch")]
-    [ApiKeyAuthentication]
-    public async Task<IActionResult> GetKeywordResearch([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "keywords/research")] HttpRequest req)
+    public async Task<IActionResult> GetKeywordResearch([HttpTrigger(AuthorizationLevel.Function, "post", Route = "keywords/research")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         long inputSize = 0;
@@ -50,12 +48,6 @@ public class KeywordResearchFunction
 
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                return new UnauthorizedResult();
-            }
-
             _logger.LogInformation("Keyword research function triggered.");
 
             // Parse request body

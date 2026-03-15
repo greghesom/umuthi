@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System;
 using System.Linq;
 using umuthi.Contracts.Interfaces;
-using umuthi.Functions.Middleware;
 using umuthi.Contracts.Models;
 using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
@@ -35,8 +34,7 @@ public class AudioConversionFunctions
     }
 
     [Function("ConvertWavToMp3")]
-    [ApiKeyAuthentication]
-    public async Task<IActionResult> ConvertWavToMp3([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+    public async Task<IActionResult> ConvertWavToMp3([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         long inputFileSize = 0;
@@ -44,12 +42,6 @@ public class AudioConversionFunctions
         
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                return new UnauthorizedResult();
-            }
-            
             _logger.LogInformation("WAV to MP3 conversion function triggered.");
 
             // Check if a file was uploaded
@@ -137,8 +129,7 @@ public class AudioConversionFunctions
     }
 
     [Function("ConvertMpegToMp3")]
-    [ApiKeyAuthentication]
-    public async Task<IActionResult> ConvertMpegToMp3([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+    public async Task<IActionResult> ConvertMpegToMp3([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         long inputFileSize = 0;
@@ -146,12 +137,6 @@ public class AudioConversionFunctions
         
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                return new UnauthorizedResult();
-            }
-            
             _logger.LogInformation("MPEG to MP3 conversion function triggered.");
 
             // Check if a file was uploaded

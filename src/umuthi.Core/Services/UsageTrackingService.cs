@@ -36,7 +36,9 @@ public class UsageTrackingService : IUsageTrackingService
         _configuration = configuration;
 
         // Initialize Azure Table Storage client
+        // In .NET isolated worker, local.settings.json Values are exposed as environment variables
         var connectionString = _configuration["AzureWebJobsStorage"] 
+                             ?? Environment.GetEnvironmentVariable("AzureWebJobsStorage")
                              ?? throw new InvalidOperationException("AzureWebJobsStorage setting is required");
         
         var tableServiceClient = new TableServiceClient(connectionString);

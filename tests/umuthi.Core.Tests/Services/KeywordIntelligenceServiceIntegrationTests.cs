@@ -224,13 +224,7 @@ public class KeywordIntelligenceServiceIntegrationTests : IDisposable
             ClientUrl = "https://example.com",
             Industry = "Technology",
             Services = new[] { "SEO Consulting", "Web Development" },
-            Competitors = new[] { "competitor1.com", "competitor2.com" },
-            SubmissionId = "test-submission-123",
-            ClientInfo = new ClientInfo
-            {
-                CompanyName = "Test Company",
-                Email = "test@example.com"
-            }
+            Competitors = new[] { "competitor1.com", "competitor2.com" }
         };
     }
 

@@ -4,7 +4,6 @@ using umuthi.Contracts.Interfaces;
 using umuthi.Contracts.Interfaces.Services;
 using umuthi.Core.Services;
 using umuthi.Core.Services.RootScan;
-using umuthi.Infrastructure.Configuration;
 
 namespace umuthi.Functions.Extensions;
 
@@ -64,40 +63,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddUmuthiFunctionServices(this IServiceCollection services, IConfiguration configuration)
     {
         return services
-            .AddInfrastructure(configuration)
             .AddAudioProcessingServices()
             .AddSEOServices()
             .AddUsageTrackingServices()
-            .AddFilloutServices()
-            .AddProjectServices()
             .AddRootScanServices()
             .AddFileConversionServices();
-    }
-    
-    /// <summary>
-    /// Add Fillout webhook processing services to the DI container
-    /// </summary>
-    /// <param name="services">The service collection</param>
-    /// <returns>The service collection for chaining</returns>
-    public static IServiceCollection AddFilloutServices(this IServiceCollection services)
-    {
-        // Register Fillout services
-        services.AddScoped<IFilloutService, FilloutService>();
-        
-        return services;
-    }
-    
-    /// <summary>
-    /// Add project initialization services to the DI container
-    /// </summary>
-    /// <param name="services">The service collection</param>
-    /// <returns>The service collection for chaining</returns>
-    public static IServiceCollection AddProjectServices(this IServiceCollection services)
-    {
-        // Register project services
-        services.AddScoped<IProjectInitService, ProjectInitService>();
-        
-        return services;
     }
     
     /// <summary>

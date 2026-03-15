@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using umuthi.Contracts.Interfaces;
 using umuthi.Contracts.Models;
 using umuthi.Contracts.Models.RootScan;
-using umuthi.Functions.Middleware;
 
 namespace umuthi.Functions.Functions.RootScan;
 
@@ -39,21 +38,13 @@ public class RootScanFunctions
     /// <param name="req">HTTP request</param>
     /// <returns>Competitors analysis response</returns>
     [Function("GetCompetitors")]
-    [ApiKeyAuthentication]
-    public async Task<IActionResult> GetCompetitors([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "rootscan/competitors")] HttpRequest req)
+    public async Task<IActionResult> GetCompetitors([HttpTrigger(AuthorizationLevel.Function, "post", Route = "rootscan/competitors")] HttpRequest req)
     {
         var startTime = DateTime.UtcNow;
         var requestSize = req.ContentLength ?? 0;
         
         try
         {
-            // Validate API key
-            if (!ApiKeyValidator.ValidateApiKey(req, _logger))
-            {
-                await TrackUsageAsync(req, startTime, 401, false, "Unauthorized - Invalid API key", requestSize);
-                return new UnauthorizedResult();
-            }
-
             _logger.LogInformation("GetCompetitors function triggered");
 
             // Read request body
