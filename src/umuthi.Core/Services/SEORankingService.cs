@@ -34,18 +34,25 @@ public class SEORankingService : ISEORankingService
         _httpClient = httpClient;
         _memoryCache = memoryCache;
         _configuration = configuration;
-        _seRankingApiKey = configuration["SEORanking:ApiKey"] ?? throw new InvalidOperationException("SE Ranking API key not configured");
+        _seRankingApiKey = configuration["SEORanking:ApiKey"] ?? string.Empty;
         _seRankingBaseUrl = configuration["SEORanking:BaseUrl"] ?? "https://api4.seranking.com/";
 
-        // Data API configuration (use regular API as fallback)
-        _seRankingDataApiKey = configuration["SEORanking:DataApiKey"] ?? _seRankingApiKey;
-        _seRankingDataApiUrl = configuration["SEORanking:DataApiUrl"] ?? "https://api.seranking.com/";
+        // Data API configuration
+        _seRankingDataApiKey = configuration["SEORanking:DataApiKey"] 
+                             ?? Environment.GetEnvironmentVariable("SEORanking__DataApiKey")
+                             ?? throw new InvalidOperationException("SE Ranking Data API key not configured");
+        _seRankingDataApiUrl = configuration["SEORanking:DataApiUrl"] 
+                             ?? Environment.GetEnvironmentVariable("SEORanking__DataApiUrl")
+                             ?? "https://api.seranking.com/";
 
         _pendingReports = new Dictionary<string, SEOReportRequestStatus>();
 
-        // Configure HTTP client
-        _httpClient.BaseAddress = new Uri(_seRankingBaseUrl);
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Token {_seRankingApiKey}");
+        // Configure HTTP client for legacy project API (if key is available)
+        if (!string.IsNullOrEmpty(_seRankingApiKey))
+        {
+            _httpClient.BaseAddress = new Uri(_seRankingBaseUrl);
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Token {_seRankingApiKey}");
+        }
         _httpClient.Timeout = TimeSpan.FromSeconds(30);
     }
 
@@ -1031,7 +1038,8 @@ public class SEORankingService : ISEORankingService
     }
 
     /// <summary>
-    /// Get comprehensive keyword research data from SE Ranking Keywords Export API
+    /// Get comprehensive keyword research data from SE Ranking Data API Keywords Export endpoint
+    /// POST https://api.seranking.com/v1/keywords/export?source={regionCode}
     /// </summary>
     public async Task<KeywordResearchResponse> GetKeywordResearchAsync(List<string> keywords, string regionCode, bool includeHistoricalTrends, ILogger logger)
     {
@@ -1050,15 +1058,21 @@ public class SEORankingService : ISEORankingService
 
         try
         {
-            using var dataClient = CreateProjectApiClient();
+            using var dataClient = CreateDataApiClient();
 
-            // Use the keyword export API endpoint for comprehensive data
-            var url = $"research/{Uri.EscapeDataString(regionCode)}/analyze-keywords/";
+            // Use the Data API keywords export endpoint
+            // source is a query parameter, keywords[] and other params are form-data
+            var url = $"v1/keywords/export?source={Uri.EscapeDataString(regionCode.ToLowerInvariant())}";
+
+            // Log the full request details for debugging
+            var fullUrl = new Uri(new Uri(_seRankingDataApiUrl), url);
+            logger.LogInformation("SE Ranking Data API request: POST {Url}", fullUrl);
+            logger.LogInformation("SE Ranking Data API key (first 8 chars): {KeyPrefix}...", _seRankingDataApiKey.Length > 8 ? _seRankingDataApiKey[..8] : _seRankingDataApiKey);
 
             // Create form data
             var formData = new MultipartFormDataContent();
 
-            // Add keywords as individual form fields
+            // Add keywords as individual form fields (up to 5,000 per request)
             foreach (var keyword in keywords)
             {
                 formData.Add(new StringContent(keyword), "keywords[]");
@@ -1078,7 +1092,13 @@ public class SEORankingService : ISEORankingService
             formData.Add(new StringContent("desc"), "sort_order");
 
             var response = await dataClient.PostAsync(url, formData);
-            response.EnsureSuccessStatusCode();
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                logger.LogError("SE Ranking Data API returned {StatusCode}: {ErrorBody}", (int)response.StatusCode, errorBody);
+                response.EnsureSuccessStatusCode();
+            }
 
             var jsonContent = await response.Content.ReadAsStringAsync();
             var data = MapKeywordResearchData(jsonContent, keywords, regionCode, includeHistoricalTrends);
@@ -1107,14 +1127,6 @@ public class SEORankingService : ISEORankingService
     }
 
 
-    private HttpClient CreateProjectApiClient()
-    {
-        var client = new HttpClient();
-        client.BaseAddress = new Uri(_seRankingBaseUrl);
-        client.DefaultRequestHeaders.Add("Authorization", $"Token {_seRankingApiKey}");
-        client.Timeout = TimeSpan.FromSeconds(30);
-        return client;
-    }
     /// <summary>
     /// Create HTTP client configured for SE Ranking Data API
     /// </summary>
@@ -1453,7 +1465,7 @@ public class SEORankingService : ISEORankingService
                 Nofollow = distElement.TryGetProperty("nofollow", out var nf) ? nf.GetInt32() : 0,
                 Government = distElement.TryGetProperty("government", out var gov) ? gov.GetInt32() : 0,
                 Educational = distElement.TryGetProperty("educational", out var edu) ? edu.GetInt32() : 0,
-                Text = distElement.TryGetProperty("text", out var text) ? text.GetInt32() : 0,
+                Text = distElement.TryGetProperty("text", out var txt) ? txt.GetInt32() : 0,
                 Image = distElement.TryGetProperty("image", out var img) ? img.GetInt32() : 0
             };
         }

@@ -8,8 +8,6 @@
     "FilloutWebhook:Secret": "your-webhook-secret-here",
     "FilloutWebhook:MaxPayloadSize": "1048576",
     "FilloutWebhook:EnableSignatureValidation": "true",
-    "SEORanking:ApiKey": "8462e99d629d3ce08e7e6d56c030cf58dffeb3ed",
-    "SEORanking:BaseUrl": "https://api4.seranking.com/",
     "SEORanking:DataApiKey": "0ccbcd23-8d83-5daf-d52d-530649b4f44c",
     "SEORanking:DataApiUrl": "https://api.seranking.com/",
     "Speech:ApiKey": "your-azure-cognitive-services-speech-key",
